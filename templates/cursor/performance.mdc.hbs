@@ -1,0 +1,208 @@
+---
+description: Performance optimization guidelines
+globs:
+  - "**/*"
+priority: 600
+---
+
+# Performance Standards
+
+## General Principles
+
+1. **Measure first** - Profile before optimizing
+2. **Optimize hot paths** - Focus on frequently executed code
+3. **Avoid premature optimization** - Clarity over micro-optimizations
+4. **Set budgets** - Define performance targets upfront
+
+## Frontend Performance
+
+### Bundle Size
+
+```typescript
+// Use dynamic imports for code splitting
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+
+// Tree-shake by using named imports
+import { debounce } from "lodash-es"; // Not: import _ from "lodash"
+
+// Analyze bundle
+// npx vite-bundle-analyzer
+// npx webpack-bundle-analyzer
+```
+
+### Rendering Optimization
+
+```typescript
+// Memoize expensive components
+const MemoizedList = React.memo(ItemList);
+
+// Memoize expensive computations
+const sortedItems = useMemo(
+  () => items.sort((a, b) => a.name.localeCompare(b.name)),
+  [items]
+);
+
+// Virtualize long lists
+import { FixedSizeList } from "react-window";
+
+<FixedSizeList
+  height={400}
+  itemCount={items.length}
+  itemSize={50}
+>
+  {({ index, style }) => <Item style={style} data={items[index]} />}
+</FixedSizeList>
+```
+
+### Image Optimization
+
+```tsx
+// Use responsive images
+<img
+  src="/image.jpg"
+  srcSet="/image-400.jpg 400w, /image-800.jpg 800w"
+  sizes="(max-width: 600px) 400px, 800px"
+  loading="lazy"
+  alt="Description"
+/>
+
+// Use modern formats
+<picture>
+  <source srcSet="/image.avif" type="image/avif" />
+  <source srcSet="/image.webp" type="image/webp" />
+  <img src="/image.jpg" alt="Description" />
+</picture>
+```
+
+## Backend Performance
+
+### Database Optimization
+
+```typescript
+// Use indexes for query columns
+// SELECT * FROM users WHERE email = ? → index on email
+
+// Avoid N+1 queries
+const users = await db.users.findMany({
+  include: { posts: true }, // Single query with JOIN
+});
+
+// Use pagination
+const users = await db.users.findMany({
+  take: 20,
+  skip: offset,
+});
+```
+
+### Caching Strategies
+
+```typescript
+// In-memory cache for hot data
+const cache = new Map<string, { data: any; expires: number }>();
+
+function getCached<T>(key: string, ttlMs: number, fetcher: () => Promise<T>) {
+  const cached = cache.get(key);
+  if (cached && cached.expires > Date.now()) {
+    return cached.data as T;
+  }
+
+  const data = await fetcher();
+  cache.set(key, { data, expires: Date.now() + ttlMs });
+  return data;
+}
+
+// Redis for distributed caching
+await redis.setex(`user:${id}`, 3600, JSON.stringify(user));
+```
+
+### Async Processing
+
+```typescript
+// Use worker threads for CPU-intensive tasks
+import { Worker } from "worker_threads";
+
+const worker = new Worker("./process-data.js");
+worker.postMessage(largeData);
+worker.on("message", (result) => {
+  // Handle result
+});
+
+// Use message queues for background jobs
+await queue.add("send-email", { to, subject, body });
+```
+
+## Network Optimization
+
+### HTTP Caching
+
+```typescript
+// Set cache headers
+res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+
+// Use ETags
+const etag = generateEtag(content);
+res.setHeader("ETag", etag);
+
+if (req.headers["if-none-match"] === etag) {
+  return res.status(304).end();
+}
+```
+
+### Compression
+
+```typescript
+import compression from "compression";
+
+app.use(compression({
+  filter: (req, res) => {
+    return /json|text|javascript|css/.test(res.getHeader("Content-Type"));
+  },
+  level: 6,
+}));
+```
+
+### Connection Reuse
+
+```typescript
+// Use HTTP/2
+// Use keep-alive connections
+// Pool database connections
+
+const pool = new Pool({
+  max: 20,
+  idleTimeoutMillis: 30000,
+});
+```
+
+## Monitoring
+
+### Key Metrics
+
+- **Response Time**: P50, P95, P99 latencies
+- **Throughput**: Requests per second
+- **Error Rate**: 4xx/5xx percentage
+- **Saturation**: CPU, memory, connections
+
+### Logging Performance Data
+
+```typescript
+const start = performance.now();
+const result = await operation();
+const duration = performance.now() - start;
+
+logger.info("Operation completed", {
+  operation: "processOrder",
+  durationMs: duration,
+  itemCount: items.length,
+});
+```
+
+## Performance Checklist
+
+- [ ] Bundle size analyzed and optimized
+- [ ] Images optimized and lazy-loaded
+- [ ] Database queries indexed and efficient
+- [ ] Caching implemented where appropriate
+- [ ] Compression enabled
+- [ ] Performance monitoring in place
+- [ ] Load testing performed

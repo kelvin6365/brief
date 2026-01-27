@@ -1,0 +1,92 @@
+---
+name: git-workflow
+description: Git workflow and commit conventions for {{project.name}}
+globs:
+  - ".git/**/*"
+  - ".gitignore"
+auto_invoke: false
+---
+
+# Git Workflow
+
+## Commit Messages
+
+Follow conventional commits format:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+### Types
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style (formatting, semicolons)
+- `refactor`: Code refactoring
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
+
+### Examples
+
+```
+feat(auth): add OAuth2 login support
+
+fix(api): handle null response from external API
+
+docs(readme): update installation instructions
+
+refactor(utils): extract date formatting logic
+```
+
+## Branch Naming
+
+```
+feature/add-user-authentication
+fix/resolve-login-timeout
+docs/update-api-documentation
+refactor/simplify-error-handling
+```
+
+## Common Commands
+
+```bash
+# Create and switch to new branch
+git checkout -b feature/my-feature
+
+# Stage specific files
+git add src/component.ts tests/component.test.ts
+
+# Commit with message
+git commit -m "feat(component): add new feature"
+
+# Push and set upstream
+git push -u origin feature/my-feature
+
+# Rebase on main
+git fetch origin
+git rebase origin/main
+
+# Squash last N commits
+git rebase -i HEAD~N
+```
+
+## Pre-commit Checks
+
+Before committing:
+
+1. Run type-check: `{{detection.packageManager}} run type-check`
+2. Run linter: `{{detection.packageManager}} run lint`
+3. Run tests: `{{detection.packageManager}} test`
+
+## Pull Request Guidelines
+
+1. **Clear title** following commit conventions
+2. **Description** of changes and motivation
+3. **Test coverage** for new functionality
+4. **No console.logs** or debug code
+5. **Passing CI checks**

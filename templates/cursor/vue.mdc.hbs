@@ -1,0 +1,209 @@
+---
+description: Vue 3 Composition API patterns and conventions
+globs:
+  - "**/*.vue"
+  - "**/composables/**/*"
+priority: 800
+---
+
+# Vue.js Development Standards
+
+## Composition API
+
+### Component Structure
+
+```vue
+<script setup lang="ts">
+import { ref, computed, onMounted } from "vue";
+import type { User } from "@/types";
+
+// Props
+const props = defineProps<{
+  userId: string;
+  showDetails?: boolean;
+}>();
+
+// Emits
+const emit = defineEmits<{
+  update: [user: User];
+  delete: [id: string];
+}>();
+
+// State
+const user = ref<User | null>(null);
+const loading = ref(false);
+
+// Computed
+const displayName = computed(() => {
+  return user.value?.name ?? "Unknown";
+});
+
+// Methods
+async function fetchUser() {
+  loading.value = true;
+  try {
+    user.value = await api.getUser(props.userId);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  fetchUser();
+});
+</script>
+
+<template>
+  <div class="user-card">
+    <span v-if="loading">Loading...</span>
+    <template v-else-if="user">
+      <h2>{{ displayName }}</h2>
+      <p v-if="showDetails">{{ user.email }}</p>
+    </template>
+  </div>
+</template>
+
+<style scoped>
+.user-card {
+  padding: 1rem;
+}
+</style>
+```
+
+## Composables
+
+### Creating Composables
+
+```typescript
+// composables/useUser.ts
+import { ref, readonly } from "vue";
+import type { User } from "@/types";
+
+export function useUser(userId: string) {
+  const user = ref<User | null>(null);
+  const loading = ref(false);
+  const error = ref<Error | null>(null);
+
+  async function fetch() {
+    loading.value = true;
+    error.value = null;
+    try {
+      user.value = await api.getUser(userId);
+    } catch (e) {
+      error.value = e as Error;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return {
+    user: readonly(user),
+    loading: readonly(loading),
+    error: readonly(error),
+    fetch,
+  };
+}
+```
+
+### Using Composables
+
+```vue
+<script setup lang="ts">
+import { useUser } from "@/composables/useUser";
+
+const props = defineProps<{ userId: string }>();
+const { user, loading, error, fetch } = useUser(props.userId);
+
+onMounted(fetch);
+</script>
+```
+
+## Reactivity Patterns
+
+### Refs vs Reactive
+
+```typescript
+// Use ref for primitives and single values
+const count = ref(0);
+const user = ref<User | null>(null);
+
+// Use reactive for objects you'll mutate
+const form = reactive({
+  name: "",
+  email: "",
+});
+
+// Access ref value with .value in script
+count.value++;
+
+// No .value needed in template
+// {{ count }}
+```
+
+### Computed Properties
+
+```typescript
+// Read-only computed
+const fullName = computed(() => {
+  return `${user.value.firstName} ${user.value.lastName}`;
+});
+
+// Writable computed
+const selected = computed({
+  get: () => props.modelValue,
+  set: (value) => emit("update:modelValue", value),
+});
+```
+
+## Event Handling
+
+```vue
+<template>
+  <!-- Method handler -->
+  <button @click="handleClick">Click</button>
+
+  <!-- Inline handler -->
+  <button @click="count++">Increment</button>
+
+  <!-- With event -->
+  <input @input="handleInput($event)" />
+
+  <!-- Modifiers -->
+  <form @submit.prevent="handleSubmit">
+    <input @keyup.enter="submit" />
+  </form>
+</template>
+```
+
+## Provide/Inject
+
+```typescript
+// Parent component
+import { provide } from "vue";
+
+const theme = ref("dark");
+provide("theme", theme);
+
+// Child component (any depth)
+import { inject } from "vue";
+
+const theme = inject<Ref<string>>("theme", ref("light"));
+```
+
+## Best Practices
+
+1. **Use `<script setup>`** - Cleaner, better TypeScript support
+2. **Type your props and emits** - Use TypeScript generics
+3. **Extract composables** - Reuse logic across components
+4. **Use `readonly`** - Prevent mutations from consumers
+5. **Prefer computed** - Over methods for derived state
+6. **Use template refs** - For DOM access, not reactive data
+
+## Avoid These Patterns
+
+- Options API in new code (use Composition API)
+- Mutating props directly
+- Using `this` in `<script setup>`
+- Watchers for computed values
+- Deep watchers without need

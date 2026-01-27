@@ -1,0 +1,211 @@
+---
+description: Security best practices and vulnerability prevention
+globs:
+  - "**/*"
+priority: 600
+---
+
+# Security Standards
+
+## Input Validation
+
+### Validate All User Input
+
+```typescript
+import { z } from "zod";
+
+const userSchema = z.object({
+  email: z.string().email().max(255),
+  name: z.string().min(1).max(100),
+  age: z.number().int().min(0).max(150),
+});
+
+// Validate before using
+const validatedData = userSchema.parse(userInput);
+```
+
+### Sanitize Output
+
+```typescript
+// Escape HTML to prevent XSS
+import { escape } from "html-escaper";
+const safeHtml = escape(userContent);
+
+// Use templating engines that auto-escape
+// React, Vue, etc. escape by default
+```
+
+## Authentication
+
+### Password Handling
+
+```typescript
+import { hash, verify } from "@node-rs/argon2";
+
+// Hash passwords (never store plain text)
+const hashedPassword = await hash(password, {
+  memoryCost: 65536,
+  timeCost: 3,
+  parallelism: 4,
+});
+
+// Verify passwords
+const isValid = await verify(hashedPassword, inputPassword);
+```
+
+### Session Security
+
+```typescript
+// Secure cookie settings
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  cookie: {
+    secure: true,      // HTTPS only
+    httpOnly: true,    // No JavaScript access
+    sameSite: "strict", // CSRF protection
+    maxAge: 3600000,   // 1 hour
+  },
+}));
+```
+
+### JWT Best Practices
+
+```typescript
+// Use short expiration
+const token = jwt.sign(payload, secret, {
+  expiresIn: "15m",  // Short-lived access token
+});
+
+// Use refresh tokens for longer sessions
+const refreshToken = jwt.sign({ userId }, refreshSecret, {
+  expiresIn: "7d",
+});
+```
+
+## Authorization
+
+### Principle of Least Privilege
+
+```typescript
+// Check permissions at every level
+async function getDocument(userId: string, docId: string) {
+  const doc = await db.documents.findUnique({ where: { id: docId } });
+
+  // Verify ownership/access
+  if (doc.ownerId !== userId && !doc.sharedWith.includes(userId)) {
+    throw new ForbiddenError("Access denied");
+  }
+
+  return doc;
+}
+```
+
+## Injection Prevention
+
+### SQL Injection
+
+```typescript
+// NEVER concatenate user input into queries
+// Bad
+const query = `SELECT * FROM users WHERE id = ${userId}`;
+
+// Good - parameterized query
+const query = "SELECT * FROM users WHERE id = $1";
+const result = await db.query(query, [userId]);
+
+// Good - ORM
+const user = await prisma.user.findUnique({ where: { id: userId } });
+```
+
+### Command Injection
+
+```typescript
+// NEVER pass user input to shell commands
+// Bad
+exec(`convert ${userFilename} output.png`);
+
+// Good - use libraries that don't spawn shells
+import sharp from "sharp";
+await sharp(sanitizedPath).png().toFile("output.png");
+```
+
+## API Security
+
+### Rate Limiting
+
+```typescript
+import rateLimit from "express-rate-limit";
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP
+  message: "Too many requests",
+});
+
+app.use("/api/", limiter);
+```
+
+### CORS Configuration
+
+```typescript
+app.use(cors({
+  origin: ["https://myapp.com"],  // Specific origins
+  methods: ["GET", "POST"],
+  credentials: true,
+}));
+```
+
+## Secrets Management
+
+### Environment Variables
+
+```typescript
+// Never hardcode secrets
+// Bad
+const apiKey = "sk_live_abc123";
+
+// Good
+const apiKey = process.env.API_KEY;
+if (!apiKey) throw new Error("API_KEY required");
+```
+
+### .gitignore
+
+```
+# Never commit
+.env
+.env.local
+*.pem
+*.key
+credentials.json
+```
+
+## Security Headers
+
+```typescript
+import helmet from "helmet";
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+    },
+  },
+  hsts: { maxAge: 31536000 },
+}));
+```
+
+## Security Checklist
+
+- [ ] Input validation on all user data
+- [ ] Output encoding to prevent XSS
+- [ ] Parameterized queries only
+- [ ] Strong password hashing (Argon2/bcrypt)
+- [ ] HTTPS everywhere
+- [ ] Secure session cookies
+- [ ] Rate limiting on endpoints
+- [ ] CORS properly configured
+- [ ] Secrets in environment variables
+- [ ] Dependencies kept up-to-date
+- [ ] Security headers enabled

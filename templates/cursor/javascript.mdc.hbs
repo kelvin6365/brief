@@ -1,0 +1,155 @@
+---
+description: JavaScript coding standards and best practices
+globs:
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
+  - "**/*.cjs"
+priority: 900
+---
+
+# JavaScript Standards
+
+## Modern JavaScript
+
+### ES Modules
+
+- Use ES modules (`import`/`export`) over CommonJS
+- Use named exports for better tree-shaking
+- Avoid default exports when possible
+
+```javascript
+// Good
+export function calculateTotal(items) { ... }
+export const TAX_RATE = 0.08;
+
+// Avoid
+export default function calculateTotal(items) { ... }
+```
+
+### Variable Declarations
+
+- Use `const` by default
+- Use `let` only when reassignment is needed
+- Never use `var`
+
+### Arrow Functions
+
+```javascript
+// Use for callbacks and short functions
+const doubled = numbers.map((n) => n * 2);
+
+// Use regular functions for methods that need `this`
+const obj = {
+  value: 42,
+  getValue() {
+    return this.value;
+  },
+};
+```
+
+## Best Practices
+
+### Destructuring
+
+```javascript
+// Object destructuring
+const { name, email } = user;
+const { name: userName } = user; // rename
+
+// Array destructuring
+const [first, second] = items;
+const [head, ...tail] = items;
+
+// Parameter destructuring
+function greet({ name, age }) {
+  return `Hello ${name}, you are ${age} years old`;
+}
+```
+
+### Spread and Rest
+
+```javascript
+// Spread for copying
+const newArray = [...oldArray, newItem];
+const newObj = { ...oldObj, updated: true };
+
+// Rest for collecting
+function sum(...numbers) {
+  return numbers.reduce((a, b) => a + b, 0);
+}
+```
+
+### Optional Chaining and Nullish Coalescing
+
+```javascript
+// Optional chaining
+const city = user?.address?.city;
+
+// Nullish coalescing
+const port = config.port ?? 3000;
+
+// Combined
+const theme = settings?.theme ?? "light";
+```
+
+## Async Patterns
+
+### Async/Await
+
+```javascript
+// Prefer async/await over raw Promises
+async function fetchUser(id) {
+  try {
+    const response = await fetch(`/api/users/${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to fetch user:", error);
+    throw error;
+  }
+}
+```
+
+### Parallel Operations
+
+```javascript
+// Use Promise.all for independent operations
+const [users, posts] = await Promise.all([
+  fetchUsers(),
+  fetchPosts(),
+]);
+
+// Use Promise.allSettled when you need all results
+const results = await Promise.allSettled(promises);
+```
+
+## Error Handling
+
+```javascript
+// Use try-catch for async operations
+try {
+  const data = await fetchData();
+  processData(data);
+} catch (error) {
+  if (error instanceof NetworkError) {
+    // Handle network errors
+  } else if (error instanceof ValidationError) {
+    // Handle validation errors
+  } else {
+    // Re-throw unexpected errors
+    throw error;
+  }
+}
+```
+
+## Avoid These Patterns
+
+- `var` - use `const` or `let`
+- `==` - use `===` for strict equality
+- `arguments` - use rest parameters
+- `with` statement
+- Modifying built-in prototypes
+- Callback hell - use async/await

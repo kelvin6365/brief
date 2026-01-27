@@ -1,0 +1,474 @@
+/**
+ * Template registry - defines all available templates
+ */
+
+import type { TemplateDefinition, TemplateBundle } from "./types.js";
+
+/**
+ * Core templates - always included
+ */
+export const CORE_TEMPLATES: TemplateDefinition[] = [
+  // Cursor core rules
+  {
+    id: "cursor-core",
+    name: "Cursor Core Rules",
+    description: "Essential coding standards and AI behavior guidelines",
+    target: "cursor",
+    category: "core",
+    templatePath: "cursor/core.mdc.hbs",
+    outputPath: ".cursor/rules/core.mdc",
+    priority: 1000,
+    tags: ["essential"],
+  },
+  // Claude core config
+  {
+    id: "claude-core",
+    name: "Claude Code Configuration",
+    description: "Main CLAUDE.md configuration file",
+    target: "claude",
+    category: "core",
+    templatePath: "claude/CLAUDE.md.hbs",
+    outputPath: "CLAUDE.md",
+    priority: 1000,
+    tags: ["essential"],
+  },
+];
+
+/**
+ * Language-specific templates
+ */
+export const LANGUAGE_TEMPLATES: TemplateDefinition[] = [
+  {
+    id: "typescript",
+    name: "TypeScript",
+    description: "TypeScript coding standards and type safety rules",
+    target: ["cursor", "claude"],
+    category: "framework",
+    templatePath: "cursor/typescript.mdc.hbs",
+    outputPath: ".cursor/rules/typescript.mdc",
+    globs: ["**/*.ts", "**/*.tsx"],
+    priority: 900,
+    conditions: [{ type: "language", value: "typescript" }],
+    tags: ["language", "typescript"],
+  },
+  {
+    id: "javascript",
+    name: "JavaScript",
+    description: "JavaScript coding standards and best practices",
+    target: ["cursor", "claude"],
+    category: "framework",
+    templatePath: "cursor/javascript.mdc.hbs",
+    outputPath: ".cursor/rules/javascript.mdc",
+    globs: ["**/*.js", "**/*.jsx"],
+    priority: 900,
+    conditions: [{ type: "language", value: "javascript" }],
+    tags: ["language", "javascript"],
+  },
+  {
+    id: "python",
+    name: "Python",
+    description: "Python coding standards and PEP guidelines",
+    target: ["cursor", "claude"],
+    category: "framework",
+    templatePath: "cursor/python.mdc.hbs",
+    outputPath: ".cursor/rules/python.mdc",
+    globs: ["**/*.py"],
+    priority: 900,
+    conditions: [{ type: "language", value: "python" }],
+    tags: ["language", "python"],
+  },
+];
+
+/**
+ * Framework-specific templates
+ */
+export const FRAMEWORK_TEMPLATES: TemplateDefinition[] = [
+  // React
+  {
+    id: "react",
+    name: "React",
+    description: "React component patterns and hooks best practices",
+    target: ["cursor", "claude"],
+    category: "framework",
+    templatePath: "cursor/react.mdc.hbs",
+    outputPath: ".cursor/rules/react.mdc",
+    globs: ["**/*.tsx", "**/*.jsx", "**/components/**/*"],
+    priority: 800,
+    dependencies: ["typescript"],
+    conditions: [{ type: "framework", value: "react" }],
+    tags: ["framework", "react", "frontend"],
+  },
+  // Next.js
+  {
+    id: "nextjs",
+    name: "Next.js",
+    description: "Next.js App Router patterns and conventions",
+    target: ["cursor", "claude"],
+    category: "framework",
+    templatePath: "cursor/nextjs.mdc.hbs",
+    outputPath: ".cursor/rules/nextjs.mdc",
+    globs: ["**/app/**/*", "**/pages/**/*", "next.config.*"],
+    priority: 750,
+    dependencies: ["react", "typescript"],
+    conditions: [{ type: "framework", value: "next" }],
+    tags: ["framework", "nextjs", "react", "fullstack"],
+  },
+  // Vue
+  {
+    id: "vue",
+    name: "Vue.js",
+    description: "Vue 3 Composition API patterns and conventions",
+    target: ["cursor", "claude"],
+    category: "framework",
+    templatePath: "cursor/vue.mdc.hbs",
+    outputPath: ".cursor/rules/vue.mdc",
+    globs: ["**/*.vue", "**/composables/**/*"],
+    priority: 800,
+    conditions: [{ type: "framework", value: "vue" }],
+    tags: ["framework", "vue", "frontend"],
+  },
+  // Express
+  {
+    id: "express",
+    name: "Express.js",
+    description: "Express.js API patterns and middleware conventions",
+    target: ["cursor", "claude"],
+    category: "framework",
+    templatePath: "cursor/express.mdc.hbs",
+    outputPath: ".cursor/rules/express.mdc",
+    globs: ["**/routes/**/*", "**/middleware/**/*", "**/controllers/**/*"],
+    priority: 800,
+    conditions: [{ type: "framework", value: "express" }],
+    tags: ["framework", "express", "backend", "api"],
+  },
+  // FastAPI
+  {
+    id: "fastapi",
+    name: "FastAPI",
+    description: "FastAPI patterns and Pydantic model conventions",
+    target: ["cursor", "claude"],
+    category: "framework",
+    templatePath: "cursor/fastapi.mdc.hbs",
+    outputPath: ".cursor/rules/fastapi.mdc",
+    globs: ["**/routers/**/*", "**/models/**/*", "**/schemas/**/*"],
+    priority: 800,
+    dependencies: ["python"],
+    conditions: [{ type: "framework", value: "fastapi" }],
+    tags: ["framework", "fastapi", "python", "backend", "api"],
+  },
+];
+
+/**
+ * Pattern templates - cross-cutting concerns
+ */
+export const PATTERN_TEMPLATES: TemplateDefinition[] = [
+  {
+    id: "testing",
+    name: "Testing Patterns",
+    description: "Testing conventions and best practices",
+    target: ["cursor", "claude"],
+    category: "pattern",
+    templatePath: "cursor/testing.mdc.hbs",
+    outputPath: ".cursor/rules/testing.mdc",
+    globs: ["**/*.test.*", "**/*.spec.*", "**/tests/**/*", "**/__tests__/**/*"],
+    priority: 700,
+    tags: ["pattern", "testing"],
+  },
+  {
+    id: "api-design",
+    name: "API Design",
+    description: "RESTful API design patterns and conventions",
+    target: ["cursor", "claude"],
+    category: "pattern",
+    templatePath: "cursor/api-design.mdc.hbs",
+    outputPath: ".cursor/rules/api-design.mdc",
+    globs: ["**/api/**/*", "**/routes/**/*", "**/endpoints/**/*"],
+    priority: 700,
+    tags: ["pattern", "api"],
+  },
+  {
+    id: "database",
+    name: "Database Patterns",
+    description: "Database access patterns and query optimization",
+    target: ["cursor", "claude"],
+    category: "pattern",
+    templatePath: "cursor/database.mdc.hbs",
+    outputPath: ".cursor/rules/database.mdc",
+    globs: ["**/db/**/*", "**/models/**/*", "**/migrations/**/*", "**/prisma/**/*"],
+    priority: 700,
+    tags: ["pattern", "database"],
+  },
+  {
+    id: "security",
+    name: "Security Patterns",
+    description: "Security best practices and vulnerability prevention",
+    target: ["cursor", "claude"],
+    category: "pattern",
+    templatePath: "cursor/security.mdc.hbs",
+    outputPath: ".cursor/rules/security.mdc",
+    priority: 600,
+    tags: ["pattern", "security"],
+  },
+  {
+    id: "performance",
+    name: "Performance Patterns",
+    description: "Performance optimization guidelines",
+    target: ["cursor", "claude"],
+    category: "pattern",
+    templatePath: "cursor/performance.mdc.hbs",
+    outputPath: ".cursor/rules/performance.mdc",
+    priority: 600,
+    tags: ["pattern", "performance"],
+  },
+];
+
+/**
+ * Project type templates
+ */
+export const PROJECT_TYPE_TEMPLATES: TemplateDefinition[] = [
+  {
+    id: "cli",
+    name: "CLI Application",
+    description: "Command-line application patterns",
+    target: ["cursor", "claude"],
+    category: "project-type",
+    templatePath: "cursor/cli.mdc.hbs",
+    outputPath: ".cursor/rules/cli.mdc",
+    globs: ["**/cli/**/*", "**/commands/**/*", "**/bin/**/*"],
+    priority: 750,
+    tags: ["project-type", "cli"],
+  },
+  {
+    id: "library",
+    name: "Library/Package",
+    description: "Library development patterns and API design",
+    target: ["cursor", "claude"],
+    category: "project-type",
+    templatePath: "cursor/library.mdc.hbs",
+    outputPath: ".cursor/rules/library.mdc",
+    priority: 750,
+    tags: ["project-type", "library"],
+  },
+];
+
+/**
+ * Claude-specific templates (skills, commands)
+ */
+export const CLAUDE_TEMPLATES: TemplateDefinition[] = [
+  {
+    id: "claude-skill-testing",
+    name: "Testing Skill",
+    description: "Claude Code skill for testing patterns",
+    target: "claude",
+    category: "pattern",
+    templatePath: "claude/skills/testing.md.hbs",
+    outputPath: ".claude/skills/testing-patterns.md",
+    priority: 500,
+    tags: ["claude", "skill", "testing"],
+  },
+  {
+    id: "claude-skill-git",
+    name: "Git Workflow Skill",
+    description: "Claude Code skill for git operations",
+    target: "claude",
+    category: "pattern",
+    templatePath: "claude/skills/git-workflow.md.hbs",
+    outputPath: ".claude/skills/git-workflow.md",
+    priority: 500,
+    tags: ["claude", "skill", "git"],
+  },
+  {
+    id: "claude-settings",
+    name: "Claude Settings",
+    description: "Claude Code settings with hooks",
+    target: "claude",
+    category: "core",
+    templatePath: "claude/settings.json.hbs",
+    outputPath: ".claude/settings.json",
+    priority: 900,
+    tags: ["claude", "settings"],
+  },
+];
+
+/**
+ * Qoder-specific templates (Qoder - The Agentic Coding Platform)
+ * Rules are stored in .qoder/rules/ directory
+ */
+export const QODO_TEMPLATES: TemplateDefinition[] = [
+  {
+    id: "qoder-core",
+    name: "Qoder Core Rules",
+    description: "Core coding standards for Qoder",
+    target: "qoder",
+    category: "core",
+    templatePath: "qoder/core.md.hbs",
+    outputPath: ".qoder/rules/core.md",
+    priority: 1000,
+    tags: ["qoder", "core"],
+  },
+  {
+    id: "qoder-best-practices",
+    name: "Qoder Best Practices",
+    description: "Best practices and coding standards for Qoder",
+    target: "qoder",
+    category: "core",
+    templatePath: "qoder/best-practices.md.hbs",
+    outputPath: ".qoder/rules/best-practices.md",
+    priority: 900,
+    tags: ["qoder", "best-practices"],
+  },
+  {
+    id: "qoder-testing",
+    name: "Qoder Testing Rules",
+    description: "Testing patterns and conventions for Qoder",
+    target: "qoder",
+    category: "pattern",
+    templatePath: "qoder/testing.md.hbs",
+    outputPath: ".qoder/rules/testing.md",
+    globs: ["**/*.test.*", "**/*.spec.*", "**/tests/**"],
+    priority: 800,
+    tags: ["qoder", "testing"],
+  },
+];
+
+/**
+ * Shared documentation templates
+ */
+export const SHARED_TEMPLATES: TemplateDefinition[] = [
+  {
+    id: "architecture",
+    name: "Architecture Documentation",
+    description: "Project architecture overview",
+    target: "shared",
+    category: "core",
+    templatePath: "shared/ARCHITECTURE.md.hbs",
+    outputPath: "docs/ARCHITECTURE.md",
+    priority: 400,
+    tags: ["documentation", "architecture"],
+  },
+  {
+    id: "tech-stack",
+    name: "Tech Stack Documentation",
+    description: "Technology stack overview",
+    target: "shared",
+    category: "core",
+    templatePath: "shared/TECH-STACK.md.hbs",
+    outputPath: "docs/TECH-STACK.md",
+    priority: 400,
+    tags: ["documentation", "tech-stack"],
+  },
+];
+
+/**
+ * All templates combined
+ */
+export const ALL_TEMPLATES: TemplateDefinition[] = [
+  ...CORE_TEMPLATES,
+  ...LANGUAGE_TEMPLATES,
+  ...FRAMEWORK_TEMPLATES,
+  ...PATTERN_TEMPLATES,
+  ...PROJECT_TYPE_TEMPLATES,
+  ...CLAUDE_TEMPLATES,
+  ...QODO_TEMPLATES,
+  ...SHARED_TEMPLATES,
+];
+
+/**
+ * Template bundles for common setups
+ */
+export const TEMPLATE_BUNDLES: TemplateBundle[] = [
+  {
+    id: "minimal",
+    name: "Minimal",
+    description: "Just the essentials",
+    templates: ["cursor-core", "claude-core"],
+    tags: ["starter"],
+  },
+  {
+    id: "typescript-react",
+    name: "TypeScript + React",
+    description: "Modern React development with TypeScript",
+    templates: ["cursor-core", "claude-core", "typescript", "react", "testing"],
+    tags: ["frontend", "react"],
+  },
+  {
+    id: "nextjs-fullstack",
+    name: "Next.js Full-Stack",
+    description: "Next.js with API routes and database",
+    templates: ["cursor-core", "claude-core", "typescript", "react", "nextjs", "api-design", "database", "testing"],
+    tags: ["fullstack", "nextjs"],
+  },
+  {
+    id: "node-api",
+    name: "Node.js API",
+    description: "Node.js backend API development",
+    templates: ["cursor-core", "claude-core", "typescript", "express", "api-design", "database", "security", "testing"],
+    tags: ["backend", "api"],
+  },
+  {
+    id: "python-api",
+    name: "Python API",
+    description: "Python backend with FastAPI",
+    templates: ["cursor-core", "claude-core", "python", "fastapi", "api-design", "database", "security", "testing"],
+    tags: ["backend", "python", "api"],
+  },
+  {
+    id: "cli-tool",
+    name: "CLI Tool",
+    description: "Command-line application",
+    templates: ["cursor-core", "claude-core", "typescript", "cli", "testing"],
+    tags: ["cli"],
+  },
+];
+
+/**
+ * Get template by ID
+ */
+export function getTemplate(id: string): TemplateDefinition | undefined {
+  return ALL_TEMPLATES.find((t) => t.id === id);
+}
+
+/**
+ * Get templates by target
+ */
+export function getTemplatesByTarget(target: "cursor" | "claude" | "qoder" | "shared"): TemplateDefinition[] {
+  return ALL_TEMPLATES.filter((t) => {
+    if (Array.isArray(t.target)) {
+      return t.target.includes(target);
+    }
+    return t.target === target;
+  });
+}
+
+/**
+ * Get templates by category
+ */
+export function getTemplatesByCategory(category: TemplateDefinition["category"]): TemplateDefinition[] {
+  return ALL_TEMPLATES.filter((t) => t.category === category);
+}
+
+/**
+ * Get templates by tag
+ */
+export function getTemplatesByTag(tag: string): TemplateDefinition[] {
+  return ALL_TEMPLATES.filter((t) => t.tags?.includes(tag));
+}
+
+/**
+ * Get bundle by ID
+ */
+export function getBundle(id: string): TemplateBundle | undefined {
+  return TEMPLATE_BUNDLES.find((b) => b.id === id);
+}
+
+/**
+ * Resolve bundle to template definitions
+ */
+export function resolveBundleTemplates(bundleId: string): TemplateDefinition[] {
+  const bundle = getBundle(bundleId);
+  if (!bundle) return [];
+
+  return bundle.templates
+    .map((id) => getTemplate(id))
+    .filter((t): t is TemplateDefinition => t !== undefined);
+}

@@ -1,0 +1,230 @@
+---
+description: Library development patterns and API design
+globs:
+  - "**/*"
+priority: 750
+---
+
+# Library Development Standards
+
+## API Design
+
+### Clear and Consistent Interface
+
+```typescript
+// Good: Clear, predictable API
+const result = await myLib.process(data, { format: "json" });
+
+// Avoid: Confusing, inconsistent
+const result = await myLib.doThing(data, true, false, "json");
+```
+
+### Options Objects Pattern
+
+```typescript
+// Use options objects for 3+ parameters
+interface ProcessOptions {
+  format?: "json" | "xml";
+  timeout?: number;
+  onProgress?: (percent: number) => void;
+}
+
+function process(data: string, options: ProcessOptions = {}): Result {
+  const { format = "json", timeout = 5000, onProgress } = options;
+  // ...
+}
+```
+
+### Progressive Disclosure
+
+```typescript
+// Simple use case is simple
+const result = parse(input);
+
+// Advanced options available when needed
+const result = parse(input, {
+  strict: true,
+  allowComments: true,
+  reviver: (key, value) => value,
+});
+```
+
+## Type Safety
+
+### Strict TypeScript
+
+```typescript
+// Export types for consumers
+export interface Config {
+  apiKey: string;
+  endpoint: string;
+  options?: Options;
+}
+
+export type Result<T> =
+  | { success: true; data: T }
+  | { success: false; error: Error };
+
+// Generic functions with constraints
+export function transform<T extends object>(
+  data: T,
+  fn: (value: unknown) => unknown
+): T {
+  // ...
+}
+```
+
+### Branded Types
+
+```typescript
+// Prevent mixing similar types
+declare const UserIdBrand: unique symbol;
+export type UserId = string & { [UserIdBrand]: never };
+
+export function createUserId(id: string): UserId {
+  return id as UserId;
+}
+```
+
+## Error Handling
+
+### Custom Error Classes
+
+```typescript
+export class LibraryError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly cause?: unknown
+  ) {
+    super(message);
+    this.name = "LibraryError";
+  }
+}
+
+export class ValidationError extends LibraryError {
+  constructor(message: string, public readonly field: string) {
+    super(message, "VALIDATION_ERROR");
+  }
+}
+```
+
+### Error Documentation
+
+```typescript
+/**
+ * Parse a configuration file.
+ *
+ * @param path - Path to config file
+ * @returns Parsed configuration object
+ * @throws {ValidationError} If config is invalid
+ * @throws {FileNotFoundError} If file doesn't exist
+ */
+export function parseConfig(path: string): Config {
+  // ...
+}
+```
+
+## Package Structure
+
+```
+my-library/
+├── src/
+│   ├── index.ts          # Public exports
+│   ├── core/             # Core functionality
+│   ├── utils/            # Internal utilities
+│   └── types.ts          # Type definitions
+├── dist/                 # Build output
+│   ├── index.js          # CommonJS
+│   ├── index.mjs         # ESM
+│   └── index.d.ts        # Types
+├── tests/
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+### Package.json Exports
+
+```json
+{
+  "name": "my-library",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils.mjs",
+      "require": "./dist/utils.js"
+    }
+  },
+  "files": ["dist"],
+  "sideEffects": false
+}
+```
+
+## Documentation
+
+### JSDoc Comments
+
+```typescript
+/**
+ * Transform data using the specified options.
+ *
+ * @example
+ * ```typescript
+ * const result = transform(data, {
+ *   format: "json",
+ *   pretty: true,
+ * });
+ * ```
+ *
+ * @param data - The input data to transform
+ * @param options - Transformation options
+ * @returns The transformed data
+ *
+ * @since 1.2.0
+ * @see {@link Config} for configuration options
+ */
+export function transform(data: unknown, options?: TransformOptions): Result {
+  // ...
+}
+```
+
+## Testing
+
+### Test Public API
+
+```typescript
+describe("parse", () => {
+  it("should parse valid input", () => {
+    expect(parse('{"a": 1}')).toEqual({ a: 1 });
+  });
+
+  it("should throw ValidationError for invalid input", () => {
+    expect(() => parse("invalid")).toThrow(ValidationError);
+  });
+
+  it("should apply options correctly", () => {
+    const result = parse(input, { strict: true });
+    expect(result).toMatchObject(expected);
+  });
+});
+```
+
+## Best Practices
+
+1. **Minimal dependencies** - Reduce bundle size
+2. **Tree-shakeable** - Use named exports
+3. **Zero side effects** - Don't run code on import
+4. **Backward compatible** - Follow semver strictly
+5. **Well documented** - README, API docs, examples
+6. **Tested thoroughly** - Unit and integration tests
+7. **TypeScript first** - Full type definitions

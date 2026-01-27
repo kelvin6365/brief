@@ -1,0 +1,230 @@
+---
+description: Command-line application patterns and best practices
+globs:
+  - "**/cli/**/*"
+  - "**/commands/**/*"
+  - "**/bin/**/*"
+priority: 750
+---
+
+# CLI Development Standards
+
+## Command Structure
+
+### Basic Command Pattern
+
+```typescript
+import { Command } from "commander";
+
+const program = new Command();
+
+program
+  .name("myapp")
+  .description("Description of your CLI")
+  .version("1.0.0");
+
+program
+  .command("init")
+  .description("Initialize a new project")
+  .option("-t, --template <name>", "Template to use", "default")
+  .option("-f, --force", "Overwrite existing files")
+  .action(async (options) => {
+    await initCommand(options);
+  });
+
+program.parse();
+```
+
+### Command Organization
+
+```
+src/
+├── cli.ts              # Entry point
+├── commands/
+│   ├── init.ts
+│   ├── build.ts
+│   └── deploy.ts
+├── lib/                # Business logic
+├── utils/
+│   ├── logger.ts
+│   ├── prompts.ts
+│   └── spinner.ts
+└── types/
+```
+
+## User Interaction
+
+### Prompts
+
+```typescript
+import { input, select, confirm } from "@inquirer/prompts";
+
+const name = await input({
+  message: "Project name:",
+  default: "my-project",
+  validate: (value) => value.length > 0 || "Name is required",
+});
+
+const framework = await select({
+  message: "Select framework:",
+  choices: [
+    { name: "React", value: "react" },
+    { name: "Vue", value: "vue" },
+    { name: "Svelte", value: "svelte" },
+  ],
+});
+
+const shouldContinue = await confirm({
+  message: "Continue?",
+  default: true,
+});
+```
+
+### Progress Indicators
+
+```typescript
+import ora from "ora";
+
+const spinner = ora("Installing dependencies...").start();
+
+try {
+  await installDeps();
+  spinner.succeed("Dependencies installed");
+} catch (error) {
+  spinner.fail("Installation failed");
+  throw error;
+}
+```
+
+## Output Formatting
+
+### Colors and Styling
+
+```typescript
+import chalk from "chalk";
+
+console.log(chalk.green("✓ Success"));
+console.log(chalk.yellow("⚠ Warning"));
+console.log(chalk.red("✗ Error"));
+console.log(chalk.dim("Hint: use --help for more info"));
+console.log(chalk.bold.blue("Important message"));
+```
+
+### Structured Output
+
+```typescript
+import { table } from "table";
+
+// Tables
+const data = [
+  ["Name", "Status", "Size"],
+  ["file1.ts", "OK", "1.2KB"],
+  ["file2.ts", "Modified", "3.4KB"],
+];
+console.log(table(data));
+
+// JSON output for scripting
+if (options.json) {
+  console.log(JSON.stringify(result, null, 2));
+}
+```
+
+## Error Handling
+
+### User-Friendly Errors
+
+```typescript
+class CLIError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public suggestion?: string
+  ) {
+    super(message);
+  }
+}
+
+function handleError(error: unknown): never {
+  if (error instanceof CLIError) {
+    console.error(chalk.red(`Error: ${error.message}`));
+    if (error.suggestion) {
+      console.error(chalk.dim(`Hint: ${error.suggestion}`));
+    }
+    process.exit(1);
+  }
+
+  // Unexpected error - show stack in debug mode
+  if (process.env.DEBUG) {
+    console.error(error);
+  } else {
+    console.error(chalk.red("An unexpected error occurred"));
+  }
+  process.exit(1);
+}
+```
+
+### Exit Codes
+
+```typescript
+// Use meaningful exit codes
+const EXIT_CODES = {
+  SUCCESS: 0,
+  GENERAL_ERROR: 1,
+  INVALID_ARGS: 2,
+  NOT_FOUND: 3,
+  PERMISSION_DENIED: 4,
+} as const;
+```
+
+## Configuration
+
+### Config File Detection
+
+```typescript
+import { cosmiconfig } from "cosmiconfig";
+
+const explorer = cosmiconfig("myapp");
+const result = await explorer.search();
+
+// Supports: myapp.config.js, .myapprc, package.json#myapp
+if (result) {
+  const config = result.config;
+}
+```
+
+### Environment Variables
+
+```typescript
+// Support env vars with prefix
+const config = {
+  apiKey: process.env.MYAPP_API_KEY,
+  verbose: process.env.MYAPP_VERBOSE === "true",
+};
+```
+
+## Best Practices
+
+1. **Provide help** - Clear descriptions for all commands/options
+2. **Use spinners** - Show progress for long operations
+3. **Colorize output** - But respect NO_COLOR environment
+4. **Handle Ctrl+C** - Clean up gracefully
+5. **Support pipes** - Work with stdin/stdout
+6. **Validate early** - Check inputs before starting work
+7. **JSON output** - Provide `--json` for scripting
+8. **Verbose mode** - Provide `-v, --verbose` for debugging
+
+## Exit Handling
+
+```typescript
+// Handle graceful shutdown
+process.on("SIGINT", async () => {
+  console.log("\nReceived SIGINT, cleaning up...");
+  await cleanup();
+  process.exit(130);
+});
+
+process.on("SIGTERM", async () => {
+  await cleanup();
+  process.exit(143);
+});
+```

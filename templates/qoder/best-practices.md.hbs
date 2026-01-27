@@ -1,0 +1,186 @@
+---
+name: Qoder Best Practices
+description: Project coding standards and guidelines for Qoder
+---
+# Best Practices for {{project.name}}
+
+> Coding standards and guidelines for AI-assisted development
+
+## Project Overview
+
+This is a **{{project.type}}** project built with {{project.language}}{{#if detection.frameworks.[0]}} and {{detection.frameworks.[0].name}}{{/if}}.
+
+## Code Style Guidelines
+
+### General Principles
+
+1. **Clarity over cleverness** - Write code that is easy to read and understand
+2. **Consistency** - Follow established patterns in the codebase
+3. **Simplicity** - Prefer simple solutions over complex ones
+4. **DRY** - Don't repeat yourself, but don't over-abstract either
+
+### Naming Conventions
+
+{{#if (eq project.language "typescript")}}
+- Use `camelCase` for variables and functions
+- Use `PascalCase` for classes, interfaces, and type aliases
+- Use `SCREAMING_SNAKE_CASE` for constants
+- Use descriptive names that convey intent
+- Prefix interfaces with `I` only when necessary to avoid conflicts
+- Use `.ts` for pure TypeScript, `.tsx` for React components
+{{else if (eq project.language "python")}}
+- Use `snake_case` for variables, functions, and modules
+- Use `PascalCase` for classes
+- Use `SCREAMING_SNAKE_CASE` for constants
+- Prefix private methods with single underscore `_`
+- Use descriptive docstrings for all public functions
+{{else if (eq project.language "javascript")}}
+- Use `camelCase` for variables and functions
+- Use `PascalCase` for classes and React components
+- Use `SCREAMING_SNAKE_CASE` for constants
+- Use `.js` for modules, `.jsx` for React components
+{{else}}
+- Use consistent naming conventions throughout the codebase
+- Choose descriptive names that convey purpose
+- Follow language-specific conventions
+{{/if}}
+
+### File Organization
+
+- Keep files focused and small (< 300 lines preferred)
+- Group related functionality together
+- Use index files for clean exports
+- Separate concerns: logic, UI, data, utilities
+
+{{#if (includes config.tools "cursor")}}
+### Cursor Rules Integration
+
+This project uses Cursor IDE rules in `.cursor/rules/`. When reviewing code:
+- Check that changes align with the rules defined there
+- Suggest improvements that follow the established patterns
+{{/if}}
+
+{{#if (includes config.tools "claude")}}
+### Claude Code Integration
+
+This project uses Claude Code with CLAUDE.md. When reviewing code:
+- Reference the guidelines in CLAUDE.md
+- Follow the skills defined in `.claude/skills/`
+{{/if}}
+
+## Error Handling
+
+{{#if (eq project.language "typescript")}}
+- Use typed errors with custom Error classes when appropriate
+- Always handle Promise rejections
+- Use try-catch for async/await operations
+- Provide meaningful error messages with context
+- Never expose sensitive information in error messages
+{{else if (eq project.language "python")}}
+- Use specific exception types (ValueError, TypeError, etc.)
+- Create custom exceptions for domain-specific errors
+- Use try-except-finally blocks appropriately
+- Log errors with proper context
+- Never expose sensitive information in error messages
+{{else}}
+- Always handle errors gracefully
+- Provide meaningful error messages
+- Log errors with context for debugging
+- Never expose sensitive information in error messages
+{{/if}}
+
+## Testing Standards
+
+{{#if detection.testing}}
+- Testing framework: **{{detection.testing}}**
+{{/if}}
+- Write unit tests for business logic
+- Test edge cases and error conditions
+- Use descriptive test names that explain the scenario
+- Follow the Arrange-Act-Assert pattern
+- Aim for high coverage on critical paths
+
+{{#if (eq project.language "typescript")}}
+### TypeScript Testing
+
+```typescript
+describe('FunctionName', () => {
+  it('should handle valid input correctly', () => {
+    // Arrange
+    const input = 'test';
+
+    // Act
+    const result = functionName(input);
+
+    // Assert
+    expect(result).toBe(expected);
+  });
+});
+```
+{{/if}}
+
+## Documentation
+
+- Write self-documenting code first
+- Add comments for complex logic or business rules
+- Use JSDoc/TSDoc/docstrings for public APIs
+- Keep documentation up-to-date with code changes
+- Document "why" not "what" in comments
+
+## Security Considerations
+
+- Never commit secrets or credentials
+- Validate all user input
+- Use parameterized queries for database operations
+- Follow the principle of least privilege
+- Review dependencies for known vulnerabilities
+
+{{#if detection.frameworks}}
+## Framework-Specific Guidelines
+
+{{#each detection.frameworks}}
+### {{this.name}}
+
+{{#if (eq this.name "React")}}
+- Use functional components with hooks
+- Keep components small and focused
+- Lift state up when needed, but avoid prop drilling
+- Use React.memo() for expensive computations
+- Handle loading and error states explicitly
+{{else if (eq this.name "Next.js")}}
+- Prefer Server Components by default
+- Use 'use client' directive only when necessary
+- Leverage built-in optimizations (Image, Font, etc.)
+- Use App Router conventions
+- Handle metadata properly for SEO
+{{else if (eq this.name "Express")}}
+- Use middleware for cross-cutting concerns
+- Validate request data at the boundary
+- Handle errors with error middleware
+- Use async/await with proper error handling
+- Structure routes logically
+{{else if (eq this.name "FastAPI")}}
+- Use Pydantic models for request/response validation
+- Leverage dependency injection
+- Use async endpoints where appropriate
+- Document APIs with OpenAPI annotations
+- Handle errors with HTTPException
+{{/if}}
+
+{{/each}}
+{{/if}}
+
+## Code Review Checklist
+
+When reviewing code, check for:
+
+- [ ] Code follows naming conventions
+- [ ] Functions are small and focused
+- [ ] Error handling is comprehensive
+- [ ] Tests cover the changes
+- [ ] No security vulnerabilities introduced
+- [ ] Documentation is updated if needed
+- [ ] No unnecessary complexity added
+
+---
+*Generated by AIde v{{generated.version}}*

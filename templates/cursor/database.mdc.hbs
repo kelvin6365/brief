@@ -1,0 +1,179 @@
+---
+description: Database access patterns and query optimization
+globs:
+  - "**/db/**/*"
+  - "**/models/**/*"
+  - "**/migrations/**/*"
+  - "**/prisma/**/*"
+  - "**/repositories/**/*"
+priority: 700
+---
+
+# Database Standards
+
+## Schema Design
+
+### Naming Conventions
+
+- Tables: `snake_case`, plural (`users`, `order_items`)
+- Columns: `snake_case` (`created_at`, `user_id`)
+- Primary keys: `id`
+- Foreign keys: `<table>_id` (`user_id`, `order_id`)
+- Indexes: `idx_<table>_<columns>`
+
+### Common Columns
+
+```sql
+-- Every table should have
+id          SERIAL PRIMARY KEY,
+created_at  TIMESTAMP DEFAULT NOW(),
+updated_at  TIMESTAMP DEFAULT NOW()
+
+-- Soft deletes (optional)
+deleted_at  TIMESTAMP NULL
+```
+
+## Query Patterns
+
+### Avoid N+1 Queries
+
+```typescript
+// Bad: N+1 queries
+const users = await db.users.findMany();
+for (const user of users) {
+  user.posts = await db.posts.findMany({ where: { userId: user.id } });
+}
+
+// Good: Single query with join
+const users = await db.users.findMany({
+  include: { posts: true },
+});
+```
+
+### Use Indexes
+
+```sql
+-- Index frequently queried columns
+CREATE INDEX idx_users_email ON users(email);
+
+-- Composite index for common queries
+CREATE INDEX idx_orders_user_status ON orders(user_id, status);
+
+-- Partial index for specific conditions
+CREATE INDEX idx_active_users ON users(email) WHERE status = 'active';
+```
+
+### Pagination
+
+```typescript
+// Offset pagination (simple but slow for large offsets)
+const users = await db.users.findMany({
+  skip: (page - 1) * limit,
+  take: limit,
+  orderBy: { id: 'desc' },
+});
+
+// Cursor pagination (better performance)
+const users = await db.users.findMany({
+  take: limit,
+  cursor: lastId ? { id: lastId } : undefined,
+  orderBy: { id: 'desc' },
+});
+```
+
+## Transactions
+
+```typescript
+// Ensure atomicity for related operations
+await db.$transaction(async (tx) => {
+  const user = await tx.users.create({ data: userData });
+  await tx.profiles.create({
+    data: { userId: user.id, ...profileData },
+  });
+  await tx.wallets.create({
+    data: { userId: user.id, balance: 0 },
+  });
+});
+```
+
+## Connection Management
+
+```typescript
+// Connection pooling
+const pool = new Pool({
+  max: 20,              // Max connections
+  min: 5,               // Min connections
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+
+// Always release connections
+const client = await pool.connect();
+try {
+  return await client.query(sql);
+} finally {
+  client.release();
+}
+```
+
+## Query Safety
+
+### Parameterized Queries
+
+```typescript
+// NEVER do this (SQL injection risk)
+const query = `SELECT * FROM users WHERE id = ${userId}`;
+
+// Always use parameterized queries
+const query = 'SELECT * FROM users WHERE id = $1';
+const result = await db.query(query, [userId]);
+
+// Or use an ORM
+const user = await db.users.findUnique({ where: { id: userId } });
+```
+
+### Input Validation
+
+```typescript
+// Validate before querying
+const schema = z.object({
+  id: z.string().uuid(),
+  limit: z.number().int().min(1).max(100).default(20),
+});
+
+const { id, limit } = schema.parse(input);
+```
+
+## Migrations
+
+```
+migrations/
+├── 001_create_users.sql
+├── 002_add_email_index.sql
+└── 003_create_posts.sql
+```
+
+```sql
+-- migrations/001_create_users.sql
+-- Up
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Down
+DROP TABLE users;
+```
+
+## Best Practices
+
+1. **Always use indexes** - For columns in WHERE, JOIN, ORDER BY
+2. **Limit query results** - Always use LIMIT, never SELECT *
+3. **Use transactions** - For multi-step operations
+4. **Parameterize queries** - Prevent SQL injection
+5. **Monitor slow queries** - Log and optimize
+6. **Use connection pooling** - Don't create connections per request
+7. **Handle migrations** - Version control schema changes
+8. **Soft delete** - Consider for audit trails

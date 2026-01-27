@@ -1,0 +1,168 @@
+---
+description: Next.js App Router patterns and conventions
+globs:
+  - "**/app/**/*"
+  - "**/pages/**/*"
+  - "next.config.*"
+  - "middleware.ts"
+priority: 750
+---
+
+# Next.js Development Standards
+
+## App Router Conventions
+
+### File Structure
+
+```
+app/
+├── layout.tsx          # Root layout
+├── page.tsx            # Home page
+├── loading.tsx         # Loading UI
+├── error.tsx           # Error boundary
+├── not-found.tsx       # 404 page
+├── (auth)/             # Route group (no URL segment)
+│   ├── login/
+│   └── register/
+├── dashboard/
+│   ├── layout.tsx      # Nested layout
+│   ├── page.tsx
+│   └── [id]/           # Dynamic segment
+│       └── page.tsx
+└── api/
+    └── users/
+        └── route.ts    # API route
+```
+
+### Server vs Client Components
+
+```tsx
+// Server Component (default) - no directive needed
+async function ProductList() {
+  const products = await db.products.findMany();
+  return <ul>{products.map(p => <li key={p.id}>{p.name}</li>)}</ul>;
+}
+
+// Client Component - needs directive
+"use client";
+
+import { useState } from "react";
+
+export function Counter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
+}
+```
+
+### When to Use Each
+
+**Server Components (default):**
+- Fetch data
+- Access backend resources
+- Keep sensitive logic server-side
+- Reduce client bundle size
+
+**Client Components:**
+- Interactivity (onClick, onChange)
+- useState, useEffect, useContext
+- Browser-only APIs
+- Custom hooks with state
+
+## Data Fetching
+
+### Server-Side Fetching
+
+```tsx
+// In Server Components - just use async/await
+async function UserProfile({ userId }: { userId: string }) {
+  const user = await fetch(`/api/users/${userId}`, {
+    next: { revalidate: 3600 }, // Cache for 1 hour
+  }).then(res => res.json());
+
+  return <Profile user={user} />;
+}
+```
+
+### Caching Strategies
+
+```tsx
+// Static (cached indefinitely)
+fetch(url, { cache: "force-cache" });
+
+// Dynamic (no caching)
+fetch(url, { cache: "no-store" });
+
+// Revalidate (ISR)
+fetch(url, { next: { revalidate: 60 } });
+
+// Tag-based revalidation
+fetch(url, { next: { tags: ["users"] } });
+// Then: revalidateTag("users")
+```
+
+## API Routes
+
+```tsx
+// app/api/users/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(request: NextRequest) {
+  const users = await db.users.findMany();
+  return NextResponse.json(users);
+}
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const user = await db.users.create({ data: body });
+  return NextResponse.json(user, { status: 201 });
+}
+```
+
+## Middleware
+
+```tsx
+// middleware.ts
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export function middleware(request: NextRequest) {
+  // Check auth
+  const token = request.cookies.get("token");
+  if (!token && request.nextUrl.pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/dashboard/:path*"],
+};
+```
+
+## Metadata
+
+```tsx
+// Static metadata
+export const metadata = {
+  title: "My App",
+  description: "App description",
+};
+
+// Dynamic metadata
+export async function generateMetadata({ params }): Promise<Metadata> {
+  const product = await getProduct(params.id);
+  return {
+    title: product.name,
+    description: product.description,
+  };
+}
+```
+
+## Best Practices
+
+1. **Prefer Server Components** - Use client components only when needed
+2. **Colocate data fetching** - Fetch data in the component that needs it
+3. **Use loading.tsx** - Provide loading states for better UX
+4. **Use error.tsx** - Handle errors gracefully with boundaries
+5. **Optimize images** - Use `next/image` for automatic optimization
+6. **Use Link** - Use `next/link` for client-side navigation

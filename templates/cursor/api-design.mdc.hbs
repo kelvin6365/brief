@@ -1,0 +1,186 @@
+---
+description: RESTful API design patterns and conventions
+globs:
+  - "**/api/**/*"
+  - "**/routes/**/*"
+  - "**/endpoints/**/*"
+priority: 700
+---
+
+# API Design Standards
+
+## RESTful Conventions
+
+### URL Structure
+
+```
+GET    /users              # List users
+POST   /users              # Create user
+GET    /users/:id          # Get user
+PUT    /users/:id          # Replace user
+PATCH  /users/:id          # Update user
+DELETE /users/:id          # Delete user
+
+# Nested resources
+GET    /users/:id/posts    # List user's posts
+POST   /users/:id/posts    # Create post for user
+
+# Actions (when CRUD doesn't fit)
+POST   /users/:id/activate
+POST   /orders/:id/cancel
+```
+
+### Naming Guidelines
+
+- Use nouns, not verbs: `/users` not `/getUsers`
+- Use plural nouns: `/users` not `/user`
+- Use kebab-case: `/user-profiles` not `/userProfiles`
+- Use lowercase: `/users` not `/Users`
+
+## Response Format
+
+### Success Responses
+
+```json
+// Single resource
+{
+  "data": {
+    "id": "123",
+    "name": "John Doe",
+    "email": "john@example.com"
+  }
+}
+
+// Collection
+{
+  "data": [
+    { "id": "1", "name": "John" },
+    { "id": "2", "name": "Jane" }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 45,
+    "totalPages": 3
+  }
+}
+```
+
+### Error Responses
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request data",
+    "details": [
+      {
+        "field": "email",
+        "message": "Invalid email format"
+      }
+    ]
+  }
+}
+```
+
+## HTTP Status Codes
+
+### Success (2xx)
+
+- `200 OK` - Successful GET, PUT, PATCH, DELETE
+- `201 Created` - Successful POST that creates a resource
+- `204 No Content` - Successful DELETE with no response body
+
+### Client Errors (4xx)
+
+- `400 Bad Request` - Invalid request syntax or data
+- `401 Unauthorized` - Authentication required
+- `403 Forbidden` - Authenticated but not authorized
+- `404 Not Found` - Resource doesn't exist
+- `409 Conflict` - Resource conflict (e.g., duplicate)
+- `422 Unprocessable Entity` - Validation error
+
+### Server Errors (5xx)
+
+- `500 Internal Server Error` - Unexpected server error
+- `503 Service Unavailable` - Server temporarily unavailable
+
+## Query Parameters
+
+### Pagination
+
+```
+GET /users?page=2&limit=20
+GET /users?offset=40&limit=20
+GET /users?cursor=abc123
+```
+
+### Filtering
+
+```
+GET /users?status=active
+GET /users?role=admin&status=active
+GET /posts?created_after=2024-01-01
+```
+
+### Sorting
+
+```
+GET /users?sort=name         # Ascending
+GET /users?sort=-created_at  # Descending
+GET /users?sort=name,-age    # Multiple
+```
+
+### Field Selection
+
+```
+GET /users?fields=id,name,email
+GET /users?include=posts,comments
+```
+
+## Versioning
+
+```
+# URL versioning (recommended)
+GET /v1/users
+GET /v2/users
+
+# Header versioning
+GET /users
+Accept: application/vnd.api+json; version=1
+```
+
+## Authentication
+
+### Bearer Token
+
+```
+Authorization: Bearer <token>
+```
+
+### API Key
+
+```
+X-API-Key: <key>
+# or
+?api_key=<key>
+```
+
+## Rate Limiting Headers
+
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1609459200
+```
+
+## Best Practices
+
+1. **Be consistent** - Same patterns across all endpoints
+2. **Use proper status codes** - Not just 200 and 500
+3. **Version your API** - Plan for breaking changes
+4. **Document everything** - OpenAPI/Swagger
+5. **Validate input** - Never trust client data
+6. **Handle errors gracefully** - Informative error messages
+7. **Use HTTPS** - Always encrypt in transit
+8. **Implement rate limiting** - Prevent abuse

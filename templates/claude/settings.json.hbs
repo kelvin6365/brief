@@ -1,0 +1,61 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash({{detection.packageManager}}:*)",
+      "Bash(git:*)",
+      {{#if (eq project.language "typescript")}}
+      "Bash(tsc:*)",
+      "Bash(npx tsc:*)",
+      {{/if}}
+      "Read",
+      "Write",
+      "Edit"
+    ],
+    "deny": [
+      "Bash(rm -rf /*)",
+      "Bash(sudo:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{detection.packageManager}} run type-check 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{detection.packageManager}} run lint --fix 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  },
+  "context": {
+    "include": [
+      "CLAUDE.md",
+      "README.md",
+      "package.json",
+      {{#if (eq project.language "typescript")}}
+      "tsconfig.json",
+      {{/if}}
+      ".claude/skills/*.md"
+    ],
+    "exclude": [
+      "node_modules/**",
+      "dist/**",
+      ".git/**",
+      "*.lock",
+      "*.log"
+    ]
+  }
+}

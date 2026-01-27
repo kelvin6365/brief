@@ -1,0 +1,159 @@
+---
+description: Python coding standards and PEP guidelines
+globs:
+  - "**/*.py"
+priority: 900
+---
+
+# Python Standards
+
+## Style Guide (PEP 8)
+
+### Naming Conventions
+
+- `snake_case` for functions, variables, modules
+- `PascalCase` for classes
+- `SCREAMING_SNAKE_CASE` for constants
+- `_private` prefix for internal use
+- `__dunder__` for magic methods only
+
+### Formatting
+
+- 4 spaces for indentation (no tabs)
+- Maximum line length: 88-100 characters
+- Two blank lines between top-level definitions
+- One blank line between method definitions
+
+## Type Hints (PEP 484)
+
+### Function Signatures
+
+```python
+from typing import Optional, List, Dict, Union
+
+def get_user(user_id: int) -> Optional[User]:
+    """Fetch a user by ID."""
+    ...
+
+def process_items(items: List[str]) -> Dict[str, int]:
+    """Process items and return counts."""
+    ...
+```
+
+### Type Aliases
+
+```python
+from typing import TypeAlias
+
+UserId: TypeAlias = int
+UserDict: TypeAlias = Dict[str, Union[str, int]]
+```
+
+### Generic Types
+
+```python
+from typing import TypeVar, Generic
+
+T = TypeVar("T")
+
+class Repository(Generic[T]):
+    def get(self, id: int) -> Optional[T]:
+        ...
+```
+
+## Best Practices
+
+### Docstrings
+
+```python
+def calculate_total(items: List[Item], tax_rate: float = 0.0) -> float:
+    """Calculate the total price of items including tax.
+
+    Args:
+        items: List of items to calculate.
+        tax_rate: Tax rate as decimal (e.g., 0.08 for 8%).
+
+    Returns:
+        Total price including tax.
+
+    Raises:
+        ValueError: If tax_rate is negative.
+    """
+    if tax_rate < 0:
+        raise ValueError("Tax rate cannot be negative")
+    subtotal = sum(item.price for item in items)
+    return subtotal * (1 + tax_rate)
+```
+
+### Context Managers
+
+```python
+# Use context managers for resource management
+with open("file.txt", "r") as f:
+    content = f.read()
+
+# Use contextlib for custom context managers
+from contextlib import contextmanager
+
+@contextmanager
+def timer(name: str):
+    start = time.time()
+    yield
+    print(f"{name}: {time.time() - start:.2f}s")
+```
+
+### Comprehensions
+
+```python
+# List comprehension
+squares = [x ** 2 for x in range(10)]
+
+# Dict comprehension
+word_lengths = {word: len(word) for word in words}
+
+# Generator expression for large datasets
+total = sum(x ** 2 for x in range(1_000_000))
+```
+
+## Error Handling
+
+```python
+# Be specific with exceptions
+try:
+    result = process_data(data)
+except ValueError as e:
+    logger.error(f"Invalid data: {e}")
+    raise
+except ConnectionError as e:
+    logger.error(f"Connection failed: {e}")
+    return None
+
+# Use custom exceptions
+class ValidationError(Exception):
+    """Raised when validation fails."""
+    pass
+```
+
+## Project Structure
+
+```
+project/
+├── src/
+│   └── package_name/
+│       ├── __init__.py
+│       ├── main.py
+│       └── utils/
+├── tests/
+│   ├── __init__.py
+│   └── test_main.py
+├── pyproject.toml
+└── README.md
+```
+
+## Avoid These Patterns
+
+- Mutable default arguments: `def f(items=[])`
+- Bare `except:` clauses
+- `from module import *`
+- Global variables for state
+- Deep nesting (> 3 levels)

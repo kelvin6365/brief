@@ -1,0 +1,83 @@
+---
+name: testing-patterns
+description: Testing patterns and best practices for {{project.name}}
+globs:
+  - "**/*.test.*"
+  - "**/*.spec.*"
+  - "**/tests/**/*"
+  - "**/__tests__/**/*"
+auto_invoke: true
+---
+
+# Testing Patterns
+
+## Test Framework
+
+{{#if detection.testing}}
+This project uses **{{detection.testing}}** for testing.
+{{else}}
+Configure your preferred test framework.
+{{/if}}
+
+## Running Tests
+
+```bash
+# Run all tests
+{{detection.packageManager}} test
+
+# Run tests in watch mode
+{{detection.packageManager}} test --watch
+
+# Run specific test file
+{{detection.packageManager}} test path/to/test.ts
+
+# Run with coverage
+{{detection.packageManager}} test --coverage
+```
+
+## Test Structure
+
+### File Organization
+
+- Place tests next to source files: `Component.tsx` → `Component.test.tsx`
+- Or in dedicated test directories: `__tests__/` or `tests/`
+- Name test files: `*.test.ts` or `*.spec.ts`
+
+### Test Pattern (AAA)
+
+```{{#if (eq project.language "typescript")}}typescript{{else}}javascript{{/if}}
+describe("ModuleName", () => {
+  describe("functionName", () => {
+    it("should do expected behavior", () => {
+      // Arrange
+      const input = createTestData();
+
+      // Act
+      const result = functionName(input);
+
+      // Assert
+      expect(result).toEqual(expected);
+    });
+  });
+});
+```
+
+## Best Practices
+
+1. **Test behavior, not implementation**
+2. **One assertion focus per test**
+3. **Use descriptive test names**
+4. **Keep tests independent**
+5. **Mock external dependencies**
+
+## Common Matchers
+
+```{{#if (eq project.language "typescript")}}typescript{{else}}javascript{{/if}}
+expect(value).toBe(expected);           // Strict equality
+expect(value).toEqual(expected);        // Deep equality
+expect(value).toBeTruthy();             // Truthy check
+expect(value).toBeNull();               // Null check
+expect(array).toContain(item);          // Array contains
+expect(fn).toThrow(Error);              // Throws error
+expect(fn).toHaveBeenCalledWith(args);  // Mock called with
+```
