@@ -35,7 +35,15 @@
     "generator",
     "rules",
     "mdc",
-    "developer-tools"
+    "developer-tools",
+    "ai-configuration",
+    "cursor-rules",
+    "claude-code",
+    "ai-development",
+    "coding-standards",
+    "project-setup",
+    "automation",
+    "boilerplate"
   ],
   "repository": {
     "type": "git",
