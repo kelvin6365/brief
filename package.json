@@ -1,5 +1,5 @@
 {
-  "name": "brief-ai",
+  "name": "@tszhim_tech/brief",
   "version": "0.1.0",
   "description": "AI-optimized configuration generator for Cursor IDE, Claude Code, and Qoder",
   "type": "module",
