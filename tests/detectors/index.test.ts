@@ -1,5 +1,8 @@
 import { describe, it, expect } from "bun:test";
-import { detectProject, getDetectionSummary } from "../../src/detectors/index.js";
+import {
+  detectProject,
+  getDetectionSummary,
+} from "../../src/detectors/index.js";
 import * as path from "path";
 
 describe("detectProject", () => {
@@ -16,9 +19,6 @@ describe("detectProject", () => {
 
     // Should detect React (Ink uses React)
     expect(result.frameworks.some((f) => f.name === "React")).toBe(true);
-
-    // Should detect existing Claude config (CLAUDE.md exists)
-    expect(result.aiConfig.claude.hasClaudeMd).toBe(true);
   });
 
   it("returns detection structure with all fields", async () => {

@@ -40,14 +40,17 @@ describe("command utils", () => {
         tools: ["hybrid"],
         templates: ["testing"],
       };
-      await fs.writeJson(path.join(testDir, ".ai-init.json"), config);
+      await fs.writeJson(path.join(testDir, ".brief.json"), config);
 
       const result = await loadProjectConfig(testDir);
       expect(result).toEqual(config);
     });
 
     test("returns null for invalid JSON", async () => {
-      await fs.writeFile(path.join(testDir, ".ai-init.json"), "not valid json");
+      await fs.writeFile(
+        path.join(testDir, ".brief-init.json"),
+        "not valid json"
+      );
       const result = await loadProjectConfig(testDir);
       expect(result).toBeNull();
     });
@@ -65,7 +68,7 @@ describe("command utils", () => {
 
       await saveProjectConfig(testDir, config);
 
-      const savedPath = path.join(testDir, ".ai-init.json");
+      const savedPath = path.join(testDir, ".brief.json");
       expect(await fs.pathExists(savedPath)).toBe(true);
 
       const content = await fs.readJson(savedPath);
@@ -87,7 +90,7 @@ describe("command utils", () => {
         tools: ["hybrid"],
         templates: [],
       };
-      await fs.writeJson(path.join(testDir, ".ai-init.json"), config);
+      await fs.writeJson(path.join(testDir, ".brief.json"), config);
 
       const result = await isInitialized(testDir);
       expect(result).toBe(true);

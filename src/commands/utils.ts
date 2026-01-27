@@ -75,7 +75,9 @@ export function formatDuration(ms: number): string {
 /**
  * Parse tool argument (cursor, claude, qoder, hybrid, all)
  */
-export function parseTool(tool: string): "cursor" | "claude" | "qoder" | "hybrid" | "all" {
+export function parseTool(
+  tool: string
+): "cursor" | "claude" | "qoder" | "hybrid" | "all" {
   const normalized = tool.toLowerCase().trim();
   if (
     normalized === "cursor" ||
@@ -86,5 +88,7 @@ export function parseTool(tool: string): "cursor" | "claude" | "qoder" | "hybrid
   ) {
     return normalized;
   }
-  throw new Error(`Invalid tool: ${tool}. Must be cursor, claude, qoder, hybrid, or all.`);
+  throw new Error(
+    `Invalid tool: ${tool}. Must be cursor, claude, qoder, hybrid, or all.`
+  );
 }
