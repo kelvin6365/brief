@@ -1,0 +1,29 @@
+# Source files (dist is published)
+src/
+
+# Development files
+.github/
+.claude/
+tests/
+*.test.ts
+
+# Config files
+tsconfig.json
+bunfig.toml
+.eslintrc*
+.prettierrc*
+.editorconfig
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+*.tmp
+.env*
+node_modules/

@@ -2,39 +2,42 @@
 
 > A powerful CLI tool that intelligently generates AI-optimized configuration files for Cursor IDE, Claude Code, Qoder, and other AI coding tools.
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](package.json)
+[![npm version](https://img.shields.io/npm/v/brief-ai.svg)](https://www.npmjs.com/package/brief-ai)
+[![npm downloads](https://img.shields.io/npm/dm/brief-ai.svg)](https://www.npmjs.com/package/brief-ai)
+[![CI](https://github.com/kelvin6365/brief/actions/workflows/ci.yml/badge.svg)](https://github.com/kelvin6365/brief/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
-[![Bun](https://img.shields.io/badge/Bun-latest-orange.svg)](https://bun.sh/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/brief.git
-cd brief
+# Use with npx (no install required)
+npx brief-ai init
 
-# Install dependencies
-bun install
+# Or install globally
+npm install -g brief-ai
 
-# Run locally
-bun run cli init
+# Then run
+brief init
 ```
 
 ## Quick Start
 
 ```bash
 # Interactive wizard (recommended)
-bun run cli init
+npx brief-ai init
 
 # Non-interactive with defaults
-bun run cli init --yes
+npx brief-ai init --yes
 
 # Preview without writing files
-bun run cli init --dry-run
+npx brief-ai init --dry-run
 
 # Smart merge with existing configs
-bun run cli init --merge
+npx brief-ai init --merge
+
+# Detect project info
+npx brief-ai detect
 ```
 
 ## Features
