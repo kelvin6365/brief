@@ -2,18 +2,52 @@
  * Template loader - loads and resolves templates
  */
 
+import { existsSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import type { TemplateDefinition, ResolvedTemplate, TemplateCondition } from "./types.js";
-import { getTemplate, ALL_TEMPLATES } from "./registry.js";
-import { readFile, exists } from "../utils/file-system.js";
-import { parseFrontmatter } from "../utils/template-engine.js";
 import type { FullProjectDetection } from "../detectors/types.js";
+import { exists, readFile } from "../utils/file-system.js";
+import { parseFrontmatter } from "../utils/template-engine.js";
+import { ALL_TEMPLATES, getTemplate } from "./registry.js";
+import type {
+  ResolvedTemplate,
+  TemplateCondition,
+  TemplateDefinition,
+} from "./types.js";
 
 // Get the templates directory path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const TEMPLATES_DIR = path.resolve(__dirname, "../../templates");
+
+// Determine templates directory based on environment
+let TEMPLATES_DIR: string;
+
+// Search for templates directory in various possible locations
+const possiblePaths = [
+  // Development: relative to source file
+  path.resolve(__dirname, "../../templates"),
+  // Production: relative to dist directory (one level up from dist, then templates)
+  path.resolve(__dirname, "../templates"),
+  // Production: relative to dist directory (two levels up)
+  path.resolve(__dirname, "../..", "templates"),
+  // Package root: when running from installed package
+  path.resolve(process.cwd(), "templates"),
+  // Package root: relative to current working directory
+  path.resolve("./templates"),
+  // When installed globally, check relative to current file
+  path.resolve(__dirname, "../../../templates"),
+];
+
+// Find the first existing path
+const foundPath = possiblePaths.find((p) => existsSync(p));
+
+if (foundPath) {
+  TEMPLATES_DIR = foundPath;
+} else {
+  throw new Error(
+    `Templates directory not found. Looked in: ${possiblePaths.join(", ")}`
+  );
+}
 
 /**
  * Get the full path to a template file
@@ -32,7 +66,9 @@ export async function templateExists(templatePath: string): Promise<boolean> {
 /**
  * Load a template by ID
  */
-export async function loadTemplate(id: string): Promise<ResolvedTemplate | null> {
+export async function loadTemplate(
+  id: string
+): Promise<ResolvedTemplate | null> {
   const definition = getTemplate(id);
   if (!definition) {
     return null;
@@ -44,7 +80,9 @@ export async function loadTemplate(id: string): Promise<ResolvedTemplate | null>
 /**
  * Load a template from its definition
  */
-export async function loadTemplateDefinition(definition: TemplateDefinition): Promise<ResolvedTemplate | null> {
+export async function loadTemplateDefinition(
+  definition: TemplateDefinition
+): Promise<ResolvedTemplate | null> {
   const fullPath = getTemplatePath(definition.templatePath);
   const content = await readFile(fullPath);
 
@@ -65,7 +103,9 @@ export async function loadTemplateDefinition(definition: TemplateDefinition): Pr
 /**
  * Load multiple templates by IDs
  */
-export async function loadTemplates(ids: string[]): Promise<ResolvedTemplate[]> {
+export async function loadTemplates(
+  ids: string[]
+): Promise<ResolvedTemplate[]> {
   const results = await Promise.all(ids.map((id) => loadTemplate(id)));
   return results.filter((t): t is ResolvedTemplate => t !== null);
 }
@@ -73,7 +113,10 @@ export async function loadTemplates(ids: string[]): Promise<ResolvedTemplate[]> 
 /**
  * Check if a condition is met
  */
-export function checkCondition(condition: TemplateCondition, detection: FullProjectDetection): boolean {
+export function checkCondition(
+  condition: TemplateCondition,
+  detection: FullProjectDetection
+): boolean {
   let result = false;
 
   switch (condition.type) {
@@ -84,7 +127,9 @@ export function checkCondition(condition: TemplateCondition, detection: FullProj
       break;
 
     case "language":
-      result = detection.language.primary.toLowerCase() === condition.value.toLowerCase();
+      result =
+        detection.language.primary.toLowerCase() ===
+        condition.value.toLowerCase();
       break;
 
     case "hasFile":
@@ -109,12 +154,17 @@ export function checkCondition(condition: TemplateCondition, detection: FullProj
 /**
  * Check if all conditions for a template are met
  */
-export function checkAllConditions(template: TemplateDefinition, detection: FullProjectDetection): boolean {
+export function checkAllConditions(
+  template: TemplateDefinition,
+  detection: FullProjectDetection
+): boolean {
   if (!template.conditions || template.conditions.length === 0) {
     return true;
   }
 
-  return template.conditions.every((condition) => checkCondition(condition, detection));
+  return template.conditions.every((condition) =>
+    checkCondition(condition, detection)
+  );
 }
 
 /**
@@ -124,7 +174,9 @@ export function filterTemplatesByDetection(
   templates: TemplateDefinition[],
   detection: FullProjectDetection
 ): TemplateDefinition[] {
-  return templates.filter((template) => checkAllConditions(template, detection));
+  return templates.filter((template) =>
+    checkAllConditions(template, detection)
+  );
 }
 
 /**
@@ -153,7 +205,9 @@ export function getApplicableTemplates(
 /**
  * Sort templates by priority (highest first)
  */
-export function sortTemplatesByPriority(templates: TemplateDefinition[]): TemplateDefinition[] {
+export function sortTemplatesByPriority(
+  templates: TemplateDefinition[]
+): TemplateDefinition[] {
   return [...templates].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
 }
 
