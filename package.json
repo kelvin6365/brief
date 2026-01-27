@@ -1,6 +1,6 @@
 {
   "name": "@tszhim_tech/brief",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "AI-optimized configuration generator for Cursor IDE, Claude Code, and Qoder",
   "type": "module",
   "main": "dist/index.js",
