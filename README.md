@@ -18,8 +18,6 @@
 - **🔧 Template Engine Fix** - Fixed `contains` helper for framework detection in Qoder templates
 - **📚 Complete Documentation** - ARCHITECTURE.md & TECH-STACK.md fully updated
 
-See [CURSOR_TEMPLATES_2026_ENHANCEMENT.md](./CURSOR_TEMPLATES_2026_ENHANCEMENT.md) and [PRISMA_SUPPORT_ADDED.md](./PRISMA_SUPPORT_ADDED.md) for details.
-
 ---
 
 ## Why Use Brief?
@@ -71,80 +69,80 @@ npx @tszhim_tech/brief templates
 
 ### Implementation Status
 
-| Feature                      | Status     | Description                              |
-| ---------------------------- | ---------- | ---------------------------------------- |
-| **Core CLI**                 |            |                                          |
-| `init` command               | ✅ Done    | Initialize AI configuration              |
-| `detect` command             | ✅ Done    | Detect project information               |
-| `add` command                | ✅ Done    | Add templates to project                 |
-| `remove` command             | ✅ Done    | Remove templates from project            |
-| `sync` command               | ✅ Done    | Re-detect and sync configuration         |
-| `validate` command           | ✅ Done    | Validate current configuration           |
-| `templates` command          | ✅ Done    | List available templates                 |
-| **Interactive UI**           |            |                                          |
-| Interactive Wizard           | ✅ Done    | 7-step guided setup                      |
-| Project Detection Display    | ✅ Done    | Show detected frameworks, tools          |
-| Tool Selector (multi-select) | ✅ Done    | Choose Cursor/Claude/Qoder               |
-| Template Selector            | ✅ Done    | Choose additional templates              |
-| Confirmation Step            | ✅ Done    | Review before generation                 |
-| Results Display              | ✅ Done    | Show generated files                     |
-| Progress Indicators          | ✅ Done    | Spinners and progress bars               |
-| **Project Detection**        |            |                                          |
-| Language Detection           | ✅ Done    | TypeScript, JavaScript, Python, Go, Java |
-| Framework Detection          | ✅ Done    | React, Next.js, Vue, Express, FastAPI    |
-| Package Manager Detection    | ✅ Done    | npm, yarn, pnpm, bun                     |
-| Testing Framework Detection  | ✅ Done    | Jest, Vitest, Bun Test, Pytest           |
-| Build Tool Detection         | ✅ Done    | Webpack, Vite, Bun Bundler               |
-| Database Detection           | ✅ Done    | PostgreSQL, MySQL, MongoDB, SQLite, Redis|
-| ORM Detection                | ✅ Done    | **Prisma**, Drizzle, TypeORM, Sequelize  |
-| Styling Detection            | ✅ Done    | Tailwind, CSS Modules, Styled Components |
-| **Generators**               |            |                                          |
-| Cursor Rules Generator       | ✅ Done    | .cursor/rules/\*.mdc files (2026 format) |
-| Claude Code Generator        | ✅ Done    | CLAUDE.md, .claude/ config               |
-| Qoder Generator              | ✅ Done    | .qoder/rules/\*.md (10 templates)        |
-| Shared Docs Generator        | ✅ Done    | ARCHITECTURE.md, TECH-STACK.md           |
-| **2026 Templates**           |            |                                          |
-| Core Rules (Enhanced)        | ✅ Done    | AI agent protocol, 424 lines             |
-| TypeScript Rules (Enhanced)  | ✅ Done    | TS 5.x+ advanced patterns, 577 lines     |
-| **Memory Management (NEW)**  | ✅ Done    | Context optimization, 450 lines          |
-| **Prisma ORM (NEW)**         | ✅ Done    | Prisma 7.0 patterns, 750+ lines          |
-| JavaScript Rules             | ✅ Done    | JS-specific patterns                     |
-| Python Rules                 | ✅ Done    | Python-specific patterns                 |
-| React Rules                  | ✅ Done    | React patterns                           |
-| Vue Rules                    | ✅ Done    | Vue patterns                             |
-| Next.js Rules                | ✅ Done    | Next.js patterns                         |
-| Express Rules                | ✅ Done    | Express patterns                         |
-| FastAPI Rules                | ✅ Done    | FastAPI patterns                         |
-| Testing Rules                | ✅ Done    | Testing best practices                   |
-| Security Rules               | ✅ Done    | Security guidelines                      |
-| Performance Rules            | ✅ Done    | Performance optimization                 |
-| API Design Rules             | ✅ Done    | API best practices                       |
-| Database Rules               | ✅ Done    | Database patterns                        |
-| CLI Development Rules        | ✅ Done    | CLI tool patterns                        |
-| Library Development Rules    | ✅ Done    | Library patterns                         |
-| **Merge Mode**               |            |                                          |
-| Smart Merge                  | ✅ Done    | Similarity-based merging                 |
-| Diff Viewer                  | ✅ Done    | Color-coded diff display                 |
-| Conflict Resolver            | ✅ Done    | Interactive conflict resolution          |
-| Auto-merge (high similarity) | ✅ Done    | ≥95% similar = auto-merge                |
-| Backup Before Changes        | ✅ Done    | Safety backups                           |
-| **File Operations**          |            |                                          |
-| Atomic Writes                | ✅ Done    | Safe file writing                        |
-| Backup Creation              | ✅ Done    | Timestamped backups                      |
-| Dry Run Mode                 | ✅ Done    | Preview without writing                  |
-| **Testing**                  |            |                                          |
-| Unit Tests                   | ✅ Done    | Detector/generator tests                 |
-| Integration Tests            | ✅ Done    | End-to-end tests                         |
-| Component Tests              | ✅ Done    | Ink component tests                      |
-| **Distribution**             |            |                                          |
-| NPM Package                  | ✅ Done    | `npm install -g @tszhim_tech/brief`      |
-| Standalone Binary            | ⏳ Planned | `bun build --compile`                    |
-| **Future Features**          |            |                                          |
-| AI-powered Generation        | 💡 Future  | LLM-assisted templates                   |
-| Template Marketplace         | 💡 Future  | Share/download templates                 |
-| VS Code Extension            | 💡 Future  | IDE integration                          |
-| Team Template Sharing        | 💡 Future  | Organization templates                   |
-| Cloud Sync                   | 💡 Future  | Sync configs across machines             |
+| Feature                      | Status     | Description                               |
+| ---------------------------- | ---------- | ----------------------------------------- |
+| **Core CLI**                 |            |                                           |
+| `init` command               | ✅ Done    | Initialize AI configuration               |
+| `detect` command             | ✅ Done    | Detect project information                |
+| `add` command                | ✅ Done    | Add templates to project                  |
+| `remove` command             | ✅ Done    | Remove templates from project             |
+| `sync` command               | ✅ Done    | Re-detect and sync configuration          |
+| `validate` command           | ✅ Done    | Validate current configuration            |
+| `templates` command          | ✅ Done    | List available templates                  |
+| **Interactive UI**           |            |                                           |
+| Interactive Wizard           | ✅ Done    | 7-step guided setup                       |
+| Project Detection Display    | ✅ Done    | Show detected frameworks, tools           |
+| Tool Selector (multi-select) | ✅ Done    | Choose Cursor/Claude/Qoder                |
+| Template Selector            | ✅ Done    | Choose additional templates               |
+| Confirmation Step            | ✅ Done    | Review before generation                  |
+| Results Display              | ✅ Done    | Show generated files                      |
+| Progress Indicators          | ✅ Done    | Spinners and progress bars                |
+| **Project Detection**        |            |                                           |
+| Language Detection           | ✅ Done    | TypeScript, JavaScript, Python, Go, Java  |
+| Framework Detection          | ✅ Done    | React, Next.js, Vue, Express, FastAPI     |
+| Package Manager Detection    | ✅ Done    | npm, yarn, pnpm, bun                      |
+| Testing Framework Detection  | ✅ Done    | Jest, Vitest, Bun Test, Pytest            |
+| Build Tool Detection         | ✅ Done    | Webpack, Vite, Bun Bundler                |
+| Database Detection           | ✅ Done    | PostgreSQL, MySQL, MongoDB, SQLite, Redis |
+| ORM Detection                | ✅ Done    | **Prisma**, Drizzle, TypeORM, Sequelize   |
+| Styling Detection            | ✅ Done    | Tailwind, CSS Modules, Styled Components  |
+| **Generators**               |            |                                           |
+| Cursor Rules Generator       | ✅ Done    | .cursor/rules/\*.mdc files (2026 format)  |
+| Claude Code Generator        | ✅ Done    | CLAUDE.md, .claude/ config                |
+| Qoder Generator              | ✅ Done    | .qoder/rules/\*.md (10 templates)         |
+| Shared Docs Generator        | ✅ Done    | ARCHITECTURE.md, TECH-STACK.md            |
+| **2026 Templates**           |            |                                           |
+| Core Rules (Enhanced)        | ✅ Done    | AI agent protocol, 424 lines              |
+| TypeScript Rules (Enhanced)  | ✅ Done    | TS 5.x+ advanced patterns, 577 lines      |
+| **Memory Management (NEW)**  | ✅ Done    | Context optimization, 450 lines           |
+| **Prisma ORM (NEW)**         | ✅ Done    | Prisma 7.0 patterns, 750+ lines           |
+| JavaScript Rules             | ✅ Done    | JS-specific patterns                      |
+| Python Rules                 | ✅ Done    | Python-specific patterns                  |
+| React Rules                  | ✅ Done    | React patterns                            |
+| Vue Rules                    | ✅ Done    | Vue patterns                              |
+| Next.js Rules                | ✅ Done    | Next.js patterns                          |
+| Express Rules                | ✅ Done    | Express patterns                          |
+| FastAPI Rules                | ✅ Done    | FastAPI patterns                          |
+| Testing Rules                | ✅ Done    | Testing best practices                    |
+| Security Rules               | ✅ Done    | Security guidelines                       |
+| Performance Rules            | ✅ Done    | Performance optimization                  |
+| API Design Rules             | ✅ Done    | API best practices                        |
+| Database Rules               | ✅ Done    | Database patterns                         |
+| CLI Development Rules        | ✅ Done    | CLI tool patterns                         |
+| Library Development Rules    | ✅ Done    | Library patterns                          |
+| **Merge Mode**               |            |                                           |
+| Smart Merge                  | ✅ Done    | Similarity-based merging                  |
+| Diff Viewer                  | ✅ Done    | Color-coded diff display                  |
+| Conflict Resolver            | ✅ Done    | Interactive conflict resolution           |
+| Auto-merge (high similarity) | ✅ Done    | ≥95% similar = auto-merge                 |
+| Backup Before Changes        | ✅ Done    | Safety backups                            |
+| **File Operations**          |            |                                           |
+| Atomic Writes                | ✅ Done    | Safe file writing                         |
+| Backup Creation              | ✅ Done    | Timestamped backups                       |
+| Dry Run Mode                 | ✅ Done    | Preview without writing                   |
+| **Testing**                  |            |                                           |
+| Unit Tests                   | ✅ Done    | Detector/generator tests                  |
+| Integration Tests            | ✅ Done    | End-to-end tests                          |
+| Component Tests              | ✅ Done    | Ink component tests                       |
+| **Distribution**             |            |                                           |
+| NPM Package                  | ✅ Done    | `npm install -g @tszhim_tech/brief`       |
+| Standalone Binary            | ⏳ Planned | `bun build --compile`                     |
+| **Future Features**          |            |                                           |
+| AI-powered Generation        | 💡 Future  | LLM-assisted templates                    |
+| Template Marketplace         | 💡 Future  | Share/download templates                  |
+| VS Code Extension            | 💡 Future  | IDE integration                           |
+| Team Template Sharing        | 💡 Future  | Organization templates                    |
+| Cloud Sync                   | 💡 Future  | Sync configs across machines              |
 
 **Legend:** ✅ Done | ⏳ Planned | 💡 Future | ❌ Blocked
 
@@ -172,6 +170,7 @@ First-class AI memory management with **4-layer context system**:
 4. **Archive** - Prune aggressively (outdated approaches)
 
 **Auto-optimization triggers**:
+
 - 50% full → Prune Archive
 - 70% full → Compress Historical
 - 85% full → Compress Important
@@ -326,6 +325,7 @@ brief templates
 ```
 
 **2026 Enhancements**:
+
 - ✅ Enhanced frontmatter (`alwaysApply`, `tags`, better descriptions)
 - ✅ AI Agent Protocol (search, confirm, minimal changes)
 - ✅ Memory Management (context layers, pattern recognition)
@@ -361,6 +361,7 @@ CLAUDE.md                  # Main Claude configuration
 ```
 
 **Qoder-Specific Features**:
+
 - ✅ Memory system integration (`user_prefer`, `project_info`, etc.)
 - ✅ @ cross-reference support (`@core.md`, `@security.md`)
 - ✅ Quest Mode optimization (no placeholders!)
@@ -379,6 +380,7 @@ docs/
 ## Tech Stack Support
 
 ### Languages
+
 - TypeScript (5.x+ advanced patterns)
 - JavaScript (ES2022+)
 - Python (PEP 8, type hints)
@@ -386,26 +388,32 @@ docs/
 - Java
 
 ### Frameworks
+
 - **Frontend**: React, Next.js, Vue, Nuxt, Svelte, SvelteKit, Astro
 - **Backend**: Express, Fastify, Koa, NestJS
 - **Python**: FastAPI, Django, Flask
 - **Full-Stack**: Next.js, Remix, SvelteKit
 
 ### Databases & ORMs
+
 - **Databases**: PostgreSQL, MySQL, MongoDB, SQLite, Redis, Supabase, Firebase
 - **ORMs**: **Prisma** (750+ line template!), Drizzle, TypeORM, Sequelize, Knex
 - **Python ORMs**: SQLAlchemy, Django ORM
 
 ### Testing
+
 - Jest, Vitest, Bun Test, Pytest, Mocha, Playwright, Cypress
 
 ### Build Tools
+
 - Vite, Webpack, Turbopack, Bun Bundler, esbuild
 
 ### Package Managers
+
 - npm, yarn, pnpm, bun
 
 ### Styling
+
 - Tailwind CSS, CSS Modules, Styled Components, Emotion
 
 ---
@@ -548,4 +556,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 **Built with ❤️ for developers who use AI coding tools**
 
-*Optimize your AI assistant • Generate better code • Ship faster*
+_Optimize your AI assistant • Generate better code • Ship faster_
