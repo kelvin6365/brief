@@ -93,26 +93,8 @@ export async function runInitInteractive(options: InitOptions): Promise<CommandR
     };
 
     try {
-      // Check if raw mode is supported on stdin
-      // Only true if both isTTY is true and we can actually enable it
-      let isRawModeSupported = false;
-      let stdinForInk = process.stdin;
-
-      if (process.stdin.isTTY && process.stdin.setRawMode) {
-        try {
-          process.stdin.setRawMode(true);
-          process.stdin.setRawMode(false);
-          isRawModeSupported = true;
-        } catch {
-          isRawModeSupported = false;
-        }
-      }
-
-      // If raw mode is not supported and stdin is not a TTY,
-      // create a PassThrough stream to avoid Ink's raw mode errors
-      if (!isRawModeSupported && !process.stdin.isTTY) {
-        stdinForInk = new PassThrough();
-      }
+      // Always use process.stdin as-is, and let Ink detect raw mode support
+      const isRawModeSupported = process.stdin.isTTY ?? false;
 
       const { waitUntilExit } = render(
         <Wizard
@@ -125,14 +107,7 @@ export async function runInitInteractive(options: InitOptions): Promise<CommandR
           autoMergeThreshold={options.autoMergeThreshold}
           isRawModeSupported={isRawModeSupported}
           onComplete={handleComplete}
-        />,
-        {
-          stdin: stdinForInk,
-          stdout: process.stdout,
-          stderr: process.stderr,
-          exitOnCtrlC: false,
-          isRawModeSupported,
-        }
+        />
       );
 
       waitUntilExit()

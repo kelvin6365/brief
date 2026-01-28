@@ -329,7 +329,7 @@ export function Wizard({
       >
         <Box flexDirection="row" gap={2}>
           <Text bold color="blue">
-            Brief CLI v{process.env.npm_package_version || "0.1.9"}
+            Brief CLI v{process.env.npm_package_version || "0.1.10"}
           </Text>
           <Text color="gray">· AI Configuration Generator</Text>
         </Box>
