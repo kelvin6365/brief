@@ -16,6 +16,7 @@ import { ConfirmStep } from "./ConfirmStep.js";
 import { Results } from "./Results.js";
 import { detectProject } from "../detectors/index.js";
 import { runGenerators } from "../generators/index.js";
+import { getTerminalChars } from "../utils/terminal.js";
 
 export interface WizardProps {
   /** Project path to configure */
@@ -312,6 +313,7 @@ function StepIndicator({ currentStep }: { currentStep: WizardStep }): React.Reac
   ];
 
   const currentIndex = steps.indexOf(currentStep);
+  const chars = getTerminalChars();
 
   return (
     <Box marginBottom={1}>
@@ -325,11 +327,11 @@ function StepIndicator({ currentStep }: { currentStep: WizardStep }): React.Reac
               color={isCompleted ? "green" : isCurrent ? "cyan" : "gray"}
               dimColor={!isCompleted && !isCurrent}
             >
-              {isCompleted ? "●" : isCurrent ? "○" : "○"}
+              {isCompleted ? chars.stepCompleted : isCurrent ? chars.stepCurrent : chars.stepPending}
             </Text>
             {i < steps.length - 2 && (
               <Text color="gray" dimColor>
-                {" — "}
+                {chars.stepSeparator}
               </Text>
             )}
           </React.Fragment>

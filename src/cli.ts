@@ -4,6 +4,24 @@
  * AI-optimized configuration generator for Cursor IDE and Claude Code
  */
 
+// Workaround for Bun's UTF-8 stdout encoding bug
+// Bun corrupts UTF-8 characters when writing to stdout, so we intercept console.log
+// and write directly to stdout with explicit UTF-8 encoding
+const originalLog = console.log;
+const originalError = console.error;
+
+console.log = (...args: unknown[]) => {
+  const text = args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ');
+  const buffer = Buffer.from(text + '\n', 'utf8');
+  process.stdout.write(buffer);
+};
+
+console.error = (...args: unknown[]) => {
+  const text = args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ');
+  const buffer = Buffer.from(text + '\n', 'utf8');
+  process.stderr.write(buffer);
+};
+
 import { Command } from "commander";
 import {
   initCommand,

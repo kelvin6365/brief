@@ -4,6 +4,7 @@
  */
 
 import chalk from "chalk";
+import { getTerminalChars } from "./terminal.js";
 
 export type LogLevel = "debug" | "info" | "warn" | "error" | "silent";
 
@@ -77,7 +78,8 @@ export function info(message: string, ...args: unknown[]): void {
  */
 export function success(message: string, ...args: unknown[]): void {
   if (!isLevelEnabled("info")) return;
-  console.log(chalk.green(formatMessage(`✓ ${message}`)), ...args);
+  const chars = getTerminalChars();
+  console.log(chalk.green(formatMessage(`${chars.check} ${message}`)), ...args);
 }
 
 /**
@@ -85,7 +87,8 @@ export function success(message: string, ...args: unknown[]): void {
  */
 export function warn(message: string, ...args: unknown[]): void {
   if (!isLevelEnabled("warn")) return;
-  console.log(chalk.yellow(formatMessage(`⚠ ${message}`)), ...args);
+  const chars = getTerminalChars();
+  console.log(chalk.yellow(formatMessage(`${chars.warning} ${message}`)), ...args);
 }
 
 /**
@@ -93,7 +96,8 @@ export function warn(message: string, ...args: unknown[]): void {
  */
 export function error(message: string, ...args: unknown[]): void {
   if (!isLevelEnabled("error")) return;
-  console.error(chalk.red(formatMessage(`✗ ${message}`)), ...args);
+  const chars = getTerminalChars();
+  console.error(chalk.red(formatMessage(`${chars.cross} ${message}`)), ...args);
 }
 
 /**
@@ -119,8 +123,9 @@ export function header(message: string): void {
  */
 export function listItem(message: string, indent = 0): void {
   if (!isLevelEnabled("info")) return;
+  const chars = getTerminalChars();
   const padding = "  ".repeat(indent);
-  console.log(formatMessage(`${padding}• ${message}`));
+  console.log(formatMessage(`${padding}${chars.bullet} ${message}`));
 }
 
 /**
@@ -163,6 +168,7 @@ export function createLogger(prefix: string): {
   error: (message: string, ...args: unknown[]) => void;
 } {
   const scopedPrefix = chalk.dim(`[${prefix}]`);
+
   return {
     debug: (message: string, ...args: unknown[]) => {
       if (!isLevelEnabled("debug")) return;
@@ -174,15 +180,18 @@ export function createLogger(prefix: string): {
     },
     success: (message: string, ...args: unknown[]) => {
       if (!isLevelEnabled("info")) return;
-      console.log(chalk.green(`${scopedPrefix} ✓ ${message}`), ...args);
+      const chars = getTerminalChars();
+      console.log(chalk.green(`${scopedPrefix} ${chars.check} ${message}`), ...args);
     },
     warn: (message: string, ...args: unknown[]) => {
       if (!isLevelEnabled("warn")) return;
-      console.log(chalk.yellow(`${scopedPrefix} ⚠ ${message}`), ...args);
+      const chars = getTerminalChars();
+      console.log(chalk.yellow(`${scopedPrefix} ${chars.warning} ${message}`), ...args);
     },
     error: (message: string, ...args: unknown[]) => {
       if (!isLevelEnabled("error")) return;
-      console.error(chalk.red(`${scopedPrefix} ✗ ${message}`), ...args);
+      const chars = getTerminalChars();
+      console.error(chalk.red(`${scopedPrefix} ${chars.cross} ${message}`), ...args);
     },
   };
 }

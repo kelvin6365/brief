@@ -6,6 +6,7 @@
 
 export * from "./types/index.js";
 export * from "./detectors/index.js";
+export * from "./utils/terminal.js";
 
 // Placeholder exports for future modules
 // export * from "./generators/index.js";

@@ -6,6 +6,7 @@
 import React, { useState } from "react";
 import { Text, Box, useInput } from "ink";
 import type { SelectOption } from "./types.js";
+import { getTerminalChars, formatInstructions } from "../utils/terminal.js";
 
 export interface SelectListProps<T = string> {
   /** Options to display */
@@ -31,6 +32,7 @@ export function SelectList<T = string>({
   label,
 }: SelectListProps<T>): React.ReactElement {
   const [cursor, setCursor] = useState(0);
+  const chars = getTerminalChars();
 
   // Handle keyboard input
   useInput((input, key) => {
@@ -96,19 +98,19 @@ export function SelectList<T = string>({
         return (
           <Box key={index}>
             {/* Cursor indicator */}
-            <Text color="cyan">{isCursor ? "❯ " : "  "}</Text>
+            <Text color="cyan">{isCursor ? `${chars.cursor} ` : "  "}</Text>
 
             {/* Checkbox for multi-select */}
             {multiple && (
               <Text color={isSelected ? "green" : "gray"}>
-                {isSelected ? "[✓] " : "[ ] "}
+                {isSelected ? `[${chars.checkboxChecked}] ` : `[${chars.checkboxUnchecked}] `}
               </Text>
             )}
 
             {/* Radio for single-select */}
             {!multiple && (
               <Text color={isSelected ? "green" : "gray"}>
-                {isSelected ? "(●) " : "( ) "}
+                {isSelected ? `(${chars.radioSelected}) ` : `(${chars.radioUnselected}) `}
               </Text>
             )}
 
@@ -131,8 +133,16 @@ export function SelectList<T = string>({
       <Box marginTop={1}>
         <Text color="gray" dimColor>
           {multiple
-            ? "↑↓ navigate • space toggle • a select all • enter confirm"
-            : "↑↓ navigate • enter select"}
+            ? formatInstructions([
+                `${chars.arrowUp}${chars.arrowDown} navigate`,
+                'space toggle',
+                'a select all',
+                'enter confirm'
+              ])
+            : formatInstructions([
+                `${chars.arrowUp}${chars.arrowDown} navigate`,
+                'enter select'
+              ])}
         </Text>
       </Box>
     </Box>
