@@ -85,6 +85,10 @@ export async function runInitInteractive(options: InitOptions): Promise<CommandR
 
   return new Promise((resolve) => {
     const handleComplete = (success: boolean): void => {
+      // Restore stdin to normal mode before resolving
+      if (process.stdin.isTTY && process.stdin.setRawMode) {
+        process.stdin.setRawMode(false);
+      }
       resolve({
         success,
         message: success ? "Configuration generated successfully" : "Generation failed",
@@ -114,12 +118,23 @@ export async function runInitInteractive(options: InitOptions): Promise<CommandR
       }
     );
 
-    waitUntilExit().catch((err: Error) => {
-      resolve({
-        success: false,
-        error: err.message,
+    waitUntilExit()
+      .then(() => {
+        // Ensure stdin is restored even if handleComplete wasn't called
+        if (process.stdin.isTTY && process.stdin.setRawMode) {
+          process.stdin.setRawMode(false);
+        }
+      })
+      .catch((err: Error) => {
+        // Restore stdin on error too
+        if (process.stdin.isTTY && process.stdin.setRawMode) {
+          process.stdin.setRawMode(false);
+        }
+        resolve({
+          success: false,
+          error: err.message,
+        });
       });
-    });
   });
 }
 

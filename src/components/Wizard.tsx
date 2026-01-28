@@ -4,7 +4,7 @@
  */
 
 import React, { useReducer, useEffect, useCallback, type Reducer } from "react";
-import { Text, Box } from "ink";
+import { Text, Box, useApp } from "ink";
 import type { WizardState, WizardAction, WizardStep, WizardConfig } from "./types.js";
 import type { AiInitConfig, AiTool } from "../types/index.js";
 import { Spinner } from "./Spinner.js";
@@ -103,6 +103,7 @@ export function Wizard({
   autoMergeThreshold,
   onComplete,
 }: WizardProps): React.ReactElement {
+  const { exit } = useApp();
   const [state, dispatch] = useReducer<Reducer<WizardState, WizardAction>>(wizardReducer, {
     ...initialState,
     projectPath,
@@ -168,17 +169,21 @@ export function Wizard({
         dispatch({ type: "SET_RESULTS", results });
         dispatch({ type: "SET_STEP", step: "complete" });
         onComplete?.(results.success);
+        // Exit the Ink app after a short delay to show results
+        setTimeout(() => exit(), 100);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         dispatch({ type: "SET_ERROR", error: message });
         onComplete?.(false);
+        // Exit the Ink app after a short delay to show error
+        setTimeout(() => exit(), 100);
       }
     }
 
     if (state.step === "generating") {
       runGeneration();
     }
-  }, [state.step, state.detection, state.config, projectPath, dryRun, mergeMode, autoMergeThreshold, onComplete]);
+  }, [state.step, state.detection, state.config, projectPath, dryRun, mergeMode, autoMergeThreshold, onComplete, exit]);
 
   // Navigation handlers
   const goToStep = useCallback((step: WizardStep) => {
