@@ -12,8 +12,8 @@
 
 ### 🚀 Production-Grade Enhancements
 
-- **✨ Prisma ORM Support** - 750+ lines of Prisma 7.0 best practices, N+1 prevention, type safety patterns
-- **🧠 AI Memory Management** - Context optimization, token efficiency, 4-layer memory system (NEW!)
+- **✨ Prisma ORM Support** - 843 lines of Prisma 7.0 best practices, N+1 prevention, type safety patterns
+- **🧠 AI Memory Management** - Context optimization, token efficiency, 4-layer memory system (436 lines, NEW!)
 - **📈 2026 Cursor Rules** - Enhanced core & TypeScript templates with AI agent protocol
 - **🔧 Template Engine Fix** - Fixed `contains` helper for framework detection in Qoder templates
 - **📚 Complete Documentation** - ARCHITECTURE.md & TECH-STACK.md fully updated
@@ -99,13 +99,13 @@ npx @tszhim_tech/brief templates
 | **Generators**               |            |                                           |
 | Cursor Rules Generator       | ✅ Done    | .cursor/rules/\*.mdc files (2026 format)  |
 | Claude Code Generator        | ✅ Done    | CLAUDE.md, .claude/ config                |
-| Qoder Generator              | ✅ Done    | .qoder/rules/\*.md (10 templates)         |
+| Qoder Generator              | ✅ Done    | .qoder/rules/\*.md (11 templates)         |
 | Shared Docs Generator        | ✅ Done    | ARCHITECTURE.md, TECH-STACK.md            |
 | **2026 Templates**           |            |                                           |
 | Core Rules (Enhanced)        | ✅ Done    | AI agent protocol, 424 lines              |
 | TypeScript Rules (Enhanced)  | ✅ Done    | TS 5.x+ advanced patterns, 577 lines      |
-| **Memory Management (NEW)**  | ✅ Done    | Context optimization, 450 lines           |
-| **Prisma ORM (NEW)**         | ✅ Done    | Prisma 7.0 patterns, 750+ lines           |
+| **Memory Management (NEW)**  | ✅ Done    | Context optimization, 436 lines           |
+| **Prisma ORM (NEW)**         | ✅ Done    | Prisma 7.0 patterns, 843 lines            |
 | JavaScript Rules             | ✅ Done    | JS-specific patterns                      |
 | Python Rules                 | ✅ Done    | Python-specific patterns                  |
 | React Rules                  | ✅ Done    | React patterns                            |
@@ -217,7 +217,7 @@ brief init
 # Generate configurations for specific tools
 brief init --tool cursor      # Only Cursor rules (2026 enhanced)
 brief init --tool claude      # Only Claude config
-brief init --tool qoder       # Only Qoder config (10 templates)
+brief init --tool qoder       # Only Qoder config (11 templates)
 
 # Add specific templates
 brief init --templates react,testing,security,prisma
@@ -294,12 +294,12 @@ brief templates
 
 # Output includes:
 # - cursor-core (424 lines, 2026 enhanced)
-# - cursor-memory (450 lines, NEW!)
+# - cursor-memory (436 lines, NEW!)
 # - typescript (577 lines, TS 5.x+ advanced)
-# - prisma (750+ lines, Prisma 7.0, NEW!)
+# - prisma (843 lines, Prisma 7.0, NEW!)
 # - react, nextjs, vue, express, fastapi
 # - testing, security, performance, api-design
-# - 10 Qoder templates (core, security, testing, etc.)
+# - 11 Qoder templates (core, security, testing, etc.)
 ```
 
 ---
@@ -312,9 +312,9 @@ brief templates
 .cursor/
 └── rules/
     ├── core.mdc                # Core standards (424 lines, 2026 enhanced)
-    ├── memory-management.mdc   # AI memory optimization (450 lines, NEW!)
+    ├── memory-management.mdc   # AI memory optimization (436 lines, NEW!)
     ├── typescript.mdc          # TypeScript 5.x+ patterns (577 lines)
-    ├── prisma.mdc              # Prisma ORM patterns (750+ lines, NEW!)
+    ├── prisma.mdc              # Prisma ORM patterns (843 lines, NEW!)
     ├── react.mdc               # React patterns (if detected)
     ├── nextjs.mdc              # Next.js patterns (if detected)
     ├── testing.mdc             # Testing best practices
@@ -339,11 +339,11 @@ CLAUDE.md                  # Main Claude configuration
 .claude/
 ├── settings.json          # Claude Code settings
 └── skills/
-    ├── testing-patterns.md
+    ├── testing.md
     └── git-workflow.md
 ```
 
-### Qoder (10 Production Templates)
+### Qoder (11 Production Templates)
 
 ```
 .qoder/
@@ -356,8 +356,9 @@ CLAUDE.md                  # Main Claude configuration
     ├── testing.md                 # Testing patterns
     ├── error-handling.md          # Error patterns & recovery
     ├── git-workflow.md            # Git conventions
-    ├── api-design.md              # RESTful API patterns (fixed!)
-    └── architecture.md            # Design patterns
+    ├── api-design.md              # RESTful API patterns
+    ├── architecture.md            # Design patterns
+    └── quick-reference.md         # Quick reference guide
 ```
 
 **Qoder-Specific Features**:
@@ -397,7 +398,7 @@ docs/
 ### Databases & ORMs
 
 - **Databases**: PostgreSQL, MySQL, MongoDB, SQLite, Redis, Supabase, Firebase
-- **ORMs**: **Prisma** (750+ line template!), Drizzle, TypeORM, Sequelize, Knex
+- **ORMs**: **Prisma** (843 line template!), Drizzle, TypeORM, Sequelize, Knex
 - **Python ORMs**: SQLAlchemy, Django ORM
 
 ### Testing
@@ -477,26 +478,32 @@ brief/
 ├── templates/              # Handlebars templates
 │   ├── cursor/
 │   │   ├── core.mdc.hbs            # 424 lines (2026 enhanced)
-│   │   ├── memory-management.mdc.hbs # 450 lines (NEW!)
+│   │   └── memory-management.mdc.hbs # 436 lines (NEW!)
+│   ├── common/              # Shared language/framework templates
 │   │   ├── typescript.mdc.hbs      # 577 lines (TS 5.x+)
-│   │   ├── prisma.mdc.hbs          # 750+ lines (NEW!)
-│   │   └── ...
+│   │   ├── prisma.mdc.hbs          # 843 lines (NEW!)
+│   │   ├── react.mdc.hbs
+│   │   ├── nextjs.mdc.hbs
+│   │   ├── vue.mdc.hbs
+│   │   ├── express.mdc.hbs
+│   │   ├── fastapi.mdc.hbs
+│   │   └── ... (16 total)
 │   ├── claude/
 │   │   ├── CLAUDE.md.hbs
-│   │   └── ...
+│   │   ├── settings.json.hbs
+│   │   └── skills/
+│   │       ├── git-workflow.md.hbs
+│   │       └── testing.md.hbs
 │   ├── qoder/
 │   │   ├── core.md.hbs
-│   │   ├── api-design.md.hbs       # Fixed framework detection
-│   │   └── ... (10 total)
+│   │   ├── api-design.md.hbs
+│   │   └── ... (11 total)
 │   └── shared/
 │       ├── ARCHITECTURE.md.hbs     # Updated 2026
 │       └── TECH-STACK.md.hbs       # Updated 2026
 └── docs/                   # Documentation
     ├── ARCHITECTURE.md
-    ├── TECH-STACK.md
-    ├── CURSOR_TEMPLATES_2026_ENHANCEMENT.md
-    ├── PRISMA_SUPPORT_ADDED.md
-    └── PRISMA_CUSTOM_OUTPUT_ADDED.md
+    └── TECH-STACK.md
 ```
 
 ## Tech Stack
@@ -512,10 +519,6 @@ brief/
 
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Complete architecture guide (updated 2026)
 - **[TECH-STACK.md](./docs/TECH-STACK.md)** - Technology stack documentation (updated 2026)
-- **[CURSOR_TEMPLATES_2026_ENHANCEMENT.md](./CURSOR_TEMPLATES_2026_ENHANCEMENT.md)** - 2026 Cursor rules research & enhancements
-- **[PRISMA_SUPPORT_ADDED.md](./PRISMA_SUPPORT_ADDED.md)** - Prisma ORM integration details
-- **[PRISMA_CUSTOM_OUTPUT_ADDED.md](./PRISMA_CUSTOM_OUTPUT_ADDED.md)** - Next.js + Prisma custom output pattern
-- **[QODER_TEMPLATES_COMPLETE.md](./QODER_TEMPLATES_COMPLETE.md)** - Qoder templates production ready
 
 ## Contributing
 
@@ -543,8 +546,8 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ### 2026-01-28 - Production-Grade Release
 
-- **✨ Prisma ORM Support** - 750+ lines covering Prisma 7.0, N+1 prevention, type safety, production patterns
-- **🧠 Memory Management Template** - 450 lines of AI context optimization, 4-layer system, auto-pruning
+- **✨ Prisma ORM Support** - 843 lines covering Prisma 7.0, N+1 prevention, type safety, production patterns
+- **🧠 Memory Management Template** - 436 lines of AI context optimization, 4-layer system, auto-pruning
 - **📈 Enhanced Core Template** - 424 lines with AI agent protocol, memory management, security checklist
 - **🎯 Enhanced TypeScript Template** - 577 lines with TS 5.x+ advanced patterns, branded types, template literals
 - **🔧 Qoder Template Fix** - Fixed `contains` helper for framework-specific code generation
