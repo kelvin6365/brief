@@ -252,7 +252,10 @@ export function Wizard({
                 <Text color="gray">Continuing automatically...</Text>
               )}
             </Box>
-            <ContinueHandler onContinue={() => goToStep("tool-select")} isRawModeSupported={isRawModeSupported} />
+            <ContinueHandler
+              onContinue={() => goToStep("tool-select")}
+              isRawModeSupported={isRawModeSupported}
+            />
           </Box>
         );
 
@@ -281,7 +284,10 @@ export function Wizard({
                 onSelect={handleTemplateSelect}
               />
             )}
-            <ContinueHandler onContinue={() => goToStep("confirm")} isRawModeSupported={isRawModeSupported} />
+            <ContinueHandler
+              onContinue={() => goToStep("confirm")}
+              isRawModeSupported={isRawModeSupported}
+            />
           </Box>
         );
 
@@ -470,6 +476,7 @@ function ContinueHandler({
       }, 1500);
       return () => clearTimeout(timer);
     }
+    return () => {};
   }, [isRawModeSupported, requireSelection, onContinue]);
 
   // Only render input handler when raw mode is supported
@@ -477,7 +484,9 @@ function ContinueHandler({
     return null;
   }
 
-  return <InputHandler onContinue={onContinue} requireSelection={requireSelection} />;
+  return (
+    <InputHandler onContinue={onContinue} requireSelection={requireSelection} />
+  );
 }
 
 // Separate component that uses the hook
