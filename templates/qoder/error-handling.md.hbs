@@ -294,7 +294,7 @@ async def get_user(user_id: str) -> User:
         logger.error(f"Database error fetching user: {e}")
         raise AppError("Failed to fetch user", code="DATABASE_ERROR")
 
-{{#if (includes detection.frameworks.[0].name "FastAPI")}}
+{{#if (contains detection.frameworks.[0].name "FastAPI")}}
 # FastAPI exception handlers
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse

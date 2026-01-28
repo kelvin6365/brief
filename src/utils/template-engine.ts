@@ -85,6 +85,12 @@ function registerHelpers(): void {
     return Array.isArray(array) && array.includes(value);
   });
 
+  // String contains helper (for checking if a string contains a substring)
+  Handlebars.registerHelper("contains", (str: unknown, substring: unknown) => {
+    if (typeof str !== "string" || typeof substring !== "string") return false;
+    return str.includes(substring);
+  });
+
   Handlebars.registerHelper("join", (array: unknown[], separator: string) => {
     if (!Array.isArray(array)) return "";
     const sep = typeof separator === "string" ? separator : ", ";

@@ -16,7 +16,7 @@ trigger: manual
 
 ---
 
-{{#if (includes detection.frameworks.[0].name "Next.js")}}
+{{#if (contains detection.frameworks.[0].name "Next.js")}}
 ## Next.js Architecture
 
 ### App Router Structure
@@ -134,7 +134,7 @@ async function createUser(formData: FormData) {
 }
 ```
 
-{{else if (includes detection.frameworks.[0].name "React")}}
+{{else if (contains detection.frameworks.[0].name "React")}}
 ## React Architecture
 
 ### Component Hierarchy
@@ -355,7 +355,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 ```
 {{/if}}
 
-{{else if (includes detection.frameworks.[0].name "Express")}}
+{{else if (contains detection.frameworks.[0].name "Express")}}
 ## Express.js Architecture
 
 ### Layered Architecture
@@ -470,7 +470,7 @@ router.get('/users/:id', userController.getUser);
 router.post('/users', validate(CreateUserSchema), userController.createUser);
 ```
 
-{{else if (includes detection.frameworks.[0].name "FastAPI")}}
+{{else if (contains detection.frameworks.[0].name "FastAPI")}}
 ## FastAPI Architecture
 
 ### Layered Structure

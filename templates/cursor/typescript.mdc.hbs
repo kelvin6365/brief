@@ -1,131 +1,576 @@
 ---
-description: TypeScript coding standards and type safety guidelines
+description: "Apply TypeScript standards when editing .ts/.tsx files to ensure type safety"
 globs:
   - "**/*.ts"
   - "**/*.tsx"
 priority: 900
+alwaysApply: false
+tags: ["typescript", "types", "type-safety", "strict-mode"]
 ---
 
-# TypeScript Standards
+# TypeScript Standards (2026)
 
-## Type Safety
+## Context & Applicability
 
-### Strict Mode Requirements
+**When**: Editing TypeScript files (.ts, .tsx)
+**Purpose**: Maintain strict type safety and leverage advanced TypeScript features
+**TypeScript Version**: 5.x+ assumed
 
-- Enable all strict TypeScript flags
-- Never use `any` - use `unknown` for truly unknown types
-- Avoid type assertions (`as`) - prefer type guards
-- Use explicit return types for public functions
+---
 
-### Type Definitions
+## Strict Mode (Non-Negotiable)
+
+### tsconfig.json Requirements
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,              // Enable all strict checks
+    "noUncheckedIndexedAccess": true,  // Array[index] returns T | undefined
+    "noImplicitOverride": true,  // Require 'override' keyword
+    "exactOptionalPropertyTypes": true, // Distinguish undefined from missing
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
+```
+
+### Forbidden Patterns
 
 ```typescript
-// Prefer interfaces for object shapes
+// ❌ NEVER use 'any'
+const data: any = fetchData();
+
+// ✅ Use 'unknown' and narrow
+const data: unknown = fetchData();
+if (isValidData(data)) {
+  // data is narrowed here
+}
+
+// ❌ NEVER use 'as' for type coercion
+const user = response as User;
+
+// ✅ Use type guards
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'email' in value
+  );
+}
+
+// ❌ NEVER use non-null assertion carelessly
+const value = maybeNull!.property;
+
+// ✅ Use proper null checks
+const value = maybeNull?.property ?? defaultValue;
+
+// ❌ NEVER use @ts-ignore or @ts-expect-error without comment
+// @ts-ignore
+const result = problematicCode();
+
+// ✅ Fix the type issue or document why it's needed
+// @ts-expect-error - Legacy API returns wrong type, safe to ignore
+const result = problematicCode();
+```
+
+---
+
+## Type Definitions
+
+### Interfaces vs Types
+
+```typescript
+// ✅ Use interfaces for object shapes (extensible)
 interface User {
   id: string;
   name: string;
   email: string;
 }
 
-// Use type for unions, intersections, and complex types
-type Status = "pending" | "active" | "inactive";
-type UserWithRole = User & { role: Role };
+// ✅ Extend interfaces
+interface AdminUser extends User {
+  permissions: string[];
+}
+
+// ✅ Use types for unions, intersections, utilities
+type Status = 'pending' | 'active' | 'inactive';
+type Result<T> = { success: true; data: T } | { success: false; error: string };
+type ReadonlyUser = Readonly<User>;
+
+// ✅ Combine with intersection
+type UserWithRole = User & { role: string };
 ```
 
-### Generics
-
-- Use meaningful generic names: `TData`, `TError`, `TResult`
-- Constrain generics when possible: `<T extends object>`
-- Provide defaults when appropriate: `<T = unknown>`
-
-## Best Practices
-
-### Null Handling
+### Enums vs Union Types (2026 Guidance)
 
 ```typescript
-// Use nullish coalescing
-const value = input ?? defaultValue;
+// ❌ Avoid string enums (bundle bloat, runtime overhead)
+enum Status {
+  Pending = 'pending',
+  Active = 'active',
+}
 
-// Use optional chaining
-const name = user?.profile?.name;
+// ✅ Use const objects with as const (zero runtime cost)
+const STATUS = {
+  PENDING: 'pending',
+  ACTIVE: 'active',
+} as const;
 
-// Prefer undefined over null for optional values
-interface Options {
-  timeout?: number; // undefined when not provided
+type Status = (typeof STATUS)[keyof typeof STATUS];
+
+// ✅ Or simple union types
+type Status = 'pending' | 'active' | 'inactive';
+
+// ✅ Numeric enums are OK for flags/bitmasks
+enum Permission {
+  Read = 1 << 0,    // 1
+  Write = 1 << 1,   // 2
+  Delete = 1 << 2,  // 4
 }
 ```
 
-### Const Assertions
+---
+
+## Advanced Type Patterns (2026)
+
+### Branded Types (Nominal Typing)
 
 ```typescript
-// Use const assertions for literal types
-const ROUTES = {
-  home: "/",
-  about: "/about",
-} as const;
+// ✅ Prevent mixing similar primitive types
+type UserId = string & { readonly __brand: 'UserId' };
+type OrderId = string & { readonly __brand: 'OrderId' };
 
-type Route = (typeof ROUTES)[keyof typeof ROUTES];
+function createUserId(id: string): UserId {
+  return id as UserId;
+}
+
+// Type error: OrderId not assignable to UserId
+const userId: UserId = createUserId('user-123');
+const orderId: OrderId = userId; // ❌ Error!
 ```
 
-### Enums vs Union Types
+### Template Literal Types
 
 ```typescript
-// Prefer union types for simple cases
-type Direction = "north" | "south" | "east" | "west";
+// ✅ Type-safe string patterns
+type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type Endpoint = `/${string}`;
+type RouteConfig = `${HTTPMethod} ${Endpoint}`;
 
-// Use const objects for values that need iteration
-const Status = {
-  Pending: "pending",
-  Active: "active",
-} as const;
+const route: RouteConfig = 'GET /users'; // ✅
+const invalid: RouteConfig = 'PATCH users'; // ❌ Error!
+
+// ✅ CSS properties
+type CSSUnit = 'px' | 'rem' | 'em' | '%';
+type CSSValue = `${number}${CSSUnit}`;
+const margin: CSSValue = '16px'; // ✅
 ```
 
-## Function Patterns
-
-### Parameter Objects
+### Discriminated Unions
 
 ```typescript
-// Use object parameters for 3+ arguments
-function createUser(options: {
+// ✅ Type-safe state machines
+type AsyncState<T> =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: T }
+  | { status: 'error'; error: Error };
+
+function handleState<T>(state: AsyncState<T>): void {
+  switch (state.status) {
+    case 'idle':
+      // state has no data or error
+      break;
+    case 'loading':
+      // state has no data or error
+      break;
+    case 'success':
+      // state.data is available (type-safe!)
+      console.log(state.data);
+      break;
+    case 'error':
+      // state.error is available (type-safe!)
+      console.error(state.error);
+      break;
+  }
+}
+```
+
+### Mapped Types & Utility Types
+
+```typescript
+// ✅ Make all properties optional
+type Partial<T> = { [P in keyof T]?: T[P] };
+
+// ✅ Make all properties readonly
+type Readonly<T> = { readonly [P in keyof T]: T[P] };
+
+// ✅ Pick specific properties
+type UserSummary = Pick<User, 'id' | 'name'>;
+
+// ✅ Omit specific properties
+type UserWithoutPassword = Omit<User, 'password'>;
+
+// ✅ Create object type from union
+type UserRole = 'admin' | 'user' | 'guest';
+type UserPermissions = Record<UserRole, string[]>;
+
+// ✅ Extract function parameters
+type Params = Parameters<typeof myFunction>;
+
+// ✅ Extract function return type
+type Return = ReturnType<typeof myFunction>;
+
+// ✅ Awaited type (unwrap Promise)
+type Data = Awaited<Promise<User>>; // User
+```
+
+---
+
+## Generics (Advanced)
+
+### Constrained Generics
+
+```typescript
+// ✅ Constrain to specific types
+function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
+}
+
+// ✅ Constrain to object types
+function merge<T extends object, U extends object>(a: T, b: U): T & U {
+  return { ...a, ...b };
+}
+
+// ✅ Constrain to specific structure
+interface HasId {
+  id: string;
+}
+
+function findById<T extends HasId>(items: T[], id: string): T | undefined {
+  return items.find(item => item.id === id);
+}
+```
+
+### Generic Type Inference
+
+```typescript
+// ✅ Let TypeScript infer when possible
+const users = ['Alice', 'Bob']; // string[]
+const numbers = [1, 2, 3]; // number[]
+
+// ✅ Use satisfies for validation without widening
+const config = {
+  url: 'https://api.example.com',
+  timeout: 5000,
+} satisfies { url: string; timeout: number };
+
+// config.url is still the literal string, not widened to 'string'
+
+// ✅ Generic React components
+interface Props<T> {
+  items: T[];
+  renderItem: (item: T) => React.ReactNode;
+}
+
+function List<T>({ items, renderItem }: Props<T>) {
+  return <ul>{items.map(renderItem)}</ul>;
+}
+```
+
+---
+
+## Async/Await Patterns (2026)
+
+### Proper Error Handling
+
+```typescript
+// ❌ Unhandled promise rejection
+async function fetchUser(id: string) {
+  const response = await fetch(`/api/users/${id}`);
+  return response.json();
+}
+
+// ✅ Proper error handling with Result type
+type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+async function fetchUser(id: string): Promise<Result<User>> {
+  try {
+    const response = await fetch(`/api/users/${id}`);
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: new Error(`HTTP ${response.status}: ${response.statusText}`),
+      };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error : new Error(String(error)),
+    };
+  }
+}
+
+// Usage
+const result = await fetchUser('123');
+if (result.success) {
+  console.log(result.data); // Type-safe access
+} else {
+  console.error(result.error); // Type-safe error
+}
+```
+
+### Parallel Operations
+
+```typescript
+// ✅ Run independent operations in parallel
+const [users, orders, products] = await Promise.all([
+  fetchUsers(),
+  fetchOrders(),
+  fetchProducts(),
+]);
+
+// ✅ Promise.allSettled for handling partial failures
+const results = await Promise.allSettled([
+  fetchUsers(),
+  fetchOrders(),
+  fetchProducts(),
+]);
+
+results.forEach((result, index) => {
+  if (result.status === 'fulfilled') {
+    console.log(`Success ${index}:`, result.value);
+  } else {
+    console.error(`Failed ${index}:`, result.reason);
+  }
+});
+```
+
+---
+
+## Null Safety (2026)
+
+### Optional Chaining & Nullish Coalescing
+
+```typescript
+// ✅ Safe property access
+const userName = user?.profile?.name ?? 'Anonymous';
+
+// ✅ Safe method calls
+const result = obj?.method?.();
+
+// ✅ Safe array access (with noUncheckedIndexedAccess)
+const firstItem = items[0]; // Type: Item | undefined
+const value = items[0]?.value ?? defaultValue;
+
+// ✅ Distinguish null vs undefined
+interface Config {
+  timeout?: number;      // Can be undefined or missing
+  retries: number | null; // Can be null (explicit no value)
+}
+```
+
+### Type Guards
+
+```typescript
+// ✅ User-defined type guards
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    typeof value.id === 'string'
+  );
+}
+
+// ✅ Use in conditional blocks
+if (isUser(data)) {
+  // data is narrowed to User type
+  console.log(data.id);
+}
+```
+
+---
+
+## Function Signatures
+
+### Parameter Patterns
+
+```typescript
+// ✅ Use object parameters for 3+ arguments
+interface CreateUserParams {
   name: string;
   email: string;
   role?: string;
-}): User {
-  // ...
+  isActive?: boolean;
+}
+
+function createUser(params: CreateUserParams): User {
+  const { name, email, role = 'user', isActive = true } = params;
+  // Implementation
+}
+
+// ✅ Readonly parameters to prevent mutations
+function processItems(items: readonly Item[]): Summary {
+  // items.push() would error - readonly
 }
 ```
 
-### Return Types
+### Return Types (Always Explicit)
 
 ```typescript
-// Always specify return types for public functions
+// ✅ Always declare return types for public functions
 function calculateTotal(items: Item[]): number {
   return items.reduce((sum, item) => sum + item.price, 0);
 }
 
-// Use Result types for operations that can fail
+// ✅ Async functions return Promise<T>
+async function fetchUser(id: string): Promise<User | null> {
+  const result = await fetch(`/api/users/${id}`);
+  if (!result.ok) return null;
+  return result.json();
+}
+
+// ✅ Use Result types for operations that can fail
 type Result<T, E = Error> =
   | { success: true; data: T }
   | { success: false; error: E };
+
+async function saveUser(user: User): Promise<Result<User>> {
+  try {
+    const saved = await db.users.create(user);
+    return { success: true, data: saved };
+  } catch (error) {
+    return { success: false, error: error as Error };
+  }
+}
 ```
+
+---
 
 ## Import Organization
 
-1. External libraries
-2. Internal modules (absolute paths)
-3. Relative imports
-4. Type-only imports last
-
 ```typescript
-import { useState } from "react";
-import { api } from "@/lib/api";
-import { Button } from "../components/Button";
-import type { User } from "./types";
+// 1. External libraries (React, third-party)
+import React, { useState, useEffect } from 'react';
+import { z } from 'zod';
+import { motion } from 'framer-motion';
+
+// 2. Internal absolute imports (alias paths)
+import { Button } from '@/components/Button';
+import { api } from '@/lib/api';
+import { formatDate } from '@/utils/date';
+
+// 3. Relative imports
+import { UserCard } from './UserCard';
+import { useUserData } from './useUserData';
+
+// 4. Type-only imports (last, separate)
+import type { User, Role } from '@/types/user';
+import type { ApiResponse } from './types';
+
+// 5. Styles
+import './styles.css';
 ```
 
-## Avoid These Patterns
+---
 
-- `any` type - use `unknown` instead
-- Non-null assertions (`!`) - use proper null checks
-- `@ts-ignore` - fix the type issue instead
-- Implicit `any` in callbacks - always type parameters
+## Const Assertions & Literal Types
+
+```typescript
+// ✅ Const assertions for literal types
+const ROUTES = {
+  home: '/',
+  users: '/users',
+  settings: '/settings',
+} as const;
+
+type Route = (typeof ROUTES)[keyof typeof ROUTES]; // '/' | '/users' | '/settings'
+
+// ✅ Tuple types with const
+const point = [10, 20] as const; // readonly [10, 20]
+
+// ✅ Readonly arrays
+const colors = ['red', 'green', 'blue'] as const;
+type Color = (typeof colors)[number]; // 'red' | 'green' | 'blue'
+```
+
+---
+
+## Performance Patterns
+
+### Type-Level Optimizations
+
+```typescript
+// ✅ Use index signatures sparingly (impacts performance)
+interface FastLookup {
+  [key: string]: Value; // Simple index signature
+}
+
+// ✅ Prefer Record<> for known keys
+type UserMap = Record<string, User>; // Better inference
+
+// ✅ Avoid complex conditional types in hot paths
+type SimpleCheck<T> = T extends string ? T : never; // Fast
+type ComplexCheck<T> = T extends infer U ? (U extends string ? U : never) : never; // Slower
+```
+
+---
+
+## Testing Types
+
+```typescript
+// ✅ Test utility types
+type AssertEqual<T, U> = T extends U ? (U extends T ? true : false) : false;
+
+// Usage in tests
+const test1: AssertEqual<string, string> = true; // ✅
+const test2: AssertEqual<string, number> = true; // ❌ Error!
+
+// ✅ Expect type errors
+// @ts-expect-error - Should not allow number
+const invalid: string = 123;
+```
+
+---
+
+## Common Pitfalls to Avoid
+
+1. **Don't use `any`** - Always prefer `unknown` and narrow
+2. **Don't skip return types** - Explicit is better than inferred for public APIs
+3. **Don't ignore strict flags** - Enable all strict checks
+4. **Don't use non-null assertions** - Use proper null checks instead
+5. **Don't use `as` for casting** - Use type guards for narrowing
+6. **Don't ignore `noUncheckedIndexedAccess`** - Array access should be checked
+7. **Don't use string enums** - Use const objects or union types
+8. **Don't create complex type gymnastics** - Simple types = faster compilation
+
+---
+
+## Cross-References
+
+Related rules:
+- Core standards → @core.mdc
+- React patterns → @react.mdc
+- Testing → @testing.mdc
+- Performance → @performance.mdc
+
+---
+
+*TypeScript 5.x+ Best Practices*
+*Production-grade | Type-safe | Performance-optimized*
+*Updated: 2026-01-28*

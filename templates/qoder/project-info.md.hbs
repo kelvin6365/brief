@@ -193,11 +193,11 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt
 
 # Run application
-{{#if (includes detection.frameworks.[0].name "FastAPI")}}
+{{#if (contains detection.frameworks.[0].name "FastAPI")}}
 uvicorn main:app --reload
-{{else if (includes detection.frameworks.[0].name "Flask")}}
+{{else if (contains detection.frameworks.[0].name "Flask")}}
 flask run
-{{else if (includes detection.frameworks.[0].name "Django")}}
+{{else if (contains detection.frameworks.[0].name "Django")}}
 python manage.py runserver
 {{else}}
 python main.py
@@ -280,7 +280,7 @@ LOG_LEVEL=info
 ## 📁 Project Structure
 
 ```
-{{#if (includes detection.frameworks.[0].name "Next.js")}}
+{{#if (contains detection.frameworks.[0].name "Next.js")}}
 project/
 ├── app/                # Next.js App Router
 │   ├── api/           # API routes
@@ -293,7 +293,7 @@ project/
 ├── tests/            # Tests
 └── package.json
 
-{{else if (includes detection.frameworks.[0].name "React")}}
+{{else if (contains detection.frameworks.[0].name "React")}}
 project/
 ├── src/
 │   ├── components/   # React components
@@ -306,7 +306,7 @@ project/
 ├── tests/            # Tests
 └── package.json
 
-{{else if (includes detection.frameworks.[0].name "Express")}}
+{{else if (contains detection.frameworks.[0].name "Express")}}
 project/
 ├── src/
 │   ├── routes/       # API routes
@@ -319,7 +319,7 @@ project/
 ├── tests/            # Tests
 └── package.json
 
-{{else if (includes detection.frameworks.[0].name "FastAPI")}}
+{{else if (contains detection.frameworks.[0].name "FastAPI")}}
 project/
 ├── app/
 │   ├── routers/      # API routers
@@ -356,7 +356,7 @@ project/
 
 ## 🚀 Deployment
 
-{{#if (includes detection.frameworks.[0].name "Next.js")}}
+{{#if (contains detection.frameworks.[0].name "Next.js")}}
 ### Vercel Deployment (Recommended)
 
 ```bash
@@ -389,7 +389,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-{{#if (includes detection.frameworks.[0].name "FastAPI")}}
+{{#if (contains detection.frameworks.[0].name "FastAPI")}}
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 {{else}}
 CMD ["python", "main.py"]

@@ -20,6 +20,18 @@ export const CORE_TEMPLATES: TemplateDefinition[] = [
     priority: 1000,
     tags: ["essential"],
   },
+  // Cursor memory management (2026)
+  {
+    id: "cursor-memory",
+    name: "AI Memory & Context Management",
+    description: "Token optimization and memory management patterns for AI assistance",
+    target: "cursor",
+    category: "core",
+    templatePath: "cursor/memory-management.mdc.hbs",
+    outputPath: ".cursor/rules/memory-management.mdc",
+    priority: 950,
+    tags: ["ai-optimization", "memory", "2026"],
+  },
   // Claude core config
   {
     id: "claude-core",

@@ -1,0 +1,436 @@
+---
+description: "Manage AI context and memory when starting new sessions to optimize token usage"
+globs:
+  - "**/*"
+priority: 950
+alwaysApply: false
+tags: ["memory", "context", "ai-optimization", "2026"]
+---
+
+# AI Memory & Context Management (2026)
+
+## Context & Applicability
+
+**When**: Applied intelligently based on session length and complexity
+**Purpose**: Optimize token usage and maintain relevant context across sessions
+**Auto-activates**: When context window >50% full or session >30 minutes
+
+---
+
+## Context Layer System
+
+### Layer 1: Critical (Always Active)
+
+**Retain permanently across all sessions**:
+
+```yaml
+Architecture:
+  - Core design patterns
+  - System boundaries
+  - Data flow architecture
+  - Integration points
+
+Business Rules:
+  - Domain logic constraints
+  - Validation rules
+  - Workflow requirements
+  - Compliance needs
+
+Security:
+  - Authentication flow
+  - Authorization model
+  - Data protection rules
+  - API security patterns
+
+Contracts:
+  - API interfaces
+  - Database schemas
+  - External integrations
+  - Message formats
+```
+
+### Layer 2: Important (Session-Level)
+
+**Maintain during active session, summarize when switching**:
+
+```yaml
+Current Context:
+  - Active task/feature
+  - Recent file changes
+  - Implementation approach
+  - Known issues/blockers
+
+Patterns:
+  - Code patterns observed
+  - Naming conventions used
+  - Error handling approach
+  - Testing strategy
+
+Decisions:
+  - Technical choices made
+  - Alternatives considered
+  - Trade-offs accepted
+  - Future refactoring notes
+```
+
+### Layer 3: Historical (Reference)
+
+**Keep as searchable reference, load when relevant**:
+
+```yaml
+Past Work:
+  - Previous implementations
+  - Similar features
+  - Bug fixes applied
+  - Refactorings completed
+
+Learnings:
+  - Performance optimizations tried
+  - Failed approaches (avoid repeating)
+  - Edge cases discovered
+  - Testing insights
+```
+
+### Layer 4: Archive (Prune Aggressively)
+
+**Discard unless explicitly needed**:
+
+```yaml
+Remove:
+  - Outdated debugging sessions
+  - Superseded approaches
+  - Exploratory dead ends
+  - Obsolete requirements
+  - Old conversation context
+```
+
+---
+
+## Memory Management Commands
+
+### Session Start
+
+```
+At beginning of new session:
+1. Summarize previous session's key outcomes
+2. Load Critical layer (architecture, rules, security)
+3. Reference Important layer (recent patterns, decisions)
+4. Keep Historical layer searchable but not loaded
+5. Discard Archive layer
+```
+
+### During Session
+
+```
+Every 10 interactions:
+1. Prune irrelevant context
+2. Summarize completed sub-tasks
+3. Update pattern recognition
+4. Archive resolved issues
+
+When approaching token limit:
+1. Compress Historical layer
+2. Summarize Important layer
+3. Keep only Critical layer + active task
+4. Suggest session split if needed
+```
+
+### Session Handoff
+
+```
+When switching tasks or agents:
+1. Summarize current state
+2. Document decisions made
+3. Note incomplete work
+4. Flag blockers/questions
+5. Update Important layer with outcomes
+```
+
+---
+
+## Pattern Recognition & Reuse
+
+### Track Common Patterns
+
+**Code Patterns**:
+```typescript
+// Recognize and suggest project-specific patterns
+Pattern: Error handling wrapper
+Usage: 23 times in /src/services/
+Last used: user-service.ts:45
+
+Pattern: API response format
+Usage: 15 times in /src/api/
+Last used: routes/users.ts:12
+```
+
+**Naming Conventions**:
+```typescript
+// Learn project-specific naming
+Observed: Event handlers use "on" prefix
+  - onSubmit, onValidate, onChange (18 occurrences)
+
+Observed: Async functions use "fetch" or "load" prefix
+  - fetchUser, loadConfig, fetchOrders (25 occurrences)
+
+Observed: Boolean flags use "is", "has", "should"
+  - isValid, hasPermission, shouldRefresh (42 occurrences)
+```
+
+**Architecture Patterns**:
+```
+Observed: Layered architecture
+  - Routes → Controllers → Services → Data Access
+  - Consistent across /src/api/
+
+Observed: Component composition
+  - Container/Presentational split
+  - Consistent in /src/components/
+
+Observed: Error handling strategy
+  - Try-catch in services
+  - Error boundaries in React
+  - Consistent across codebase
+```
+
+### Apply Patterns Automatically
+
+```
+When creating new code:
+1. Search for similar existing code (@Codebase)
+2. Identify patterns used
+3. Apply same pattern to new code
+4. Suggest pattern if deviation detected
+
+Example:
+  "I notice existing API routes use the Controller pattern.
+   Should I follow that pattern for this new endpoint?"
+```
+
+---
+
+## Token Optimization Strategies
+
+### 1. Reference Instead of Duplicate
+
+```
+❌ BAD: Copying entire file content
+"Here's the full user-service.ts file content..."
+
+✅ GOOD: Referencing specific sections
+"Referencing getUserById pattern from user-service.ts:45-60"
+```
+
+### 2. Batch Related Changes
+
+```
+❌ BAD: Single change per response
+- Response 1: Update function A
+- Response 2: Update related function B
+- Response 3: Update related function C
+
+✅ GOOD: Batch logically related changes
+- Response 1: Update functions A, B, C together (they're related)
+```
+
+### 3. Summarize Completed Work
+
+```
+❌ BAD: Keep entire conversation history
+[10 messages about debugging API issue]
+
+✅ GOOD: Summarize and compress
+"API issue resolved: Added error handling in middleware.
+ Root cause: Missing validation. Fixed in commit abc123."
+```
+
+### 4. Prune Irrelevant Context
+
+```
+When discussing backend API:
+  ❌ Keep: Frontend component details
+  ✅ Keep: API contract, validation rules, database schema
+
+When discussing UI component:
+  ❌ Keep: Database migration details
+  ✅ Keep: Component props, styling patterns, state management
+```
+
+---
+
+## Decision Tracking
+
+### Architecture Decisions
+
+```markdown
+## ADR Format (Lightweight)
+
+Decision: Use React Query for data fetching
+Date: {{date "iso"}}
+Context: Need consistent data caching and loading states
+Alternatives: SWR, Redux Toolkit Query, Custom hooks
+Chosen: React Query
+Reason: Best TypeScript support, team familiar with it
+Trade-offs: Adds 13KB to bundle, worth it for DX improvement
+
+Status: Active
+Review: Not needed unless issues arise
+```
+
+### Track in Memory
+
+```
+Store decisions in Important layer:
+- Quick reference during session
+- Context for future related changes
+- Avoid re-discussing same topics
+
+Summarize to Historical layer at session end:
+- Compress to bullet points
+- Keep for future reference
+- Searchable when needed
+```
+
+---
+
+## Context Window Monitoring
+
+### Auto-Optimization Triggers
+
+```yaml
+50% full:
+  action: Start pruning Archive layer
+  message: "Optimizing context for better performance..."
+
+70% full:
+  action: Compress Historical layer
+  message: "Summarizing past work to free up context space..."
+
+85% full:
+  action: Compress Important layer, keep Critical + active task only
+  message: "Approaching context limit. Compressed non-critical context."
+
+95% full:
+  action: Suggest session split or reset
+  message: "Context near limit. Consider: 1) Split task 2) New session 3) Continue with minimal context"
+```
+
+### Manual Context Commands
+
+```
+User can request:
+- "@summarize" - Compress current context
+- "@reset-context" - Keep only Critical layer
+- "@show-memory" - Display what's in each layer
+- "@archive [topic]" - Move topic to Archive layer
+- "@recall [topic]" - Load topic from Historical layer
+```
+
+---
+
+## Session Coordination
+
+### Multi-Agent Handoff
+
+```yaml
+When handing off to another agent/session:
+
+Document:
+  - Current task state
+  - Files modified
+  - Decisions made
+  - Next steps
+  - Open questions
+
+Format:
+  ## Session Handoff
+  **Task**: [Brief description]
+  **Progress**: [What's done]
+  **Current State**: [Where we are]
+  **Next Steps**: [What to do]
+  **Questions**: [Unresolved items]
+  **Modified Files**: [List with brief notes]
+```
+
+### Long-Running Tasks
+
+```yaml
+For tasks spanning multiple sessions:
+
+Create roadmap.md:
+  - Break into sub-tasks
+  - Track progress
+  - Document decisions
+  - Note learnings
+
+Update after each session:
+  - Mark completed items
+  - Add new discoveries
+  - Update estimates
+  - Document blockers
+```
+
+---
+
+## Best Practices
+
+### DO
+
+- Actively prune irrelevant context
+- Summarize completed work immediately
+- Reference files instead of duplicating content
+- Track patterns and reuse them
+- Document decisions as you go
+- Split sessions when context gets heavy
+
+### DON'T
+
+- Keep entire conversation history forever
+- Duplicate file contents unnecessarily
+- Ignore token usage warnings
+- Forget to summarize before session end
+- Mix multiple unrelated tasks in one session
+- Avoid using @-references for files/docs
+
+---
+
+## Integration with Other Rules
+
+This memory management system works with:
+- @core.mdc - General standards (Critical layer)
+- @typescript.mdc - Language patterns (Important layer)
+- @react.mdc - Framework patterns (Important layer)
+- @testing.mdc - Test patterns (Historical layer)
+
+All project-specific patterns should be tracked and managed through this system.
+
+---
+
+## Metrics & Monitoring
+
+```typescript
+// Example context usage awareness
+Context Status:
+  Current: 45% (safe)
+  Critical layer: 15%
+  Important layer: 20%
+  Historical layer: 8%
+  Archive layer: 2%
+
+Session Health:
+  Duration: 18 minutes
+  Interactions: 12
+  Files modified: 5
+  Patterns recognized: 3
+  Decisions documented: 2
+
+Recommendations:
+  ✅ Context usage healthy
+  ✅ Active pruning working well
+  ⚠️ Consider summarizing if session goes >30 min
+```
+
+---
+
+*Part of 2026 Production-Grade Cursor Rules*
+*Token-optimized | Context-aware | Memory-efficient*

@@ -179,7 +179,7 @@ const user = await db.query(
 
 **Sanitize all output**. Never render user input directly into HTML.
 
-{{#if (includes detection.frameworks.[0].name "React")}}
+{{#if (contains detection.frameworks.[0].name "React")}}
 ### React XSS Prevention
 ```tsx
 // ✅ Good - React escapes by default
@@ -201,7 +201,7 @@ function SafeRichContent({ html }) {
 }
 ```
 
-{{else if (includes detection.frameworks.[0].name "Vue")}}
+{{else if (contains detection.frameworks.[0].name "Vue")}}
 ### Vue XSS Prevention
 ```vue
 <!-- ✅ Good - Vue escapes by default -->
@@ -389,7 +389,7 @@ secrets.yaml
 
 **Implement CSRF tokens** for state-changing operations.
 
-{{#if (includes detection.frameworks.[0].name "Express")}}
+{{#if (contains detection.frameworks.[0].name "Express")}}
 ```typescript
 import csrf from 'csurf';
 import cookieParser from 'cookie-parser';
@@ -544,7 +544,7 @@ catch (error) {
 
 **Always use HTTPS** in production and set security headers.
 
-{{#if (includes detection.frameworks.[0].name "Express")}}
+{{#if (contains detection.frameworks.[0].name "Express")}}
 ```typescript
 import helmet from 'helmet';
 

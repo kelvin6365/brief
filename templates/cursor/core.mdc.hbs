@@ -1,78 +1,424 @@
 ---
-description: Core coding standards and AI assistant guidelines for {{project.name}}
+description: "Apply core coding standards when editing any file to ensure consistency and quality"
 globs:
   - "**/*"
 priority: 1000
+alwaysApply: true
+tags: ["core", "standards", "quality", "ai-protocol"]
 ---
 
 # Core Development Standards
 
-## Project Overview
+## Context & Applicability
 
-This is **{{project.name}}**, a {{project.type}} project{{#if project.framework}} built with {{project.framework}}{{/if}}.
+**When**: Active in all sessions for {{project.name}}
+**Purpose**: Ensure consistent, production-grade code across all files
+**Project Type**: {{capitalize project.type}}{{#if project.framework}} using {{project.framework}}{{/if}}
 
 {{#if detection.frameworks}}
-### Tech Stack
+**Tech Stack**:
 {{#each detection.frameworks}}
-- {{name}}{{#if version}} v{{version}}{{/if}}
+- {{name}}{{#if version}} v{{version}}{{/if}}{{#if (gt confidence 0.8)}} (primary){{/if}}
 {{/each}}
 {{/if}}
 
-## Code Style Guidelines
+---
 
-### General Principles
+## AI Agent Protocol (2026)
 
-1. **Clarity over cleverness** - Write code that is easy to read and understand
-2. **Consistency** - Follow established patterns in the codebase
-3. **Simplicity** - Prefer simple solutions over complex ones
-4. **DRY** - Don't repeat yourself, but don't over-abstract either
+### Before Implementation
+
+1. **Search First, Code Second**
+   ```
+   ALWAYS use @Codebase, @Files, or grep to find similar functionality
+   → Check if feature/pattern already exists
+   → Extend existing code before creating new
+   → Maintain architectural consistency
+   ```
+
+2. **Confirm Understanding**
+   ```
+   Before starting ANY task:
+   → Summarize what you understand
+   → Clarify ambiguous requirements
+   → Confirm approach for non-trivial changes
+   → Ask about edge cases
+   ```
+
+3. **Minimal Changes Philosophy**
+   ```
+   Strive for smallest possible code change:
+   → Fix the specific issue only
+   → Don't refactor unrelated code
+   → Don't add "nice-to-have" features
+   → One concern per change
+   ```
+
+### During Implementation
+
+4. **Context Window Optimization**
+   ```
+   Efficient token usage:
+   → Reference files (@Files) instead of duplicating content
+   → Use @Docs for external documentation
+   → Batch related changes together
+   → Prune irrelevant context actively
+   ```
+
+5. **Verification Requirements**
+   ```
+   After each change:
+   → Verify syntax is correct
+   → Check imports are complete
+   → Ensure no placeholder comments (TODO/FIXME in production code)
+   → Run type checker mentally
+   → Consider edge cases
+   ```
+
+---
+
+## Code Quality Standards
+
+### General Principles (CRITICAL)
+
+1. **Clarity over Cleverness**
+   - Write code that is immediately understandable
+   - Optimize for readability, then performance
+   - Future developers (including AI) should grasp logic quickly
+
+2. **Consistency First**
+   - Match existing patterns in the codebase
+   - Use established conventions
+   - Don't introduce new patterns without discussion
+
+3. **Simplicity Wins**
+   - Choose the most straightforward solution
+   - Avoid premature optimization
+   - Simple code = fewer bugs
+
+4. **DRY with Balance**
+   - Extract repeated logic (3+ occurrences)
+   - Don't over-abstract (2 similar things ≠ abstraction need)
+   - Inline trivial helpers if they hurt readability
 
 ### Naming Conventions
 
-- Use descriptive, meaningful names
-- Variables: `camelCase`
-- Constants: `SCREAMING_SNAKE_CASE`
-- Functions: `camelCase` (verbs: `getUserById`, `calculateTotal`)
-- Classes/Types: `PascalCase`
-- Files: `kebab-case.ts` or `PascalCase.tsx` for components
+**Variables & Functions**:
+```javascript
+// Variables: descriptive camelCase
+const userProfile = getUserProfile();
+const isAuthenticated = checkAuth();
+const itemCount = items.length;
+
+// Functions: verb + noun camelCase
+function fetchUserData() { }
+function calculateTotalPrice() { }
+function validateEmail() { }
+
+// Boolean: is/has/should prefix
+const isValid = validate(data);
+const hasPermission = checkPermission(user);
+const shouldRedirect = needsRedirect();
+```
+
+**Constants**:
+```javascript
+// Global constants: SCREAMING_SNAKE_CASE
+const MAX_RETRY_ATTEMPTS = 3;
+const API_BASE_URL = process.env.API_URL;
+const DEFAULT_TIMEOUT = 5000;
+
+// Object constants: camelCase with as const
+const routes = {
+  home: '/',
+  dashboard: '/dashboard',
+} as const;
+```
+
+**Classes & Types**:
+```typescript
+// Classes/Interfaces/Types: PascalCase
+class UserService { }
+interface UserData { }
+type ResponseStatus = 'success' | 'error';
+```
+
+**Files**:
+```
+components/      → UserProfile.tsx (PascalCase for React)
+utils/           → string-helpers.ts (kebab-case)
+services/        → user-service.ts (kebab-case)
+types/           → user.types.ts (kebab-case)
+```
 
 ### File Organization
 
-- Keep files focused and small (< 300 lines preferred)
-- Group related functionality together
-- Use index files for clean exports
-- Separate concerns: logic, UI, data, utilities
+**Size Limits**:
+- Components: < 300 lines (split into smaller components if larger)
+- Utilities: < 200 lines (one concern per file)
+- Services: < 400 lines (split by domain if larger)
+- Types: < 150 lines (split by module if larger)
+
+**Structure Pattern**:
+```
+module/
+├── index.ts           # Public exports only
+├── module.tsx         # Main implementation
+├── module.types.ts    # Type definitions
+├── module.utils.ts    # Helper functions
+├── module.test.ts     # Tests co-located
+└── module.styles.css  # Styles if needed
+```
+
+**Import Order**:
+```typescript
+// 1. External dependencies
+import React from 'react';
+import { z } from 'zod';
+
+// 2. Internal absolute imports
+import { Button } from '@/components/Button';
+import { api } from '@/lib/api';
+
+// 3. Relative imports
+import { helper } from './utils';
+import type { Props } from './types';
+
+// 4. Styles
+import './styles.css';
+```
+
+---
 
 ## Error Handling
 
-- Always handle errors gracefully
-- Provide meaningful error messages
-- Log errors with context for debugging
-- Never expose sensitive information in error messages
+### Requirements
 
-## Comments and Documentation
+1. **Always Handle Errors**
+   ```typescript
+   // ❌ BAD: Unhandled promise
+   const data = await fetchData();
 
-- Write self-documenting code first
-- Add comments for complex logic or business rules
-- Use JSDoc/TSDoc for public APIs
-- Keep comments up-to-date with code changes
+   // ✅ GOOD: Proper error handling
+   try {
+     const data = await fetchData();
+     return { success: true, data };
+   } catch (error) {
+     logger.error('Failed to fetch data', { error });
+     return { success: false, error: 'Failed to load data' };
+   }
+   ```
 
-## Security Considerations
+2. **User-Friendly Messages**
+   ```typescript
+   // ❌ BAD: Technical jargon
+   throw new Error('ECONNREFUSED 127.0.0.1:5432');
 
-- Never commit secrets or credentials
-- Validate all user input
-- Use parameterized queries for database operations
-- Follow the principle of least privilege
+   // ✅ GOOD: Clear message for users
+   throw new Error('Unable to connect to database. Please try again.');
+   ```
 
-## AI Assistant Guidelines
+3. **Context Logging**
+   ```typescript
+   // ❌ BAD: No context
+   console.error(error);
 
-When assisting with this project:
+   // ✅ GOOD: Rich context
+   logger.error('User update failed', {
+     error,
+     userId,
+     operation: 'update',
+     timestamp: new Date().toISOString(),
+   });
+   ```
 
-1. **Follow existing patterns** - Look at similar code in the codebase first
-2. **Ask before major changes** - Confirm approach for architectural decisions
-3. **Test your suggestions** - Ensure code compiles and passes tests
-4. **Be concise** - Provide focused, relevant suggestions
-5. **Explain trade-offs** - When there are multiple approaches, explain the pros/cons
+4. **Security First**
+   ```typescript
+   // ❌ BAD: Exposing internals
+   res.status(500).json({ error: error.stack });
+
+   // ✅ GOOD: Safe error response
+   res.status(500).json({
+     error: 'An unexpected error occurred',
+     requestId: req.id, // For support lookup
+   });
+   ```
 
 ---
-*Generated by AIde v{{generated.version}} on {{generated.date}}*
+
+## Security Checklist
+
+**Critical Rules** (NEVER violate):
+
+- [ ] No secrets in code (use environment variables)
+- [ ] All user input validated/sanitized
+- [ ] Parameterized queries for database (prevent SQL injection)
+- [ ] HTTPS only in production
+- [ ] Principle of least privilege (minimal permissions)
+- [ ] Sensitive data encrypted at rest
+- [ ] Authentication on protected routes
+- [ ] Rate limiting on public endpoints
+- [ ] CSRF protection on state-changing operations
+- [ ] XSS prevention (escape user content)
+
+---
+
+## Comments & Documentation
+
+### When to Comment
+
+**DO comment**:
+- Complex algorithms or business logic
+- Non-obvious performance optimizations
+- Workarounds for known issues/bugs
+- Public API functions (JSDoc/TSDoc)
+
+**DON'T comment**:
+- Obvious code (`i++; // increment i`)
+- Redundant descriptions of what code does
+- Commented-out code (delete it, use git history)
+- TODOs in production code (create issues instead)
+
+### Documentation Format
+
+**JSDoc for Public APIs**:
+```typescript
+/**
+ * Fetches user data by ID with caching
+ *
+ * @param userId - Unique user identifier
+ * @param options - Fetch options
+ * @param options.cache - Enable caching (default: true)
+ * @returns User data or null if not found
+ * @throws {NotFoundError} When user doesn't exist
+ *
+ * @example
+ * const user = await fetchUser('123', { cache: false });
+ */
+async function fetchUser(
+  userId: string,
+  options?: { cache?: boolean }
+): Promise<User | null> {
+  // Implementation
+}
+```
+
+---
+
+## Testing Requirements
+
+**Always Include**:
+- [ ] Unit tests for business logic
+- [ ] Integration tests for API endpoints
+- [ ] Edge case coverage
+- [ ] Error path testing
+
+**Test Naming**:
+```typescript
+// Pattern: "should [expected behavior] when [condition]"
+describe('calculateDiscount', () => {
+  it('should return 0 when price is negative', () => {
+    expect(calculateDiscount(-100, 0.1)).toBe(0);
+  });
+
+  it('should apply percentage correctly when valid', () => {
+    expect(calculateDiscount(100, 0.2)).toBe(20);
+  });
+});
+```
+
+---
+
+## Agent Memory Management (2026)
+
+### Context Layers
+
+**Critical** (Always remember):
+- Project architecture decisions
+- Core business rules
+- Security constraints
+- API contracts
+
+**Important** (Session-level):
+- Current task context
+- Recent implementation patterns
+- Active file changes
+
+**Historical** (Reference when needed):
+- Previous similar implementations
+- Past bug fixes
+- Refactoring history
+
+**Archive** (Prune aggressively):
+- Outdated approaches
+- Superseded decisions
+- Old debugging sessions
+
+### Pattern Recognition
+
+Track and reuse:
+- Common code patterns in this project
+- Preferred library usage
+- Team coding style nuances
+- Architectural decisions
+
+---
+
+## Production Checklist
+
+Before considering code "done":
+
+- [ ] No `any` types (TypeScript)
+- [ ] No `console.log` (use proper logging)
+- [ ] No hardcoded values (use config/env)
+- [ ] No commented-out code
+- [ ] No placeholder comments (TODO/FIXME/HACK)
+- [ ] All error paths handled
+- [ ] Tests passing
+- [ ] Types checked
+- [ ] Imports optimized
+- [ ] Performance acceptable
+- [ ] Security reviewed
+- [ ] Documentation updated
+
+---
+
+## Performance Considerations
+
+**Optimization Priority**:
+1. Correctness first (make it work)
+2. Clarity second (make it readable)
+3. Performance third (make it fast, if needed)
+
+**Common Optimizations**:
+```typescript
+// Memoization for expensive computations
+const memoized = useMemo(() => expensiveCalc(data), [data]);
+
+// Lazy loading for large modules
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+
+// Debouncing for frequent events
+const debouncedSearch = debounce(handleSearch, 300);
+
+// Batch operations
+const results = await Promise.all(items.map(process));
+```
+
+---
+
+## Cross-References
+
+Related rules for specific contexts:
+- TypeScript patterns → @typescript.mdc
+- React components → @react.mdc
+- API design → @api-design.mdc
+- Testing → @testing.mdc
+- Security → @security.mdc
+- Performance → @performance.mdc
+
+---
+
+*Generated by Brief v{{generated.version}} for {{project.name}}*
+*Standards updated: 2026-01-28*
+*Token-optimized for efficient AI assistance*

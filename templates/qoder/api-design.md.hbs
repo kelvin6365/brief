@@ -63,7 +63,7 @@ GET    /getUserOrders     # Use REST conventions
 ## 🔧 Endpoint Patterns
 
 {{#if (eq project.language "typescript")}}
-{{#if (includes detection.frameworks.[0].name "Express")}}
+{{#if (contains detection.frameworks.[0].name "Express")}}
 ### Express.js Patterns
 
 ```typescript
@@ -219,7 +219,7 @@ router.delete('/users/:id', requireAuth, async (req: Request, res: Response) => 
 export default router;
 ```
 
-{{else if (includes detection.frameworks.[0].name "Next.js")}}
+{{else if (contains detection.frameworks.[0].name "Next.js")}}
 ### Next.js App Router API Routes
 
 ```typescript
