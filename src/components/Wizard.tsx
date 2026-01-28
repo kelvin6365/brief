@@ -39,6 +39,8 @@ export interface WizardProps {
   mergeMode?: boolean;
   /** Similarity threshold for auto-merge (0-1) */
   autoMergeThreshold?: number;
+  /** Whether raw mode is supported on stdin */
+  isRawModeSupported?: boolean;
   /** Callback when wizard completes */
   onComplete?: (success: boolean) => void;
 }
@@ -107,6 +109,7 @@ export function Wizard({
   dryRun = false,
   mergeMode = false,
   autoMergeThreshold,
+  isRawModeSupported = true,
   onComplete,
 }: WizardProps): React.ReactElement {
   const [state, dispatch] = useReducer<Reducer<WizardState, WizardAction>>(
@@ -243,7 +246,7 @@ export function Wizard({
               </Text>
               <Text color="gray"> to continue</Text>
             </Box>
-            <ContinueHandler onContinue={() => goToStep("tool-select")} />
+            <ContinueHandler onContinue={() => goToStep("tool-select")} isRawModeSupported={isRawModeSupported} />
           </Box>
         );
 
@@ -257,6 +260,7 @@ export function Wizard({
             <ContinueHandler
               onContinue={() => goToStep("template-select")}
               requireSelection={state.config.tools?.length === 0}
+              isRawModeSupported={isRawModeSupported}
             />
           </Box>
         );
@@ -271,7 +275,7 @@ export function Wizard({
                 onSelect={handleTemplateSelect}
               />
             )}
-            <ContinueHandler onContinue={() => goToStep("confirm")} />
+            <ContinueHandler onContinue={() => goToStep("confirm")} isRawModeSupported={isRawModeSupported} />
           </Box>
         );
 
@@ -445,15 +449,20 @@ function StepIndicator({
 function ContinueHandler({
   onContinue,
   requireSelection = false,
+  isRawModeSupported = true,
 }: {
   onContinue: () => void;
   requireSelection?: boolean;
+  isRawModeSupported?: boolean;
 }): React.ReactElement | null {
-  useInput((_input: string, key: { return?: boolean }) => {
-    if (key.return && !requireSelection) {
-      onContinue();
-    }
-  });
+  // Only use useInput hook if raw mode is supported
+  if (isRawModeSupported) {
+    useInput((_input: string, key: { return?: boolean }) => {
+      if (key.return && !requireSelection) {
+        onContinue();
+      }
+    });
+  }
 
   return null;
 }
