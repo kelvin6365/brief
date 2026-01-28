@@ -1,0 +1,642 @@
+---
+trigger: manual
+---
+# API Design Patterns for {{project.name}}
+
+> RESTful API conventions and best practices
+
+## 🎯 API Design Principles
+
+**Core Principles:**
+1. **Consistency** - Uniform patterns across all endpoints
+2. **Simplicity** - Easy to understand and use
+3. **Security** - Authentication and authorization on all endpoints
+4. **Documentation** - Auto-generated OpenAPI/Swagger docs
+5. **Versioning** - Plan for API evolution
+6. **Error Handling** - Clear, actionable error messages
+
+---
+
+## 📍 RESTful Endpoint Design
+
+### Resource Naming
+
+**Rules:**
+- Use **plural nouns** for resources
+- Use **kebab-case** for multi-word resources
+- Keep URLs **lowercase**
+- Be **consistent** across all endpoints
+
+✅ **Good:**
+```
+GET    /users
+GET    /users/{id}
+POST   /users
+PUT    /users/{id}
+DELETE /users/{id}
+
+GET    /users/{id}/orders
+GET    /blog-posts
+GET    /product-categories
+```
+
+❌ **Bad:**
+```
+GET    /getUsers          # Don't use verbs
+GET    /user/{id}         # Use plural
+GET    /Users             # Use lowercase
+GET    /getUserOrders     # Use REST conventions
+```
+
+### HTTP Methods
+
+| Method | Purpose | Idempotent | Safe |
+|--------|---------|------------|------|
+| GET | Retrieve resource(s) | ✅ | ✅ |
+| POST | Create new resource | ❌ | ❌ |
+| PUT | Update entire resource | ✅ | ❌ |
+| PATCH | Partial update | ❌ | ❌ |
+| DELETE | Remove resource | ✅ | ❌ |
+
+---
+
+## 🔧 Endpoint Patterns
+
+{{#if (eq project.language "typescript")}}
+{{#if (includes detection.frameworks.[0].name "Express")}}
+### Express.js Patterns
+
+```typescript
+import { Router, Request, Response } from 'express';
+import { requireAuth } from './middleware/auth';
+import { validate } from './middleware/validation';
+import { UserSchema } from './schemas/user';
+
+const router = Router();
+
+// GET /users - List all users
+router.get('/users', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { page = 1, limit = 20, sort = '-createdAt' } = req.query;
+
+    const users = await User.find()
+      .sort(sort as string)
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit));
+
+    const total = await User.countDocuments();
+
+    res.json({
+      data: users,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        pages: Math.ceil(total / Number(limit))
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /users/:id - Get single user
+router.get('/users/:id', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        error: {
+          message: 'User not found',
+          code: 'USER_NOT_FOUND'
+        }
+      });
+    }
+
+    res.json({ data: user });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /users - Create user
+router.post(
+  '/users',
+  requireAuth,
+  validate(UserSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const user = await User.create(req.body);
+
+      res.status(201).json({
+        data: user,
+        message: 'User created successfully'
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// PUT /users/:id - Update user (full replacement)
+router.put(
+  '/users/:id',
+  requireAuth,
+  validate(UserSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const user = await User.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true, runValidators: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          error: {
+            message: 'User not found',
+            code: 'USER_NOT_FOUND'
+          }
+        });
+      }
+
+      res.json({ data: user });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// PATCH /users/:id - Partial update
+router.patch(
+  '/users/:id',
+  requireAuth,
+  async (req: Request, res: Response) => {
+    try {
+      const user = await User.findByIdAndUpdate(
+        req.params.id,
+        { $set: req.body },
+        { new: true, runValidators: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          error: {
+            message: 'User not found',
+            code: 'USER_NOT_FOUND'
+          }
+        });
+      }
+
+      res.json({ data: user });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// DELETE /users/:id - Delete user
+router.delete('/users/:id', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        error: {
+          message: 'User not found',
+          code: 'USER_NOT_FOUND'
+        }
+      });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+});
+
+export default router;
+```
+
+{{else if (includes detection.frameworks.[0].name "Next.js")}}
+### Next.js App Router API Routes
+
+```typescript
+// app/api/users/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { z } from 'zod';
+
+const UserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2).max(100)
+});
+
+// GET /api/users
+export async function GET(request: NextRequest) {
+  const session = await getServerSession();
+
+  if (!session) {
+    return NextResponse.json(
+      { error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+
+    const users = await prisma.user.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const total = await prisma.user.count();
+
+    return NextResponse.json({
+      data: users,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: { message: 'Failed to fetch users', code: 'FETCH_ERROR' } },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/users
+export async function POST(request: NextRequest) {
+  const session = await getServerSession();
+
+  if (!session) {
+    return NextResponse.json(
+      { error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+    const validated = UserSchema.parse(body);
+
+    const user = await prisma.user.create({
+      data: validated
+    });
+
+    return NextResponse.json(
+      { data: user, message: 'User created successfully' },
+      { status: 201 }
+    );
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Validation failed',
+            code: 'VALIDATION_ERROR',
+            details: error.errors
+          }
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: { message: 'Failed to create user', code: 'CREATE_ERROR' } },
+      { status: 500 }
+    );
+  }
+}
+
+// app/api/users/[id]/route.ts
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  // Similar pattern...
+}
+```
+{{/if}}
+
+{{else if (eq project.language "python")}}
+### FastAPI Patterns
+
+```python
+from fastapi import FastAPI, Depends, HTTPException, Query, status
+from pydantic import BaseModel, EmailStr
+from typing import List, Optional
+
+app = FastAPI()
+
+# Request/Response Models
+class UserBase(BaseModel):
+    email: EmailStr
+    name: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    name: Optional[str] = None
+
+class UserResponse(UserBase):
+    id: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class PaginatedResponse(BaseModel):
+    data: List[UserResponse]
+    pagination: dict
+
+# GET /users - List all users
+@app.get("/users", response_model=PaginatedResponse)
+async def list_users(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(get_current_user)
+):
+    skip = (page - 1) * limit
+    users = await User.find().skip(skip).limit(limit).to_list()
+    total = await User.find().count()
+
+    return {
+        "data": users,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "pages": math.ceil(total / limit)
+        }
+    }
+
+# GET /users/{id} - Get single user
+@app.get("/users/{user_id}", response_model=UserResponse)
+async def get_user(
+    user_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    user = await User.get(user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "message": "User not found",
+                "code": "USER_NOT_FOUND"
+            }
+        )
+
+    return user
+
+# POST /users - Create user
+@app.post("/users", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    user_data: UserCreate,
+    current_user: User = Depends(require_admin)
+):
+    user = User(**user_data.dict())
+    await user.insert()
+
+    return user
+
+# PUT /users/{id} - Update user (full replacement)
+@app.put("/users/{user_id}", response_model=UserResponse)
+async def update_user(
+    user_id: str,
+    user_data: UserCreate,
+    current_user: User = Depends(get_current_user)
+):
+    user = await User.get(user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "User not found", "code": "USER_NOT_FOUND"}
+        )
+
+    await user.set(user_data.dict())
+    return user
+
+# PATCH /users/{id} - Partial update
+@app.patch("/users/{user_id}", response_model=UserResponse)
+async def partial_update_user(
+    user_id: str,
+    user_data: UserUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    user = await User.get(user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "User not found", "code": "USER_NOT_FOUND"}
+        )
+
+    update_data = user_data.dict(exclude_unset=True)
+    await user.set(update_data)
+
+    return user
+
+# DELETE /users/{id} - Delete user
+@app.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: str,
+    current_user: User = Depends(require_admin)
+):
+    user = await User.get(user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "User not found", "code": "USER_NOT_FOUND"}
+        )
+
+    await user.delete()
+```
+{{/if}}
+
+---
+
+## 📊 Response Formats
+
+### Success Response
+
+```json
+{
+  "data": {
+    "id": "123",
+    "email": "user@example.com",
+    "name": "John Doe"
+  },
+  "message": "User created successfully"
+}
+```
+
+### List Response with Pagination
+
+```json
+{
+  "data": [
+    { "id": "1", "name": "User 1" },
+    { "id": "2", "name": "User 2" }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "pages": 8
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "error": {
+    "message": "Validation failed",
+    "code": "VALIDATION_ERROR",
+    "details": {
+      "email": "Invalid email format",
+      "name": "Name is required"
+    },
+    "requestId": "req_123456",
+    "timestamp": "2025-01-28T10:30:00Z"
+  }
+}
+```
+
+---
+
+## 🔐 Authentication & Authorization
+
+### JWT Bearer Token
+
+```typescript
+// Authentication middleware
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({
+      error: {
+        message: 'No token provided',
+        code: 'NO_TOKEN'
+      }
+    });
+  }
+
+  const token = authHeader.substring(7);
+
+  try {
+    const decoded = verifyToken(token);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      error: {
+        message: 'Invalid or expired token',
+        code: 'INVALID_TOKEN'
+      }
+    });
+  }
+}
+```
+
+---
+
+## 📦 API Versioning
+
+### URL-Based Versioning (Recommended)
+
+```
+/api/v1/users
+/api/v2/users
+```
+
+### Header-Based Versioning
+
+```
+GET /api/users
+Accept: application/vnd.api+json;version=1
+```
+
+---
+
+## 📝 API Documentation
+
+{{#if (eq project.language "typescript")}}
+### OpenAPI/Swagger (Express)
+
+```typescript
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: '{{project.name}} API',
+      version: '1.0.0',
+      description: 'API documentation'
+    },
+    servers: [
+      {
+        url: 'http://localhost:3000/api',
+        description: 'Development server'
+      }
+    ]
+  },
+  apis: ['./src/routes/*.ts']
+};
+
+const specs = swaggerJsdoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+```
+
+{{else if (eq project.language "python")}}
+### FastAPI Auto-Documentation
+
+```python
+# FastAPI generates docs automatically!
+# Access at:
+# - /docs (Swagger UI)
+# - /redoc (ReDoc)
+
+app = FastAPI(
+    title="{{project.name}} API",
+    description="API documentation",
+    version="1.0.0",
+    docs_url="/api-docs",
+    redoc_url="/api-redoc"
+)
+```
+{{/if}}
+
+---
+
+## Related Rules
+
+- **Core**: `@core.md` - General coding standards
+- **Security**: `@security.md` - API security requirements
+- **Error Handling**: `@error-handling.md` - Error response formats
+- **Requirements**: `@requirements-spec.md` - API specification standards
+- **Testing**: `@testing.md` - API testing patterns
+
+---
+
+*Generated by Brief v{{generated.version}} for Qoder IDE*
+*Consistent APIs = Happy developers*

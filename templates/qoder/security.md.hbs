@@ -1,0 +1,721 @@
+---
+trigger: manual
+---
+# Security Guidelines for {{project.name}}
+
+> Security best practices and OWASP Top 10 prevention for Qoder
+
+## 🔒 Security-First Development
+
+**Core Principle**: Security is not optional. Every feature must be implemented with security in mind from the start.
+
+---
+
+## Rule 1: Input Validation (CRITICAL)
+
+**Never trust user input**. Validate and sanitize ALL data from external sources.
+
+### Validation Requirements
+
+{{#if (eq project.language "typescript")}}
+```typescript
+// ✅ Good - Comprehensive validation
+function processUserData(input: unknown): UserData {
+  // 1. Type validation
+  if (typeof input !== 'object' || input === null) {
+    throw new ValidationError('Invalid input type');
+  }
+
+  const data = input as Record<string, unknown>;
+
+  // 2. Required fields
+  if (!data.email || typeof data.email !== 'string') {
+    throw new ValidationError('Email is required');
+  }
+
+  // 3. Format validation
+  if (!isValidEmail(data.email)) {
+    throw new ValidationError('Invalid email format');
+  }
+
+  // 4. Length constraints
+  if (data.email.length > 255) {
+    throw new ValidationError('Email too long');
+  }
+
+  // 5. Sanitization
+  const sanitized = {
+    email: data.email.trim().toLowerCase(),
+    name: sanitizeString(data.name as string)
+  };
+
+  return sanitized as UserData;
+}
+```
+
+{{else if (eq project.language "python")}}
+```python
+from pydantic import BaseModel, EmailStr, validator
+
+# ✅ Good - Use Pydantic for validation
+class UserData(BaseModel):
+    email: EmailStr
+    name: str
+    age: int
+
+    @validator('name')
+    def validate_name(cls, v):
+        if len(v) < 2 or len(v) > 100:
+            raise ValueError('Name must be 2-100 characters')
+        if not v.replace(' ', '').isalpha():
+            raise ValueError('Name must contain only letters')
+        return v.strip()
+
+    @validator('age')
+    def validate_age(cls, v):
+        if v < 0 or v > 150:
+            raise ValueError('Invalid age')
+        return v
+
+def process_user_data(input_data: dict) -> UserData:
+    try:
+        return UserData(**input_data)
+    except ValidationError as e:
+        raise ValueError(f"Invalid user data: {e}")
+```
+
+{{else}}
+```javascript
+// ✅ Good - Comprehensive validation
+function processUserData(input) {
+  // 1. Type validation
+  if (typeof input !== 'object' || input === null) {
+    throw new Error('Invalid input type');
+  }
+
+  // 2. Required fields
+  if (!input.email || typeof input.email !== 'string') {
+    throw new Error('Email is required');
+  }
+
+  // 3. Format validation
+  if (!isValidEmail(input.email)) {
+    throw new Error('Invalid email format');
+  }
+
+  // 4. Sanitization
+  return {
+    email: input.email.trim().toLowerCase(),
+    name: sanitizeString(input.name)
+  };
+}
+```
+{{/if}}
+
+---
+
+## Rule 2: SQL Injection Prevention
+
+**ALWAYS use parameterized queries**. Never concatenate user input into SQL.
+
+{{#if (eq project.language "typescript")}}
+### TypeScript with Prisma
+```typescript
+// ❌ NEVER DO THIS - SQL Injection vulnerability
+const email = req.body.email;
+const query = `SELECT * FROM users WHERE email = '${email}'`;
+
+// ✅ ALWAYS DO THIS - Parameterized query
+const user = await prisma.user.findUnique({
+  where: { email: email }
+});
+
+// ✅ With raw queries, use parameters
+const users = await prisma.$queryRaw`
+  SELECT * FROM users WHERE email = ${email}
+`;
+```
+
+{{else if (eq project.language "python")}}
+### Python with SQLAlchemy
+```python
+# ❌ NEVER DO THIS - SQL Injection vulnerability
+email = request.form['email']
+query = f"SELECT * FROM users WHERE email = '{email}'"
+result = db.execute(query)
+
+# ✅ ALWAYS DO THIS - Parameterized query
+from sqlalchemy import select
+
+email = request.form['email']
+stmt = select(User).where(User.email == email)
+result = db.execute(stmt).scalars().first()
+
+# ✅ With raw SQL, use parameters
+result = db.execute(
+    text("SELECT * FROM users WHERE email = :email"),
+    {"email": email}
+)
+```
+
+{{else}}
+### JavaScript with Database Client
+```javascript
+// ❌ NEVER DO THIS
+const email = req.body.email;
+const query = `SELECT * FROM users WHERE email = '${email}'`;
+
+// ✅ ALWAYS DO THIS - Parameterized
+const user = await db.query(
+  'SELECT * FROM users WHERE email = $1',
+  [email]
+);
+```
+{{/if}}
+
+---
+
+## Rule 3: XSS Prevention (Cross-Site Scripting)
+
+**Sanitize all output**. Never render user input directly into HTML.
+
+{{#if (includes detection.frameworks.[0].name "React")}}
+### React XSS Prevention
+```tsx
+// ✅ Good - React escapes by default
+function UserProfile({ user }) {
+  return <div>{user.name}</div>; // Automatically escaped
+}
+
+// ❌ DANGEROUS - Only use when absolutely necessary
+function RichContent({ html }) {
+  return <div dangerouslySetInnerHTML={{ __html: html }} />; // Risky!
+}
+
+// ✅ Better - Sanitize first
+import DOMPurify from 'dompurify';
+
+function SafeRichContent({ html }) {
+  const clean = DOMPurify.sanitize(html);
+  return <div dangerouslySetInnerHTML={{ __html: clean }} />;
+}
+```
+
+{{else if (includes detection.frameworks.[0].name "Vue")}}
+### Vue XSS Prevention
+```vue
+<!-- ✅ Good - Vue escapes by default -->
+<template>
+  <div>{{ user.name }}</div>
+</template>
+
+<!-- ❌ DANGEROUS - Avoid v-html -->
+<template>
+  <div v-html="rawHtml"></div>
+</template>
+
+<!-- ✅ Better - Sanitize first -->
+<script setup>
+import DOMPurify from 'dompurify';
+const safeHtml = computed(() => DOMPurify.sanitize(rawHtml.value));
+</script>
+<template>
+  <div v-html="safeHtml"></div>
+</template>
+```
+
+{{else}}
+### General XSS Prevention
+```javascript
+// ❌ NEVER DO THIS
+element.innerHTML = userInput;
+
+// ✅ DO THIS - Use textContent
+element.textContent = userInput;
+
+// ✅ Or sanitize first
+import DOMPurify from 'dompurify';
+element.innerHTML = DOMPurify.sanitize(userInput);
+```
+{{/if}}
+
+---
+
+## Rule 4: Authentication & Authorization
+
+**Implement proper auth checks** at every protected endpoint.
+
+{{#if (includes project.type "api")}}
+### API Authentication
+{{#if (eq project.language "typescript")}}
+```typescript
+// ✅ Authentication Middleware
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    const decoded = await verifyToken(token);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+// ✅ Authorization Check
+function requireRole(role: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (req.user?.role !== role) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+    next();
+  };
+}
+
+// Usage
+app.get('/admin/users', requireAuth, requireRole('admin'), getUsers);
+```
+
+{{else if (eq project.language "python")}}
+```python
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer
+
+security = HTTPBearer()
+
+# ✅ Authentication Dependency
+async def get_current_user(token: str = Depends(security)):
+    try:
+        payload = verify_token(token.credentials)
+        return User(**payload)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials"
+        )
+
+# ✅ Authorization Check
+def require_role(role: str):
+    def role_checker(user: User = Depends(get_current_user)):
+        if user.role != role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions"
+            )
+        return user
+    return role_checker
+
+# Usage
+@app.get("/admin/users")
+async def get_users(user: User = Depends(require_role("admin"))):
+    return await fetch_users()
+```
+{{/if}}
+{{/if}}
+
+---
+
+## Rule 5: Secrets Management
+
+**NEVER hardcode secrets**. Use environment variables and secure vaults.
+
+### Environment Variables
+
+{{#if (eq project.language "typescript")}}
+```typescript
+// ❌ NEVER DO THIS
+const API_KEY = "sk-1234567890abcdef";
+const DB_PASSWORD = "mysecretpassword";
+
+// ✅ DO THIS - Use environment variables
+import dotenv from 'dotenv';
+dotenv.config();
+
+const API_KEY = process.env.API_KEY;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+
+if (!API_KEY || !DB_PASSWORD) {
+  throw new Error('Missing required environment variables');
+}
+```
+
+{{else if (eq project.language "python")}}
+```python
+# ❌ NEVER DO THIS
+API_KEY = "sk-1234567890abcdef"
+DB_PASSWORD = "mysecretpassword"
+
+# ✅ DO THIS - Use environment variables
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_KEY = os.getenv('API_KEY')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+
+if not API_KEY or not DB_PASSWORD:
+    raise ValueError('Missing required environment variables')
+```
+{{/if}}
+
+### .env File Structure
+```bash
+# .env (NEVER commit this file!)
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+API_KEY=sk-1234567890abcdef
+JWT_SECRET=your-secret-key-here
+```
+
+### .gitignore (CRITICAL)
+```bash
+# ALWAYS gitignore sensitive files
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+secrets.yaml
+```
+
+---
+
+## Rule 6: CSRF Protection
+
+**Implement CSRF tokens** for state-changing operations.
+
+{{#if (includes detection.frameworks.[0].name "Express")}}
+```typescript
+import csrf from 'csurf';
+import cookieParser from 'cookie-parser';
+
+app.use(cookieParser());
+app.use(csrf({ cookie: true }));
+
+// Provide token to client
+app.get('/form', (req, res) => {
+  res.render('form', { csrfToken: req.csrfToken() });
+});
+
+// Verify on POST
+app.post('/submit', (req, res) => {
+  // CSRF token automatically verified
+  // Process request
+});
+```
+{{/if}}
+
+---
+
+## Rule 7: Rate Limiting
+
+**Prevent abuse** with rate limiting on all public endpoints.
+
+{{#if (eq project.language "typescript")}}
+```typescript
+import rateLimit from 'express-rate-limit';
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests, please try again later'
+});
+
+// Apply to all routes
+app.use(limiter);
+
+// Stricter limit for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Too many login attempts'
+});
+
+app.post('/login', authLimiter, loginHandler);
+```
+
+{{else if (eq project.language "python")}}
+```python
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
+
+# Apply rate limit
+@app.get("/api/data")
+@limiter.limit("100/15minutes")
+async def get_data():
+    return {"data": "..."}
+
+# Stricter for auth
+@app.post("/login")
+@limiter.limit("5/15minutes")
+async def login(credentials: LoginRequest):
+    return authenticate(credentials)
+```
+{{/if}}
+
+---
+
+## Rule 8: Dependency Security
+
+**Keep dependencies updated** and scan for vulnerabilities.
+
+### Regular Security Audits
+{{#if (eq detection.packageManager.name "npm")}}
+```bash
+# Check for vulnerabilities
+npm audit
+
+# Fix automatically
+npm audit fix
+
+# Use Snyk or Dependabot
+npm install -g snyk
+snyk test
+```
+
+{{else if (eq detection.packageManager.name "yarn")}}
+```bash
+# Check for vulnerabilities
+yarn audit
+
+# Use Snyk
+yarn global add snyk
+snyk test
+```
+
+{{else if (eq detection.packageManager.name "pnpm")}}
+```bash
+# Check for vulnerabilities
+pnpm audit
+
+# Fix issues
+pnpm audit --fix
+```
+
+{{else if (eq project.language "python")}}
+```bash
+# Check for vulnerabilities
+pip-audit
+
+# Or use safety
+safety check
+
+# Keep requirements updated
+pip list --outdated
+```
+{{/if}}
+
+---
+
+## Rule 9: Error Information Disclosure
+
+**Never expose sensitive information** in error messages.
+
+```typescript
+// ❌ BAD - Exposes internal details
+catch (error) {
+  res.status(500).json({
+    error: error.message, // Might contain SQL, file paths, etc.
+    stack: error.stack // NEVER expose stack traces!
+  });
+}
+
+// ✅ GOOD - Generic error for production
+catch (error) {
+  logger.error('Database error:', error); // Log internally
+
+  res.status(500).json({
+    error: 'An error occurred processing your request',
+    requestId: req.id // For support reference
+  });
+}
+```
+
+---
+
+## Rule 10: HTTPS & Secure Headers
+
+**Always use HTTPS** in production and set security headers.
+
+{{#if (includes detection.frameworks.[0].name "Express")}}
+```typescript
+import helmet from 'helmet';
+
+// Security headers
+app.use(helmet());
+
+// Custom security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  next();
+});
+
+// Force HTTPS in production
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      res.redirect(`https://${req.header('host')}${req.url}`);
+    } else {
+      next();
+    }
+  });
+}
+```
+
+{{else if (eq project.language "python")}}
+```python
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+
+# Force HTTPS in production
+if settings.ENVIRONMENT == "production":
+    app.add_middleware(HTTPSRedirectMiddleware)
+
+# Security headers
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000"
+    return response
+```
+{{/if}}
+
+---
+
+## Rule 11: File Upload Security
+
+**Validate and sanitize** all file uploads.
+
+```typescript
+// ✅ Comprehensive file upload validation
+function validateUpload(file: Express.Multer.File): void {
+  // 1. File size limit
+  const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+  if (file.size > MAX_SIZE) {
+    throw new Error('File too large');
+  }
+
+  // 2. Allowed MIME types
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!ALLOWED_TYPES.includes(file.mimetype)) {
+    throw new Error('Invalid file type');
+  }
+
+  // 3. Validate file extension
+  const ext = path.extname(file.originalname).toLowerCase();
+  const ALLOWED_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
+  if (!ALLOWED_EXTS.includes(ext)) {
+    throw new Error('Invalid file extension');
+  }
+
+  // 4. Scan file content (magic numbers)
+  const buffer = fs.readFileSync(file.path);
+  if (!isValidImageBuffer(buffer)) {
+    throw new Error('Invalid file content');
+  }
+}
+
+// Store with safe filenames
+function getSafeFilename(originalName: string): string {
+  const uuid = crypto.randomUUID();
+  const ext = path.extname(originalName);
+  return `${uuid}${ext}`;
+}
+```
+
+---
+
+## Rule 12: Logging & Monitoring
+
+**Log security events** but never log sensitive data.
+
+```typescript
+// ✅ Good logging practices
+logger.info('User login attempt', {
+  userId: user.id,
+  ip: req.ip,
+  timestamp: new Date()
+});
+
+// ❌ NEVER log sensitive data
+logger.error('Login failed', {
+  password: req.body.password, // NEVER!
+  creditCard: user.card, // NEVER!
+  ssn: user.ssn // NEVER!
+});
+
+// ✅ Log security events
+logger.warn('Failed login attempt', {
+  userId: user.id,
+  ip: req.ip,
+  reason: 'invalid_password',
+  attemptCount: user.failedAttempts
+});
+```
+
+---
+
+## OWASP Top 10 Quick Reference
+
+1. **Broken Access Control** → Verify permissions on every request
+2. **Cryptographic Failures** → Use strong encryption (AES-256, RSA-2048+)
+3. **Injection** → Use parameterized queries, validate input
+4. **Insecure Design** → Threat modeling, security by design
+5. **Security Misconfiguration** → Disable debug mode, update dependencies
+6. **Vulnerable Components** → Regular dependency audits
+7. **Identification Failures** → Strong passwords, MFA, secure sessions
+8. **Software Integrity Failures** → Verify dependencies, use SRI
+9. **Logging Failures** → Log security events, never log secrets
+10. **SSRF** → Validate URLs, whitelist allowed domains
+
+---
+
+## Security Checklist
+
+Before deploying to production:
+
+- [ ] All secrets in environment variables, not code
+- [ ] .env files in .gitignore
+- [ ] Input validation on all endpoints
+- [ ] Parameterized queries (no SQL injection)
+- [ ] Output sanitization (no XSS)
+- [ ] Authentication on protected routes
+- [ ] Authorization checks for sensitive operations
+- [ ] HTTPS enforced
+- [ ] Security headers configured
+- [ ] Rate limiting implemented
+- [ ] CSRF protection enabled
+- [ ] Dependencies audited for vulnerabilities
+- [ ] Error messages don't expose internals
+- [ ] File uploads validated
+- [ ] Logging configured (no sensitive data)
+
+---
+
+## Related Rules
+
+- **Core**: `@core.md` - General security principles
+- **Requirements**: `@requirements-spec.md` - Security requirements in specs
+- **Error Handling**: `@error-handling.md` - Secure error handling
+{{#if (includes project.type "api")}}
+- **API Design**: `@api-design.md` - API security patterns
+{{/if}}
+
+---
+
+*Generated by Brief v{{generated.version}} for Qoder IDE*
+*Security is everyone's responsibility - follow these rules strictly*

@@ -1,0 +1,633 @@
+---
+trigger: manual
+---
+# Architecture Patterns for {{project.name}}
+
+> Design patterns and architectural guidelines
+
+## 🏗️ Architectural Principles
+
+**Core Principles:**
+1. **Separation of Concerns** - Each module has a single responsibility
+2. **Dependency Injection** - Loose coupling between components
+3. **SOLID Principles** - Maintainable and scalable code
+4. **DRY (Don't Repeat Yourself)** - Reusable code
+5. **YAGNI (You Aren't Gonna Need It)** - Don't over-engineer
+
+---
+
+{{#if (includes detection.frameworks.[0].name "Next.js")}}
+## Next.js Architecture
+
+### App Router Structure
+
+```
+app/
+├── (auth)/              # Route group for auth pages
+│   ├── login/
+│   └── register/
+├── (dashboard)/         # Protected dashboard routes
+│   ├── layout.tsx      # Dashboard layout
+│   ├── page.tsx        # Dashboard home
+│   └── settings/
+├── api/                 # API routes
+│   ├── auth/
+│   └── users/
+├── layout.tsx          # Root layout
+└── page.tsx            # Home page
+
+components/
+├── ui/                 # Reusable UI components
+│   ├── button.tsx
+│   ├── card.tsx
+│   └── input.tsx
+├── forms/              # Form components
+└── layouts/            # Layout components
+
+lib/
+├── db/                 # Database utilities
+├── auth/               # Auth helpers
+├── api/                # API clients
+└── utils/              # General utilities
+```
+
+### Server vs Client Components
+
+**Server Components (Default):**
+- Data fetching
+- Direct database access
+- Server-side logic
+- SEO content
+
+**Client Components ('use client'):**
+- Interactive elements
+- Event handlers
+- Browser APIs (useState, useEffect)
+- Third-party libraries using React hooks
+
+```typescript
+// Server Component (default)
+async function UserList() {
+  const users = await prisma.user.findMany();
+
+  return (
+    <div>
+      {users.map(user => (
+        <UserCard key={user.id} user={user} />
+      ))}
+    </div>
+  );
+}
+
+// Client Component
+'use client';
+
+function UserCard({ user }: { user: User }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div onClick={() => setIsExpanded(!isExpanded)}>
+      {/* Interactive content */}
+    </div>
+  );
+}
+```
+
+### Data Fetching Patterns
+
+```typescript
+// Server Component with caching
+async function getUsers() {
+  const users = await prisma.user.findMany();
+  return users;
+}
+
+// With revalidation
+export const revalidate = 3600; // Revalidate every hour
+
+// Dynamic route with params
+async function UserPage({ params }: { params: { id: string } }) {
+  const user = await prisma.user.findUnique({
+    where: { id: params.id }
+  });
+
+  if (!user) {
+    notFound();
+  }
+
+  return <div>{user.name}</div>;
+}
+
+// Server Actions for mutations
+async function createUser(formData: FormData) {
+  'use server';
+
+  const name = formData.get('name') as string;
+  const email = formData.get('email') as string;
+
+  await prisma.user.create({
+    data: { name, email }
+  });
+
+  revalidatePath('/users');
+  redirect('/users');
+}
+```
+
+{{else if (includes detection.frameworks.[0].name "React")}}
+## React Architecture
+
+### Component Hierarchy
+
+```
+src/
+├── components/
+│   ├── common/         # Reusable components
+│   │   ├── Button/
+│   │   ├── Input/
+│   │   └── Modal/
+│   ├── features/       # Feature-specific components
+│   │   ├── Auth/
+│   │   ├── Dashboard/
+│   │   └── Profile/
+│   └── layouts/        # Layout components
+│       ├── AppLayout/
+│       └── AuthLayout/
+├── hooks/              # Custom hooks
+│   ├── useAuth.ts
+│   ├── useApi.ts
+│   └── useLocalStorage.ts
+├── contexts/           # React contexts
+│   ├── AuthContext.tsx
+│   └── ThemeContext.tsx
+├── services/           # API services
+│   ├── api.ts
+│   └── auth.ts
+├── utils/              # Utilities
+└── types/              # TypeScript types
+```
+
+### Component Patterns
+
+**Container/Presentation Pattern:**
+
+```typescript
+// Container Component (logic)
+function UserListContainer() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUsers().then(data => {
+      setUsers(data);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <Spinner />;
+
+  return <UserList users={users} />;
+}
+
+// Presentation Component (UI only)
+interface UserListProps {
+  users: User[];
+}
+
+function UserList({ users }: UserListProps) {
+  return (
+    <div>
+      {users.map(user => (
+        <UserItem key={user.id} user={user} />
+      ))}
+    </div>
+  );
+}
+```
+
+**Custom Hooks for Logic Reuse:**
+
+```typescript
+// hooks/useUsers.ts
+function useUsers() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    fetchUsers()
+      .then(setUsers)
+      .catch(setError)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const refetch = useCallback(() => {
+    setLoading(true);
+    fetchUsers()
+      .then(setUsers)
+      .catch(setError)
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { users, loading, error, refetch };
+}
+
+// Usage
+function UserList() {
+  const { users, loading, error, refetch } = useUsers();
+
+  if (loading) return <Spinner />;
+  if (error) return <Error error={error} />;
+
+  return <div>{/* Render users */}</div>;
+}
+```
+
+### State Management
+
+{{#if (includes detection.dependencies "zustand")}}
+**Zustand:**
+
+```typescript
+import create from 'zustand';
+
+interface UserStore {
+  users: User[];
+  loading: boolean;
+  fetchUsers: () => Promise<void>;
+  addUser: (user: User) => void;
+}
+
+export const useUserStore = create<UserStore>((set) => ({
+  users: [],
+  loading: false,
+  fetchUsers: async () => {
+    set({ loading: true });
+    const users = await api.getUsers();
+    set({ users, loading: false });
+  },
+  addUser: (user) => set((state) => ({
+    users: [...state.users, user]
+  }))
+}));
+```
+
+{{else if (includes detection.dependencies "redux")}}
+**Redux Toolkit:**
+
+```typescript
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
+export const fetchUsers = createAsyncThunk(
+  'users/fetch',
+  async () => {
+    return await api.getUsers();
+  }
+);
+
+const userSlice = createSlice({
+  name: 'users',
+  initialState: {
+    users: [],
+    loading: false,
+    error: null
+  },
+  reducers: {
+    addUser: (state, action) => {
+      state.users.push(action.payload);
+    }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchUsers.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchUsers.fulfilled, (state, action) => {
+        state.users = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchUsers.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.loading = false;
+      });
+  }
+});
+```
+
+{{else}}
+**Context + Reducer:**
+
+```typescript
+// Context
+const UserContext = createContext<UserContextType | undefined>(undefined);
+
+// Reducer
+function userReducer(state: UserState, action: UserAction): UserState {
+  switch (action.type) {
+    case 'SET_USERS':
+      return { ...state, users: action.payload };
+    case 'ADD_USER':
+      return { ...state, users: [...state.users, action.payload] };
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload };
+    default:
+      return state;
+  }
+}
+
+// Provider
+export function UserProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(userReducer, initialState);
+
+  const fetchUsers = useCallback(async () => {
+    dispatch({ type: 'SET_LOADING', payload: true });
+    const users = await api.getUsers();
+    dispatch({ type: 'SET_USERS', payload: users });
+    dispatch({ type: 'SET_LOADING', payload: false });
+  }, []);
+
+  return (
+    <UserContext.Provider value=\{\{ ...state, fetchUsers \}\}>
+      \{children\}
+    </UserContext.Provider>
+  );
+}
+```
+{{/if}}
+
+{{else if (includes detection.frameworks.[0].name "Express")}}
+## Express.js Architecture
+
+### Layered Architecture
+
+```
+src/
+├── routes/             # API routes
+│   ├── auth.routes.ts
+│   └── user.routes.ts
+├── controllers/        # Request handlers
+│   ├── auth.controller.ts
+│   └── user.controller.ts
+├── services/           # Business logic
+│   ├── auth.service.ts
+│   └── user.service.ts
+├── repositories/       # Data access
+│   ├── user.repository.ts
+│   └── session.repository.ts
+├── models/             # Data models
+│   ├── User.ts
+│   └── Session.ts
+├── middleware/         # Express middleware
+│   ├── auth.ts
+│   ├── validation.ts
+│   └── error.ts
+├── utils/              # Utilities
+└── index.ts
+```
+
+### Clean Architecture Pattern
+
+```typescript
+// Repository Layer (Data Access)
+class UserRepository {
+  async findById(id: string): Promise<User | null> {
+    return await db.user.findUnique({ where: { id } });
+  }
+
+  async create(data: CreateUserDTO): Promise<User> {
+    return await db.user.create({ data });
+  }
+
+  async update(id: string, data: UpdateUserDTO): Promise<User> {
+    return await db.user.update({ where: { id }, data });
+  }
+}
+
+// Service Layer (Business Logic)
+class UserService {
+  constructor(private userRepo: UserRepository) {}
+
+  async getUser(id: string): Promise<User> {
+    const user = await this.userRepo.findById(id);
+
+    if (!user) {
+      throw new NotFoundError('User', id);
+    }
+
+    return user;
+  }
+
+  async createUser(data: CreateUserDTO): Promise<User> {
+    // Validate
+    validateEmail(data.email);
+
+    // Check duplicates
+    const existing = await this.userRepo.findByEmail(data.email);
+    if (existing) {
+      throw new ConflictError('Email already exists');
+    }
+
+    // Hash password
+    const hashedPassword = await hash(data.password);
+
+    // Create user
+    return await this.userRepo.create({
+      ...data,
+      password: hashedPassword
+    });
+  }
+}
+
+// Controller Layer (HTTP Handling)
+class UserController {
+  constructor(private userService: UserService) {}
+
+  getUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = await this.userService.getUser(req.params.id);
+      res.json({ data: user });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = await this.userService.createUser(req.body);
+      res.status(201).json({ data: user });
+    } catch (error) {
+      next(error);
+    }
+  };
+}
+
+// Routes
+const userRepo = new UserRepository();
+const userService = new UserService(userRepo);
+const userController = new UserController(userService);
+
+router.get('/users/:id', userController.getUser);
+router.post('/users', validate(CreateUserSchema), userController.createUser);
+```
+
+{{else if (includes detection.frameworks.[0].name "FastAPI")}}
+## FastAPI Architecture
+
+### Layered Structure
+
+```
+app/
+├── routers/            # API routers
+│   ├── auth.py
+│   └── users.py
+├── services/           # Business logic
+│   ├── auth_service.py
+│   └── user_service.py
+├── repositories/       # Data access
+│   ├── user_repository.py
+│   └── session_repository.py
+├── models/             # SQLAlchemy models
+│   ├── user.py
+│   └── session.py
+├── schemas/            # Pydantic schemas
+│   ├── user.py
+│   └── auth.py
+├── dependencies/       # Dependency injection
+│   ├── auth.py
+│   └── database.py
+├── core/               # Core configuration
+│   ├── config.py
+│   └── security.py
+└── main.py
+```
+
+### Dependency Injection Pattern
+
+```python
+# dependencies/database.py
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        yield session
+
+# services/user_service.py
+class UserService:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+    async def get_user(self, user_id: str) -> User:
+        result = await self.db.execute(
+            select(User).where(User.id == user_id)
+        )
+        user = result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail={"message": "User not found", "code": "USER_NOT_FOUND"}
+            )
+
+        return user
+
+    async def create_user(self, user_data: UserCreate) -> User:
+        # Hash password
+        hashed_password = get_password_hash(user_data.password)
+
+        # Create user
+        user = User(
+            email=user_data.email,
+            name=user_data.name,
+            hashed_password=hashed_password
+        )
+
+        self.db.add(user)
+        await self.db.commit()
+        await self.db.refresh(user)
+
+        return user
+
+# dependencies/users.py
+async def get_user_service(
+    db: AsyncSession = Depends(get_db)
+) -> UserService:
+    return UserService(db)
+
+# routers/users.py
+@router.get("/users/{user_id}", response_model=UserResponse)
+async def get_user(
+    user_id: str,
+    user_service: UserService = Depends(get_user_service),
+    current_user: User = Depends(get_current_user)
+):
+    return await user_service.get_user(user_id)
+
+@router.post("/users", response_model=UserResponse, status_code=201)
+async def create_user(
+    user_data: UserCreate,
+    user_service: UserService = Depends(get_user_service)
+):
+    return await user_service.create_user(user_data)
+```
+
+{{/if}}
+
+---
+
+## Design Patterns
+
+### Repository Pattern
+
+**Benefits:**
+- Abstracts data access
+- Testable with mock repositories
+- Swappable data sources
+
+### Service Layer Pattern
+
+**Benefits:**
+- Business logic separation
+- Reusable across controllers
+- Easier to test
+
+### Dependency Injection
+
+**Benefits:**
+- Loose coupling
+- Testability
+- Flexibility
+
+---
+
+## SOLID Principles
+
+**S - Single Responsibility:**
+- Each class/function has one job
+- Easier to understand and maintain
+
+**O - Open/Closed:**
+- Open for extension
+- Closed for modification
+
+**L - Liskov Substitution:**
+- Subtypes must be substitutable for base types
+
+**I - Interface Segregation:**
+- Many specific interfaces > one general interface
+
+**D - Dependency Inversion:**
+- Depend on abstractions, not concretions
+
+---
+
+## Related Rules
+
+- **Core**: `@core.md` - General coding principles
+- **Requirements**: `@requirements-spec.md` - Architecture requirements
+- **Testing**: `@testing.md` - Testing architecture
+{{#if (includes project.type "api")}}
+- **API Design**: `@api-design.md` - API architecture
+{{/if}}
+
+---
+
+*Generated by Brief v{{generated.version}} for Qoder IDE*
+*Good architecture = maintainable code*

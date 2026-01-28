@@ -1,0 +1,374 @@
+---
+trigger: manual
+---
+# Requirements & Specifications for {{project.name}}
+
+> Technical specification standards for Qoder Quest Mode
+
+## 🎯 Core Requirement: Complete Runnable Code
+
+**CRITICAL RULE #1: No Placeholders**
+
+When implementing features, you MUST provide **complete, runnable code** with NO placeholders:
+
+❌ **NEVER use:**
+- `// TODO: implement this`
+- `// ... rest of the code`
+- `/* add error handling here */`
+- `# implement this function`
+- `pass  # to be implemented`
+- `...` (ellipsis as placeholder)
+- Comments suggesting incomplete implementation
+
+✅ **ALWAYS provide:**
+- Fully implemented functions with all logic
+- Complete error handling
+- All imports and dependencies
+- Working examples
+- Full type definitions
+
+**Example - Bad:**
+```typescript
+function processData(data: any) {
+  // TODO: validate data
+  // TODO: transform data
+  // ... processing logic here
+  return data;
+}
+```
+
+**Example - Good:**
+```typescript
+function processData(data: unknown): ProcessedData {
+  if (!isValidData(data)) {
+    throw new ValidationError('Invalid data format');
+  }
+
+  const validated = validateSchema(data);
+  const transformed = transformData(validated);
+  const enriched = enrichWithMetadata(transformed);
+
+  return enriched;
+}
+```
+
+---
+
+## Specification Standards
+
+### 1. Feature Completeness
+
+Every feature implementation must include:
+
+- [ ] **Core functionality** - All required logic implemented
+- [ ] **Error handling** - All error cases handled gracefully
+- [ ] **Input validation** - All inputs validated and sanitized
+- [ ] **Type safety** - Full type definitions (TypeScript/Python type hints)
+- [ ] **Edge cases** - Boundary conditions handled
+- [ ] **Documentation** - JSDoc/docstrings for public APIs
+{{#if detection.testing}}
+- [ ] **Tests** - Unit tests for all critical paths
+{{/if}}
+
+### 2. Code Quality Requirements
+
+**Completeness:**
+- Every function must have a body with actual implementation
+- All branches must have real logic, not just comments
+- All error cases must be handled, not just noted with comments
+- All data transformations must be complete
+
+**Clarity:**
+- Use descriptive variable names that explain purpose
+- Break complex operations into well-named helper functions
+- Add comments only for complex business logic, not for TODOs
+
+**Consistency:**
+- Follow existing patterns in the codebase
+- Match the style of surrounding code
+- Use consistent naming conventions
+
+### 3. Quest Mode Workflow
+
+When working in Qoder's Quest Mode:
+
+**Phase 1: Spec Review**
+1. Read and understand the full specification
+2. Identify all requirements and acceptance criteria
+3. Plan the implementation approach
+4. Reference relevant rules: `@core.md`, `@security.md`, `@testing.md`
+
+**Phase 2: Implementation**
+1. Implement ALL features completely - no placeholders
+2. Add comprehensive error handling
+3. Include input validation
+4. Add necessary tests
+
+**Phase 3: Verification**
+1. Verify all requirements are met
+2. Check that no TODOs or placeholders remain
+3. Ensure all error cases are handled
+4. Confirm tests pass
+
+---
+
+## Technical Specification Format
+
+### Feature Request Template
+
+When receiving a feature request, clarify:
+
+```markdown
+## Feature: [Name]
+
+### Requirements
+1. [Specific requirement]
+2. [Specific requirement]
+3. [Edge cases to handle]
+
+### Acceptance Criteria
+- [ ] [Measurable criterion]
+- [ ] [Measurable criterion]
+- [ ] [Error handling criterion]
+
+### Technical Constraints
+- Performance: [specific metrics]
+- Security: [specific requirements]
+- Compatibility: [browsers/versions/platforms]
+
+### Implementation Notes
+- Use [specific pattern/library]
+- Follow [specific architecture]
+- Reference: @[relevant-rule].md
+```
+
+---
+
+## Language-Specific Standards
+
+{{#if (eq project.language "typescript")}}
+### TypeScript Specifications
+
+**Type Completeness:**
+- All function parameters must have explicit types
+- All return types must be declared
+- No `any` types - use proper types or `unknown`
+- All interfaces/types must be fully defined
+
+**Example - Complete Implementation:**
+```typescript
+interface UserData {
+  id: string;
+  email: string;
+  name: string;
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
+function validateUser(data: unknown): ValidationResult {
+  const errors: string[] = [];
+
+  if (typeof data !== 'object' || data === null) {
+    return { isValid: false, errors: ['Data must be an object'] };
+  }
+
+  const user = data as Partial<UserData>;
+
+  if (!user.id || typeof user.id !== 'string') {
+    errors.push('Missing or invalid id');
+  }
+
+  if (!user.email || !isValidEmail(user.email)) {
+    errors.push('Missing or invalid email');
+  }
+
+  if (!user.name || typeof user.name !== 'string') {
+    errors.push('Missing or invalid name');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+```
+
+{{else if (eq project.language "python")}}
+### Python Specifications
+
+**Type Hints:**
+- All functions must have complete type hints
+- Use proper types from `typing` module
+- Include return type annotations
+- Document exceptions in docstrings
+
+**Example - Complete Implementation:**
+```python
+from typing import Dict, List, Optional
+from dataclasses import dataclass
+
+@dataclass
+class ValidationResult:
+    is_valid: bool
+    errors: List[str]
+
+def validate_user(data: Dict[str, any]) -> ValidationResult:
+    """
+    Validate user data dictionary.
+
+    Args:
+        data: Dictionary containing user information
+
+    Returns:
+        ValidationResult with validation status and errors
+
+    Raises:
+        TypeError: If data is not a dictionary
+    """
+    if not isinstance(data, dict):
+        raise TypeError("Data must be a dictionary")
+
+    errors: List[str] = []
+
+    if 'id' not in data or not isinstance(data['id'], str):
+        errors.append("Missing or invalid id")
+
+    if 'email' not in data or not is_valid_email(data['email']):
+        errors.append("Missing or invalid email")
+
+    if 'name' not in data or not isinstance(data['name'], str):
+        errors.append("Missing or invalid name")
+
+    return ValidationResult(
+        is_valid=len(errors) == 0,
+        errors=errors
+    )
+```
+
+{{else if (eq project.language "javascript")}}
+### JavaScript Specifications
+
+**Complete Implementation:**
+- All functions must have full implementation
+- Use JSDoc for type documentation
+- Include all error handling
+- Provide complete async/await flows
+
+**Example - Complete Implementation:**
+```javascript
+/**
+ * Validate user data object
+ * @param \{object\} data - User data to validate
+ * @returns \{\{isValid: boolean, errors: string[]\}\} Validation result
+ */
+function validateUser(data) {
+  const errors = [];
+
+  if (typeof data !== 'object' || data === null) {
+    return { isValid: false, errors: ['Data must be an object'] };
+  }
+
+  if (!data.id || typeof data.id !== 'string') {
+    errors.push('Missing or invalid id');
+  }
+
+  if (!data.email || !isValidEmail(data.email)) {
+    errors.push('Missing or invalid email');
+  }
+
+  if (!data.name || typeof data.name !== 'string') {
+    errors.push('Missing or invalid name');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+```
+
+{{/if}}
+
+---
+
+## Anti-Patterns to Avoid
+
+### ❌ Incomplete Code
+
+```
+function getData() {
+  // TODO: fetch from API
+  // TODO: cache result
+  return null;
+}
+```
+
+### ❌ Vague Placeholders
+
+```
+// ... validation logic here
+// ... error handling
+// etc.
+```
+
+### ❌ Commented Out Logic
+
+```
+function process() {
+  // Will implement this later
+  // Need to handle edge cases
+  // Remember to add logging
+}
+```
+
+### ✅ Complete Implementation
+
+```
+function process(input: Input): Result {
+  validateInput(input);
+
+  try {
+    const result = performProcessing(input);
+    logSuccess(result);
+    return result;
+  } catch (error) {
+    logError(error);
+    throw new ProcessingError('Failed to process input', { cause: error });
+  }
+}
+```
+
+---
+
+## Quality Gates
+
+Before considering any implementation complete, verify:
+
+1. ✅ **No TODOs or placeholders** in the code
+2. ✅ **All functions have bodies** with actual logic
+3. ✅ **Error handling is complete** for all cases
+4. ✅ **All branches return values** (no empty returns)
+5. ✅ **Types are fully defined** (TS/Python)
+6. ✅ **Edge cases are handled** explicitly
+7. ✅ **Tests are written** and passing
+8. ✅ **Documentation is complete** for public APIs
+
+---
+
+## Related Rules
+
+- **Core Standards**: `@core.md` - General coding principles
+- **Error Handling**: `@error-handling.md` - Comprehensive error patterns
+- **Testing**: `@testing.md` - Test coverage requirements
+- **Security**: `@security.md` - Input validation and security
+{{#if (includes project.type "api")}}
+- **API Design**: `@api-design.md` - API specification standards
+{{/if}}
+
+---
+
+*Generated by Brief v{{generated.version}} for Qoder IDE*
+*This specification ensures Quest Mode produces production-ready code*

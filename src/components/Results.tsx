@@ -74,8 +74,45 @@ export function Results({ results }: ResultsProps): React.ReactElement {
           <Text color="gray">• Commit changes to version control</Text>
         </Box>
       </Box>
+
+      {/* Qoder-specific usage guide */}
+      {hasQoderTarget(generatorResults) && (
+        <Box marginTop={1} flexDirection="column">
+          <Box borderStyle="round" borderColor="cyan" paddingX={1} paddingY={1} flexDirection="column">
+            <Text bold color="cyan">🎉 Qoder Rules Generated!</Text>
+            <Box marginTop={1} flexDirection="column">
+              <Text bold color="white">📖 How to Use:</Text>
+              <Box marginLeft={2} flexDirection="column" marginTop={1}>
+                <Text color="gray">Rules use <Text color="yellow">trigger: manual</Text> - reference with <Text color="green">@rule-name.md</Text></Text>
+              </Box>
+            </Box>
+            <Box marginTop={1} flexDirection="column">
+              <Text bold color="white">💡 Quick Start:</Text>
+              <Box marginLeft={2} flexDirection="column" marginTop={1}>
+                <Text><Text color="cyan">1.</Text> <Text color="green">@quick-reference.md</Text> <Text color="gray">- Complete usage guide</Text></Text>
+                <Text><Text color="cyan">2.</Text> <Text color="green">@requirements-spec.md</Text> <Text color="gray">- Quest Mode (no TODOs!)</Text></Text>
+                <Text><Text color="cyan">3.</Text> <Text color="green">@security.md</Text> <Text color="gray">- Auth, validation, APIs</Text></Text>
+              </Box>
+            </Box>
+            <Box marginTop={1} flexDirection="column">
+              <Text bold color="white">🚀 Example:</Text>
+              <Box marginLeft={2} flexDirection="column" marginTop={1}>
+                <Text color="gray">"Implement login <Text color="green">@security.md @api-design.md</Text>"</Text>
+              </Box>
+            </Box>
+            <Box marginTop={1}>
+              <Text color="yellow">⚠️  Important: </Text>
+              <Text color="gray">Always use <Text color="green">@requirements-spec.md</Text> for new features!</Text>
+            </Box>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
+}
+
+function hasQoderTarget(results: any[]): boolean {
+  return results.some(r => r.target === "qoder");
 }
 
 function getTargetLabel(target: string): string {
@@ -84,6 +121,8 @@ function getTargetLabel(target: string): string {
       return "Cursor Rules (.cursor/rules/)";
     case "claude":
       return "Claude Code (CLAUDE.md, .claude/)";
+    case "qoder":
+      return "Qoder Rules (.qoder/rules/)";
     case "shared":
       return "Documentation (docs/)";
     default:

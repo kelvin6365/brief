@@ -1,0 +1,693 @@
+---
+trigger: manual
+---
+# Error Handling Patterns for {{project.name}}
+
+> Comprehensive error handling standards for robust applications
+
+## 🎯 Error Handling Philosophy
+
+**Core Principles:**
+1. **Fail explicitly** - Never silently swallow errors
+2. **Provide context** - Include relevant details for debugging
+3. **User-friendly** - Production errors should guide users
+4. **Log everything** - Record errors for monitoring
+5. **Recover gracefully** - Handle errors at the right level
+6. **Never expose secrets** - No sensitive data in error messages
+
+---
+
+## Rule 1: Error Classification
+
+### Error Types by Severity
+
+**1. Fatal Errors** (500)
+- Database connection failures
+- Missing critical configuration
+- System resource exhaustion
+- **Action**: Log, alert ops team, show generic error to user
+
+**2. Business Logic Errors** (400-499)
+- Validation failures
+- Unauthorized access
+- Resource not found
+- **Action**: Log, return specific error to user with guidance
+
+**3. External Service Errors** (502-504)
+- Third-party API failures
+- Timeout errors
+- Network issues
+- **Action**: Log, retry with backoff, show temporary error message
+
+**4. Warning-Level Issues**
+- Deprecated feature usage
+- Performance degradation
+- Data quality issues
+- **Action**: Log warning, continue execution
+
+---
+
+## Rule 2: Language-Specific Error Patterns
+
+{{#if (eq project.language "typescript")}}
+### TypeScript Error Handling
+
+**Custom Error Classes:**
+```typescript
+// Base application error
+export class AppError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number = 500,
+    public code?: string,
+    public details?: unknown
+  ) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+// Specific error types
+export class ValidationError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, 400, 'VALIDATION_ERROR', details);
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(resource: string, id: string) {
+    super(`${resource} not found: ${id}`, 404, 'NOT_FOUND');
+  }
+}
+
+export class UnauthorizedError extends AppError {
+  constructor(message: string = 'Unauthorized') {
+    super(message, 401, 'UNAUTHORIZED');
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(message: string = 'Forbidden') {
+    super(message, 403, 'FORBIDDEN');
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, 409, 'CONFLICT', details);
+  }
+}
+```
+
+**Error Handling Pattern:**
+```typescript
+// Service layer - throw typed errors
+async function getUser(id: string): Promise<User> {
+  try {
+    const user = await db.user.findUnique({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundError('User', id);
+    }
+
+    return user;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error; // Re-throw known errors
+    }
+
+    // Wrap unknown errors
+    logger.error('Database error fetching user:', error);
+    throw new AppError('Failed to fetch user', 500, 'DATABASE_ERROR');
+  }
+}
+
+// Controller layer - catch and respond
+app.get('/users/:id', async (req, res, next) => {
+  try {
+    const user = await getUser(req.params.id);
+    res.json(user);
+  } catch (error) {
+    next(error); // Pass to error middleware
+  }
+});
+
+// Global error middleware
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof AppError) {
+    logger.error(`${err.code}: ${err.message}`, {
+      statusCode: err.statusCode,
+      details: err.details,
+      requestId: req.id
+    });
+
+    return res.status(err.statusCode).json({
+      error: {
+        message: err.message,
+        code: err.code,
+        ...(err.details && { details: err.details }),
+        requestId: req.id
+      }
+    });
+  }
+
+  // Unknown errors - don't expose details
+  logger.error('Unhandled error:', err);
+  res.status(500).json({
+    error: {
+      message: 'An unexpected error occurred',
+      code: 'INTERNAL_ERROR',
+      requestId: req.id
+    }
+  });
+});
+```
+
+**Async/Await Error Handling:**
+```typescript
+// ✅ Always wrap async operations
+async function processData(data: Data): Promise<Result> {
+  try {
+    const validated = await validateData(data);
+    const processed = await transform(validated);
+    const saved = await save(processed);
+    return saved;
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      // Re-throw known errors
+      throw error;
+    }
+
+    // Log and wrap unexpected errors
+    logger.error('Error processing data:', error);
+    throw new AppError('Failed to process data', 500);
+  }
+}
+
+// ✅ Handle multiple async operations
+async function batchProcess(items: Item[]): Promise<Result[]> {
+  const results = await Promise.allSettled(
+    items.map(item => processItem(item))
+  );
+
+  const successful: Result[] = [];
+  const failed: FailedItem[] = [];
+
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      successful.push(result.value);
+    } else {
+      logger.error(`Failed to process item ${index}:`, result.reason);
+      failed.push({ item: items[index], error: result.reason });
+    }
+  });
+
+  if (failed.length > 0) {
+    throw new AppError(
+      `${failed.length} items failed to process`,
+      500,
+      'BATCH_PROCESSING_ERROR',
+      failed
+    );
+  }
+
+  return successful;
+}
+```
+
+{{else if (eq project.language "python")}}
+### Python Error Handling
+
+**Custom Exception Classes:**
+```python
+class AppError(Exception):
+    """Base application exception."""
+
+    def __init__(
+        self,
+        message: str,
+        status_code: int = 500,
+        code: str = "APP_ERROR",
+        details: dict = None
+    ):
+        super().__init__(message)
+        self.message = message
+        self.status_code = status_code
+        self.code = code
+        self.details = details or {}
+
+
+class ValidationError(AppError):
+    """Validation error."""
+
+    def __init__(self, message: str, details: dict = None):
+        super().__init__(
+            message,
+            status_code=400,
+            code="VALIDATION_ERROR",
+            details=details
+        )
+
+
+class NotFoundError(AppError):
+    """Resource not found."""
+
+    def __init__(self, resource: str, id: str):
+        super().__init__(
+            f"{resource} not found: {id}",
+            status_code=404,
+            code="NOT_FOUND"
+        )
+
+
+class UnauthorizedError(AppError):
+    """Unauthorized access."""
+
+    def __init__(self, message: str = "Unauthorized"):
+        super().__init__(message, status_code=401, code="UNAUTHORIZED")
+
+
+class ForbiddenError(AppError):
+    """Forbidden action."""
+
+    def __init__(self, message: str = "Forbidden"):
+        super().__init__(message, status_code=403, code="FORBIDDEN")
+```
+
+**Error Handling Pattern:**
+```python
+# Service layer - raise typed exceptions
+async def get_user(user_id: str) -> User:
+    try:
+        user = await db.users.find_one({"_id": user_id})
+
+        if not user:
+            raise NotFoundError("User", user_id)
+
+        return User(**user)
+
+    except AppError:
+        raise  # Re-raise known errors
+
+    except Exception as e:
+        logger.error(f"Database error fetching user: {e}")
+        raise AppError("Failed to fetch user", code="DATABASE_ERROR")
+
+{{#if (includes detection.frameworks.[0].name "FastAPI")}}
+# FastAPI exception handlers
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+
+app = FastAPI()
+
+@app.exception_handler(AppError)
+async def app_error_handler(request: Request, exc: AppError):
+    logger.error(
+        f"{exc.code}: {exc.message}",
+        extra={
+            "status_code": exc.status_code,
+            "details": exc.details,
+            "request_id": request.state.request_id
+        }
+    )
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": {
+                "message": exc.message,
+                "code": exc.code,
+                "details": exc.details,
+                "request_id": request.state.request_id
+            }
+        }
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": {
+                "message": "An unexpected error occurred",
+                "code": "INTERNAL_ERROR",
+                "request_id": request.state.request_id
+            }
+        }
+    )
+
+# Endpoint with error handling
+@app.get("/users/{user_id}")
+async def get_user_endpoint(user_id: str):
+    user = await get_user(user_id)
+    return user
+{{/if}}
+```
+
+**Context Managers for Resource Management:**
+```python
+# ✅ Always use context managers for resources
+async def process_file(file_path: str) -> Result:
+    try:
+        async with aiofiles.open(file_path, 'r') as file:
+            content = await file.read()
+            return process_content(content)
+    except FileNotFoundError:
+        raise NotFoundError("File", file_path)
+    except Exception as e:
+        logger.error(f"Error processing file: {e}")
+        raise AppError("Failed to process file")
+```
+
+{{else if (eq project.language "javascript")}}
+### JavaScript Error Handling
+
+**Custom Error Classes:**
+```javascript
+class AppError extends Error {
+  constructor(message, statusCode = 500, code = 'APP_ERROR', details = null) {
+    super(message);
+    this.name = this.constructor.name;
+    this.statusCode = statusCode;
+    this.code = code;
+    this.details = details;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+class ValidationError extends AppError {
+  constructor(message, details = null) {
+    super(message, 400, 'VALIDATION_ERROR', details);
+  }
+}
+
+class NotFoundError extends AppError {
+  constructor(resource, id) {
+    super(`${resource} not found: ${id}`, 404, 'NOT_FOUND');
+  }
+}
+```
+
+**Error Handling Pattern:**
+```javascript
+// Service layer
+async function getUser(id) {
+  try {
+    const user = await db.users.findById(id);
+
+    if (!user) {
+      throw new NotFoundError('User', id);
+    }
+
+    return user;
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+
+    logger.error('Database error:', error);
+    throw new AppError('Failed to fetch user', 500, 'DATABASE_ERROR');
+  }
+}
+
+// Error middleware
+app.use((err, req, res, next) => {
+  if (err instanceof AppError) {
+    logger.error(`${err.code}: ${err.message}`, {
+      statusCode: err.statusCode,
+      details: err.details,
+      requestId: req.id
+    });
+
+    return res.status(err.statusCode).json({
+      error: {
+        message: err.message,
+        code: err.code,
+        details: err.details,
+        requestId: req.id
+      }
+    });
+  }
+
+  logger.error('Unhandled error:', err);
+  res.status(500).json({
+    error: {
+      message: 'An unexpected error occurred',
+      code: 'INTERNAL_ERROR',
+      requestId: req.id
+    }
+  });
+});
+```
+{{/if}}
+
+---
+
+## Rule 3: Error Response Format
+
+### Consistent API Error Response
+
+```json
+{
+  "error": {
+    "message": "User-friendly error message",
+    "code": "ERROR_CODE",
+    "details": {
+      "field": "email",
+      "issue": "Invalid format"
+    },
+    "requestId": "req_123456",
+    "timestamp": "2025-01-28T10:30:00Z"
+  }
+}
+```
+
+---
+
+## Rule 4: Logging Best Practices
+
+### Structured Logging
+
+{{#if (eq project.language "typescript")}}
+```typescript
+import winston from 'winston';
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
+  ]
+});
+
+// Log with context
+logger.error('Failed to process payment', {
+  userId: user.id,
+  orderId: order.id,
+  amount: payment.amount,
+  error: error.message,
+  stack: error.stack
+});
+```
+
+{{else if (eq project.language "python")}}
+```python
+import logging
+import structlog
+
+# Configure structured logging
+structlog.configure(
+    processors=[
+        structlog.stdlib.filter_by_level,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.JSONRenderer()
+    ],
+    wrapper_class=structlog.stdlib.BoundLogger,
+    logger_factory=structlog.stdlib.LoggerFactory(),
+)
+
+logger = structlog.get_logger()
+
+# Log with context
+logger.error(
+    "Failed to process payment",
+    user_id=user.id,
+    order_id=order.id,
+    amount=payment.amount,
+    error=str(e)
+)
+```
+{{/if}}
+
+---
+
+## Rule 5: Retry Logic with Exponential Backoff
+
+```typescript
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 1000
+): Promise<T> {
+  let lastError: Error;
+
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+
+      if (i < maxRetries - 1) {
+        const delay = baseDelay * Math.pow(2, i);
+        logger.warn(`Retry ${i + 1}/${maxRetries} after ${delay}ms`, {
+          error: error.message
+        });
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError!;
+}
+
+// Usage
+const data = await retryWithBackoff(
+  () => fetchFromExternalAPI(endpoint),
+  3,
+  1000
+);
+```
+
+---
+
+## Rule 6: Circuit Breaker Pattern
+
+```typescript
+class CircuitBreaker {
+  private failures = 0;
+  private state: 'closed' | 'open' | 'half-open' = 'closed';
+  private nextAttempt = Date.now();
+
+  constructor(
+    private threshold: number = 5,
+    private timeout: number = 60000
+  ) {}
+
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.state === 'open') {
+      if (Date.now() < this.nextAttempt) {
+        throw new Error('Circuit breaker is OPEN');
+      }
+      this.state = 'half-open';
+    }
+
+    try {
+      const result = await fn();
+      this.onSuccess();
+      return result;
+    } catch (error) {
+      this.onFailure();
+      throw error;
+    }
+  }
+
+  private onSuccess(): void {
+    this.failures = 0;
+    this.state = 'closed';
+  }
+
+  private onFailure(): void {
+    this.failures++;
+    if (this.failures >= this.threshold) {
+      this.state = 'open';
+      this.nextAttempt = Date.now() + this.timeout;
+      logger.error('Circuit breaker opened', {
+        failures: this.failures
+      });
+    }
+  }
+}
+
+// Usage
+const breaker = new CircuitBreaker(5, 60000);
+const data = await breaker.execute(() => externalAPICall());
+```
+
+---
+
+## Rule 7: Error Monitoring
+
+### Track Error Rates
+
+```typescript
+// Monitor error rates by type
+const errorMetrics = {
+  validation: 0,
+  notFound: 0,
+  unauthorized: 0,
+  internal: 0
+};
+
+function trackError(error: AppError): void {
+  if (error instanceof ValidationError) {
+    errorMetrics.validation++;
+  } else if (error instanceof NotFoundError) {
+    errorMetrics.notFound++;
+  } else if (error instanceof UnauthorizedError) {
+    errorMetrics.unauthorized++;
+  } else {
+    errorMetrics.internal++;
+  }
+
+  // Alert if error rate exceeds threshold
+  if (errorMetrics.internal > 100) {
+    alertOpsTeam('High internal error rate', errorMetrics);
+  }
+}
+```
+
+---
+
+## Error Handling Checklist
+
+- [ ] All async operations wrapped in try-catch
+- [ ] Custom error classes for different error types
+- [ ] Errors include context (user ID, resource ID, timestamp)
+- [ ] Sensitive information never exposed in errors
+- [ ] All errors logged with appropriate level
+- [ ] User-friendly messages for all error types
+- [ ] Retry logic for transient failures
+- [ ] Circuit breaker for external service calls
+- [ ] Error monitoring and alerting configured
+- [ ] Global error handler catches all unhandled errors
+
+---
+
+## Related Rules
+
+- **Core**: `@core.md` - General error handling principles
+- **Security**: `@security.md` - Never expose sensitive data
+- **Requirements**: `@requirements-spec.md` - Error handling in specs
+- **Testing**: `@testing.md` - Testing error scenarios
+{{#if (includes project.type "api")}}
+- **API Design**: `@api-design.md` - API error responses
+{{/if}}
+
+---
+
+*Generated by Brief v{{generated.version}} for Qoder IDE*
+*Proper error handling is essential for production reliability*

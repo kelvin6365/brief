@@ -4,6 +4,7 @@
  */
 
 import { render } from "ink";
+import chalk from "chalk";
 import type { InitOptions, CommandResult } from "./types.js";
 import type { AiTool, AiInitConfig } from "../types/index.js";
 import { Wizard } from "../components/Wizard.js";
@@ -31,6 +32,49 @@ function getActionSymbol(action: string): string {
     default:
       return "?";
   }
+}
+
+/**
+ * Show post-generation usage guide for Qoder
+ */
+function showQoderUsageGuide(): void {
+
+  console.log("");
+  console.log(chalk.cyan.bold("━".repeat(60)));
+  console.log(chalk.cyan.bold("  🎉 Qoder Rules Generated Successfully!"));
+  console.log(chalk.cyan.bold("━".repeat(60)));
+  console.log("");
+  console.log(chalk.white("📖 How to Use These Rules:"));
+  console.log("");
+  console.log(chalk.gray("  Rules use ") + chalk.yellow("trigger: manual") + chalk.gray(" - reference them with ") + chalk.green("@rule-name.md"));
+  console.log("");
+  console.log(chalk.white("💡 Quick Start:"));
+  console.log("");
+  console.log(chalk.gray("  1. ") + chalk.green("@quick-reference.md") + chalk.gray(" - Start here! Complete usage guide"));
+  console.log(chalk.gray("  2. ") + chalk.green("@requirements-spec.md") + chalk.gray(" - Critical for Quest Mode (no TODOs!)"));
+  console.log(chalk.gray("  3. ") + chalk.green("@security.md") + chalk.gray(" - When handling auth, validation, APIs"));
+  console.log(chalk.gray("  4. ") + chalk.green("@api-design.md") + chalk.gray(" - When creating API endpoints"));
+  console.log(chalk.gray("  5. ") + chalk.green("@testing.md") + chalk.gray(" - When writing tests"));
+  console.log("");
+  console.log(chalk.white("🚀 Example Usage:"));
+  console.log("");
+  console.log(chalk.gray('  "Implement login endpoint ') + chalk.green("@requirements-spec.md @security.md @api-design.md") + chalk.gray('"'));
+  console.log(chalk.gray('  "Write tests for UserService ') + chalk.green("@testing.md @core.md") + chalk.gray('"'));
+  console.log(chalk.gray('  "Commit changes ') + chalk.green("@git-workflow.md") + chalk.gray('"'));
+  console.log("");
+  console.log(chalk.white("📚 Common Combinations:"));
+  console.log("");
+  console.log(chalk.gray("  • API Development: ") + chalk.green("@api-design.md @security.md @error-handling.md"));
+  console.log(chalk.gray("  • New Features: ") + chalk.green("@requirements-spec.md @core.md @security.md"));
+  console.log(chalk.gray("  • Architecture: ") + chalk.green("@architecture.md @core.md"));
+  console.log("");
+  console.log(chalk.yellow("⚠️  Important: ") + chalk.gray("Always reference ") + chalk.green("@requirements-spec.md") + chalk.gray(" for new features"));
+  console.log(chalk.gray("   to ensure complete, runnable code with no TODOs/placeholders!"));
+  console.log("");
+  console.log(chalk.white("📖 Read the full guide: ") + chalk.cyan(".qoder/rules/quick-reference.md"));
+  console.log("");
+  console.log(chalk.cyan.bold("━".repeat(60)));
+  console.log("");
 }
 
 /**
@@ -132,6 +176,12 @@ export async function runInitNonInteractive(options: InitOptions): Promise<Comma
           : "";
         log.info(`  ${actionSymbol} ${file.path}${mergeInfo}`);
       }
+
+      // Show Qoder-specific usage guide if generating for Qoder
+      if (tools.includes("qoder") && !options.dryRun) {
+        showQoderUsageGuide();
+      }
+
       return {
         success: true,
         message: `Generated ${allFiles.length} configuration files`,

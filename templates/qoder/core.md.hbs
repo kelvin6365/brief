@@ -1,16 +1,68 @@
+---
+trigger: manual
+---
 # Core Rules for {{project.name}}
 
 > Essential coding standards and AI behavior guidelines for Qoder
+
+## 🤖 Qoder-Specific Instructions
+
+### Agent & Quest Mode Guidelines
+
+When working in **Quest Mode** (Qoder's multi-step workflow):
+1. **Always provide complete runnable code** - Never use placeholders like `// TODO`, `...`, `/* implement this */`, or similar
+2. **Follow Spec-first workflow** - Review and reference technical specifications before implementing
+3. **Leverage context awareness** - Use `@` syntax to reference other rules (e.g., `@quality/security.md`, `@quality/testing.md`)
+4. **Complete all steps** - When given a multi-step task, complete ALL steps without stopping midway
+
+### Ask Mode Guidelines
+
+For quick questions and clarifications:
+- Provide concise, actionable answers
+- Reference specific files and line numbers when relevant
+- Suggest next steps when appropriate
+
+### Memory System Integration
+
+This project uses Qoder's persistent memory system:
+- **user_prefer**: Coding preferences, dialogue style, project-specific preferences
+- **project_info**: Technology stack, environment setup (see `.qoder/rules/project-info.md`)
+- **project_specification**: Development standards, architecture (see `.qoder/rules/requirements-spec.md`)
+- **experience_lessons**: Remember pain points and solutions from this project
 
 ## Project Context
 
 - **Language**: {{project.language}}
 - **Type**: {{project.type}}
 {{#if detection.frameworks.[0]}}
-- **Framework**: {{detection.frameworks.[0].name}}
+- **Framework**: {{detection.frameworks.[0].name}}{{#if detection.frameworks.[0].version}} v{{detection.frameworks.[0].version}}{{/if}}
 {{/if}}
 {{#if detection.packageManager.name}}
 - **Package Manager**: {{detection.packageManager.name}}
+{{/if}}
+{{#if detection.testing.[0]}}
+- **Testing**: {{detection.testing.[0].name}}
+{{/if}}
+{{#if detection.database}}
+- **Database**: {{detection.database}}
+{{/if}}
+
+### Available Rule References
+
+Use `@` to reference other rules in this project:
+- `@core.md` - This file (core coding standards)
+- `@best-practices.md` - Project-specific best practices
+{{#if detection.testing}}
+- `@testing.md` - Testing patterns and conventions
+{{/if}}
+- `@requirements-spec.md` - Feature requirements and specifications
+- `@security.md` - Security guidelines and OWASP prevention
+- `@error-handling.md` - Error handling patterns
+{{#if detection.frameworks}}
+- `@git-workflow.md` - Git commit and branching conventions
+{{/if}}
+{{#if (includes project.type "api")}}
+- `@api-design.md` - RESTful API design patterns
 {{/if}}
 
 ## Code Quality Standards
@@ -36,47 +88,227 @@
 - Add appropriate error handling
 - Consider edge cases
 
-{{#if (eq project.language "typescript")}}
-## TypeScript Guidelines
+## Language-Specific Guidelines
 
-- Use strict mode and explicit types
+{{#if (eq project.language "typescript")}}
+### TypeScript Standards
+
+**Type Safety:**
+- Enable strict mode in `tsconfig.json`
+- Use explicit return types for all functions
+- Never use `any` - use `unknown` or proper types instead
 - Prefer `interface` over `type` for object shapes
 - Use `const` assertions for literal types
-- Handle `null`/`undefined` explicitly
-- Use async/await over raw Promises
+
+**Code Style:**
+- Use `camelCase` for variables and functions
+- Use `PascalCase` for types, interfaces, and classes
+- Use `SCREAMING_SNAKE_CASE` for constants
+- Handle `null`/`undefined` explicitly with optional chaining (`?.`)
+
+**Async Patterns:**
+- Always use `async`/`await` over raw Promises
+- Handle Promise rejections with try-catch
+- Use `Promise.all()` for parallel operations
+- Never forget to await async functions
+
 {{else if (eq project.language "python")}}
-## Python Guidelines
+### Python Standards
 
-- Follow PEP 8 style guidelines
-- Use type hints for function signatures
-- Prefer explicit over implicit
-- Use context managers for resources
-- Document public APIs with docstrings
+**Style & Formatting:**
+- Follow PEP 8 style guidelines strictly
+- Use type hints for all function signatures
+- Prefer explicit over implicit (Zen of Python)
+- Use 4 spaces for indentation (never tabs)
+
+**Code Patterns:**
+- Use `snake_case` for functions and variables
+- Use `PascalCase` for classes
+- Use context managers (`with`) for resource management
+- Document all public APIs with comprehensive docstrings
+
+**Error Handling:**
+- Use specific exception types (ValueError, TypeError, etc.)
+- Never use bare `except:` - always specify exception types
+- Create custom exceptions for domain-specific errors
+
 {{else if (eq project.language "javascript")}}
-## JavaScript Guidelines
+### JavaScript Standards
 
-- Use modern ES6+ syntax
-- Prefer const/let over var
-- Use async/await for asynchronous code
-- Handle errors with try/catch
+**Modern Syntax:**
+- Use modern ES6+ syntax exclusively
+- Prefer `const` over `let`, avoid `var` completely
+- Use arrow functions for callbacks
+- Use template literals over string concatenation
+- Leverage destructuring for cleaner code
+
+**Async Patterns:**
+- Use `async`/`await` for asynchronous code
+- Handle errors with try-catch blocks
+- Use `Promise.all()` for parallel operations
+
+**Best Practices:**
 - Avoid global variables
+- Use strict mode (`'use strict'`)
+- Handle errors explicitly, never silently
+
+{{else if (eq project.language "go")}}
+### Go Standards
+
+**Code Style:**
+- Follow official Go formatting (use `gofmt`)
+- Use `camelCase` for unexported, `PascalCase` for exported
+- Keep functions small and focused
+- Use early returns to reduce nesting
+
+**Error Handling:**
+- Always check errors: `if err != nil { return err }`
+- Wrap errors with context using `fmt.Errorf`
+- Never panic in library code
+
+{{else if (eq project.language "java")}}
+### Java Standards
+
+**Code Style:**
+- Use `PascalCase` for classes
+- Use `camelCase` for methods and variables
+- Use `SCREAMING_SNAKE_CASE` for constants
+- Follow Oracle's Java Code Conventions
+
+**Best Practices:**
+- Use interfaces for abstractions
+- Favor composition over inheritance
+- Close resources with try-with-resources
+- Handle exceptions appropriately
+
+{{else}}
+### {{project.language}} Standards
+
+- Follow language-specific style guides
+- Use consistent naming conventions
+- Handle errors appropriately
+- Write self-documenting code
+- Add comments only when necessary
+
+{{/if}}
+
+{{#if detection.frameworks.[0]}}
+## Framework-Specific Guidelines
+
+{{#each detection.frameworks}}
+{{#if (eq this.name "React")}}
+### React Patterns
+
+- Use functional components with hooks exclusively
+- Keep components small (< 200 lines)
+- Use `useState` for local state, lift state up when needed
+- Use `useEffect` cleanup functions to prevent memory leaks
+- Memoize expensive computations with `useMemo`
+- Use `React.memo()` only when profiling shows benefit
+- Handle loading and error states explicitly
+- Avoid prop drilling - use Context or state management
+
+{{else if (eq this.name "Next.js")}}
+### Next.js Patterns
+
+- Prefer Server Components by default (App Router)
+- Use `'use client'` directive only when necessary (interactivity, hooks, browser APIs)
+- Leverage built-in optimizations: `<Image>`, `<Link>`, Font optimization
+- Use metadata API for SEO and head management
+- Implement loading.tsx and error.tsx for better UX
+- Use server actions for mutations when possible
+- Cache data fetches appropriately with revalidation
+
+{{else if (eq this.name "Vue")}}
+### Vue 3 Patterns
+
+- Use Composition API with `<script setup>` syntax
+- Keep components small and focused
+- Use composables for reusable logic
+- Leverage reactive primitives: `ref`, `reactive`, `computed`
+- Use `watch` sparingly, prefer computed properties
+- Handle async operations with Suspense
+- Use Pinia for state management
+
+{{else if (eq this.name "Express")}}
+### Express.js Patterns
+
+- Use middleware for cross-cutting concerns (auth, logging, error handling)
+- Validate request data at route boundaries
+- Use async/await with proper error handling in routes
+- Structure routes logically by resource
+- Use error middleware as the last middleware
+- Never trust user input - validate and sanitize
+- Use environment variables for configuration
+
+{{else if (eq this.name "FastAPI")}}
+### FastAPI Patterns
+
+- Use Pydantic models for request/response validation
+- Leverage dependency injection for shared logic
+- Use async endpoints (`async def`) when doing I/O operations
+- Document APIs with proper type hints (auto-generates OpenAPI)
+- Handle errors with `HTTPException` with appropriate status codes
+- Use background tasks for long-running operations
+- Implement proper CORS configuration
+
+{{/if}}
+{{/each}}
 {{/if}}
 
 ## Security Considerations
 
-- Never commit secrets or credentials
-- Validate all user input
-- Use parameterized queries for database operations
-- Follow the principle of least privilege
-- Sanitize data before rendering
+**Critical Security Rules:**
+- **Never commit secrets** - Use environment variables and `.env` files (gitignored)
+- **Validate all user input** - Never trust client-side data
+- **Use parameterized queries** - Prevent SQL injection
+- **Sanitize output** - Prevent XSS attacks
+- **Follow principle of least privilege** - Minimum necessary permissions
+- **Keep dependencies updated** - Regular security audits
+- **Implement rate limiting** - Prevent abuse and DoS
+
+For detailed security guidelines, reference: `@security.md`
 
 ## Error Handling
 
-- Provide meaningful error messages
-- Log errors with appropriate context
-- Handle errors at the appropriate level
-- Don't swallow exceptions silently
-- Fail fast when recovery isn't possible
+**General Principles:**
+- **Meaningful messages** - Errors should explain what went wrong and how to fix it
+- **Proper context** - Include relevant details (user ID, request ID, timestamp)
+- **Appropriate level** - Handle errors where they can be meaningfully addressed
+- **Never swallow** - Always log or propagate errors, never silently ignore
+- **Fail fast** - When recovery isn't possible, fail immediately with clear error
+- **User-friendly** - Production errors should never expose sensitive implementation details
+
+**Language-Specific:**
+{{#if (eq project.language "typescript")}}
+- Use typed errors with custom Error classes
+- Always handle Promise rejections
+- Use try-catch for async/await operations
+{{else if (eq project.language "python")}}
+- Use specific exception types (ValueError, TypeError, etc.)
+- Create custom exceptions for domain errors
+- Use try-except-finally appropriately
+{{else if (eq project.language "javascript")}}
+- Always catch async errors
+- Use Error objects, not strings
+- Include error stack traces in logs
+{{/if}}
+
+For comprehensive error handling patterns, reference: `@error-handling.md`
 
 ---
-*Generated by AIde v{{generated.version}}*
+
+## Related Rules
+
+- **Security**: See `@security.md` for OWASP prevention
+- **Testing**: See `@testing.md` for test coverage standards
+- **Requirements**: See `@requirements-spec.md` for feature completeness
+{{#if (includes project.type "api")}}
+- **API Design**: See `@api-design.md` for endpoint patterns
+{{/if}}
+- **Best Practices**: See `@best-practices.md` for project-specific guidelines
+
+---
+
+*Generated by Brief v{{generated.version}} for Qoder IDE*
+*Last updated: {{generated.timestamp}}*

@@ -1,0 +1,469 @@
+---
+trigger: manual
+---
+# Git Workflow & Conventions for {{project.name}}
+
+> Git best practices for collaborative development
+
+## 🌳 Branching Strategy
+
+### Branch Naming Conventions
+
+```
+<type>/<ticket-id>-<short-description>
+
+Types:
+- feature/    New feature development
+- fix/        Bug fixes
+- hotfix/     Production hotfixes
+- refactor/   Code refactoring
+- docs/       Documentation updates
+- test/       Test additions/updates
+- chore/      Maintenance tasks
+
+Examples:
+feature/AUTH-123-add-oauth-login
+fix/BUG-456-fix-memory-leak
+hotfix/PROD-789-patch-security
+refactor/TECH-101-improve-cache
+```
+
+---
+
+## 📝 Commit Message Format
+
+### Convention: Conventional Commits
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Types:**
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation only
+- `style:` Formatting, missing semi colons, etc
+- `refactor:` Code change that neither fixes a bug nor adds a feature
+- `perf:` Performance improvement
+- `test:` Adding missing tests
+- `chore:` Updating build tasks, package manager configs, etc
+- `ci:` CI configuration files and scripts
+- `build:` Changes that affect the build system
+
+**Examples:**
+
+```bash
+feat(auth): add OAuth2 authentication
+
+Implement OAuth2 flow with Google and GitHub providers.
+- Add OAuth2 middleware
+- Create callback handler
+- Update user model with provider info
+
+Closes #123
+
+---
+
+fix(api): resolve race condition in cache update
+
+The cache was being updated before database write completed,
+causing stale data issues.
+
+Fixes #456
+
+---
+
+refactor(db): optimize query performance
+
+- Add database indexes on frequently queried fields
+- Implement connection pooling
+- Use prepared statements
+
+---
+
+docs(readme): update installation instructions
+
+Add section for Docker-based development environment
+
+---
+
+chore(deps): update dependencies to latest versions
+
+Update all non-breaking dependency versions
+```
+
+---
+
+## 🔀 Git Workflow
+
+### Feature Development Flow
+
+```bash
+# 1. Start from main
+git checkout main
+git pull origin main
+
+# 2. Create feature branch
+git checkout -b feature/TICKET-123-add-feature
+
+# 3. Make changes and commit regularly
+git add .
+git commit -m "feat(module): implement core functionality"
+
+# 4. Keep branch up to date
+git fetch origin
+git rebase origin/main
+
+# 5. Push to remote
+git push origin feature/TICKET-123-add-feature
+
+# 6. Create Pull Request
+# Use GitHub/GitLab UI
+
+# 7. After approval, squash and merge
+# Then delete branch
+git checkout main
+git pull origin main
+git branch -d feature/TICKET-123-add-feature
+```
+
+---
+
+## 🔍 Code Review Process
+
+### Pull Request Template
+
+```markdown
+## Description
+Brief description of changes
+
+## Type of Change
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation update
+
+## Related Issues
+Closes #(issue number)
+
+## Changes Made
+- Change 1
+- Change 2
+- Change 3
+
+## Testing
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+
+## Checklist
+- [ ] Code follows project style guidelines (`@core.md`)
+- [ ] Self-review completed
+- [ ] Comments added for complex logic
+- [ ] Documentation updated
+- [ ] No new warnings generated
+- [ ] Tests added/updated
+- [ ] All tests pass
+```
+
+### Review Checklist
+
+**Code Quality:**
+- [ ] Code is clear and understandable
+- [ ] Follows naming conventions (`@core.md`)
+- [ ] No unnecessary complexity
+- [ ] Error handling is comprehensive (`@error-handling.md`)
+- [ ] No hardcoded values or magic numbers
+
+**Security:**
+- [ ] Input validation implemented (`@security.md`)
+- [ ] No secrets in code
+- [ ] SQL injection prevention
+- [ ] XSS prevention
+- [ ] Authentication/authorization checks
+
+**Testing:**
+- [ ] Unit tests cover new code
+- [ ] Edge cases tested
+- [ ] Error cases tested
+- [ ] Tests are meaningful and maintainable
+
+**Performance:**
+- [ ] No obvious performance issues
+- [ ] Database queries optimized
+- [ ] No N+1 query problems
+- [ ] Appropriate caching
+
+---
+
+## 🚫 What NOT to Commit
+
+### .gitignore Essentials
+
+```bash
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+venv/
+.venv/
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+*.log
+*.pid
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+*.pem
+*.key
+*.cert
+secrets.yaml
+credentials.json
+
+# Database
+*.sqlite
+*.db
+
+# Test coverage
+coverage/
+.nyc_output/
+htmlcov/
+
+# Temporary files
+*.tmp
+.cache/
+temp/
+```
+
+---
+
+## 🔐 Security Best Practices
+
+### Pre-commit Checks
+
+```bash
+# Set up pre-commit hooks
+{{#if (eq detection.packageManager.name "npm")}}
+npm install -g husky lint-staged
+
+# package.json
+{
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
+    "*.{md,json}": ["prettier --write"]
+  }
+}
+
+{{else if (eq project.language "python")}}
+# Install pre-commit
+pip install pre-commit
+
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: detect-private-key
+
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+
+{{/if}}
+```
+
+### Secrets Scanning
+
+```bash
+# Scan for secrets before commit
+{{#if (eq detection.packageManager.name "npm")}}
+npm install -g @trufflesecurity/trufflehog
+
+# Scan staged files
+trufflehog git file://. --since-commit HEAD~1
+
+{{else if (eq project.language "python")}}
+pip install detect-secrets
+
+# Scan repository
+detect-secrets scan --baseline .secrets.baseline
+
+{{/if}}
+```
+
+---
+
+## 📊 Git Best Practices
+
+### Commit Frequency
+
+✅ **DO:**
+- Commit logical units of work
+- Commit when a feature/fix is complete
+- Commit after tests pass
+- Make commits that compile/run
+
+❌ **DON'T:**
+- Commit broken code
+- Make commits that span multiple unrelated changes
+- Commit with "WIP" or "temp" messages regularly
+- Commit commented-out code
+
+### Commit Messages
+
+✅ **DO:**
+```bash
+feat(auth): implement JWT token refresh
+
+Add token refresh endpoint and middleware to handle
+expired tokens automatically.
+
+Closes #234
+```
+
+❌ **DON'T:**
+```bash
+updated stuff
+fix bug
+WIP
+changes
+```
+
+---
+
+## 🔄 Merge Strategies
+
+### When to Use Each Strategy
+
+**1. Squash and Merge** (Recommended for features)
+- Clean main branch history
+- Each PR = one commit
+- Easier to revert
+```bash
+git merge --squash feature/branch
+```
+
+**2. Rebase and Merge** (For small fixes)
+- Linear history
+- Preserves individual commits
+- Good for well-organized commit history
+```bash
+git rebase main
+git merge feature/branch
+```
+
+**3. Merge Commit** (Rarely)
+- Preserves full history
+- Shows PR boundaries
+- Can create messy history
+```bash
+git merge --no-ff feature/branch
+```
+
+---
+
+## 🚨 Emergency Procedures
+
+### Reverting Changes
+
+```bash
+# Revert last commit
+git revert HEAD
+
+# Revert specific commit
+git revert <commit-hash>
+
+# Revert merge commit
+git revert -m 1 <merge-commit-hash>
+```
+
+### Hotfix Process
+
+```bash
+# 1. Branch from production
+git checkout production
+git pull origin production
+git checkout -b hotfix/critical-bug-fix
+
+# 2. Fix and test
+git commit -m "fix(critical): resolve security vulnerability"
+
+# 3. Deploy to production immediately
+git checkout production
+git merge hotfix/critical-bug-fix
+git push origin production
+
+# 4. Merge back to main
+git checkout main
+git merge hotfix/critical-bug-fix
+git push origin main
+```
+
+---
+
+## 📈 Git Workflow Metrics
+
+### Healthy Repository Signs
+
+✅ **Good:**
+- PRs reviewed within 24 hours
+- Average PR size < 500 lines
+- Main branch always deployable
+- CI passes on all commits
+- Clear, descriptive commit messages
+
+❌ **Bad:**
+- PRs sit for days without review
+- Huge PRs (> 1000 lines)
+- Main branch has failing tests
+- Frequent force pushes to main
+- Vague commit messages
+
+---
+
+## Related Rules
+
+- **Core**: `@core.md` - Code quality standards
+- **Requirements**: `@requirements-spec.md` - Feature completeness
+- **Testing**: `@testing.md` - Test requirements before merge
+- **Security**: `@security.md` - Security checks before commit
+
+---
+
+*Generated by Brief v{{generated.version}} for Qoder IDE*
+*Clean git history = happy developers*

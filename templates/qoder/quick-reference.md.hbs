@@ -1,0 +1,343 @@
+---
+trigger: manual
+---
+# Quick Reference Guide for {{project.name}}
+
+> How to use Qoder rules effectively with the `@` reference system
+
+## 🎯 What Are These Rules?
+
+The `.qoder/rules/` directory contains AI coding guidelines that help Qoder understand your project standards. Rules use `trigger: manual`, meaning you **explicitly reference** them when needed using `@rule-name.md` syntax.
+
+---
+
+## 📖 Available Rules
+
+### Core Standards (Reference Often)
+
+**`@core.md`** - Essential coding standards
+- Language-specific guidelines ({{project.language}})
+{{#if detection.frameworks.[0]}}
+- Framework patterns ({{detection.frameworks.[0].name}})
+{{/if}}
+- Security principles
+- Error handling basics
+- When to use: Any coding task
+
+**`@requirements-spec.md`** - Complete code requirements
+- **CRITICAL**: No TODO/placeholder rule
+- Quest Mode workflow
+- Feature completeness checklist
+- When to use: Implementing new features, Quest Mode tasks
+
+**`@project-info.md`** - Technology stack reference
+- Dependencies and versions
+- Build commands
+- Environment setup
+- When to use: Understanding project setup, onboarding
+
+**`@best-practices.md`** - Project-specific guidelines
+- Naming conventions
+- File organization
+- Code review checklist
+- When to use: Code reviews, refactoring
+
+---
+
+### Quality & Security (Reference When Needed)
+
+**`@security.md`** - OWASP Top 10 prevention
+- Input validation patterns
+- SQL injection prevention
+- XSS prevention
+- Authentication/authorization
+- Secrets management
+- When to use: Auth, validation, API endpoints, sensitive data
+
+**`@testing.md`** - Testing patterns
+- Test organization
+- Coverage targets ({{#if (eq project.type "library")}}85%+{{else if (eq project.type "cli")}}80%+{{else}}70%+{{/if}})
+- Mocking guidelines
+- When to use: Writing tests, improving coverage
+
+**`@error-handling.md`** - Error patterns
+- Custom error classes
+- Retry logic
+- Circuit breakers
+- Structured logging
+- When to use: Implementing error handling, debugging
+
+---
+
+### Process & Architecture (Task-Specific)
+
+**`@git-workflow.md`** - Git conventions
+- Conventional commit format
+- Branch naming
+- PR template
+- Pre-commit hooks
+- When to use: Before committing, creating PRs
+
+{{#if (includes project.type "api")}}
+**`@api-design.md`** - RESTful API patterns
+- Endpoint naming
+- HTTP methods
+- Response formats
+- Authentication
+- When to use: Creating/modifying API endpoints
+
+{{/if}}
+**`@architecture.md`** - Design patterns
+{{#if detection.frameworks.[0]}}
+- {{detection.frameworks.[0].name}} architecture
+{{/if}}
+- Component structure
+- State management
+- SOLID principles
+- When to use: Designing features, refactoring, architecture decisions
+
+---
+
+## 💡 How to Use Rules
+
+### Basic Usage
+
+Reference rules in your prompts to Qoder:
+
+```
+"Implement user login @security.md @api-design.md"
+"Add validation to the form @security.md"
+"Write tests for the UserService @testing.md"
+"Commit these changes @git-workflow.md"
+```
+
+### Quest Mode Usage
+
+For multi-step tasks, reference multiple rules:
+
+```
+Quest: Implement password reset flow
+References: @requirements-spec.md @security.md @api-design.md @error-handling.md
+
+Qoder will:
+1. Follow "complete code" requirement (no TODOs)
+2. Apply security best practices
+3. Use proper API patterns
+4. Implement comprehensive error handling
+```
+
+### Common Combinations
+
+**API Development:**
+```
+@api-design.md @security.md @error-handling.md
+```
+
+**Feature Implementation:**
+```
+@requirements-spec.md @core.md @security.md
+```
+
+**Testing:**
+```
+@testing.md @core.md
+```
+
+**Code Review:**
+```
+@best-practices.md @security.md
+```
+
+**Architecture Planning:**
+```
+@architecture.md @core.md
+```
+
+**Committing Code:**
+```
+@git-workflow.md
+```
+
+---
+
+## 🚀 Quick Start Examples
+
+### Example 1: Add New API Endpoint
+
+```
+Implement POST /api/users endpoint with validation
+
+@requirements-spec.md @api-design.md @security.md @error-handling.md
+
+Requirements:
+- Create user with email, name, password
+- Validate input (email format, password strength)
+- Hash password before storing
+- Return 201 with created user
+- Handle duplicate email (409 Conflict)
+```
+
+### Example 2: Write Tests
+
+```
+Write unit tests for UserService
+
+@testing.md @core.md
+
+Cover:
+- Creating users (happy path)
+- Validation errors
+- Duplicate email handling
+- Edge cases
+```
+
+### Example 3: Refactor Component
+
+```
+Refactor UserProfile component to improve performance
+
+@architecture.md @best-practices.md
+
+Issues:
+- Re-renders too often
+- Props drilling
+- Component too large (300+ lines)
+```
+
+---
+
+## 🎯 Pro Tips
+
+### 1. Always Reference Requirements Spec for New Features
+
+```
+✅ "Add feature X @requirements-spec.md @security.md"
+❌ "Add feature X" (might get incomplete code with TODOs)
+```
+
+The requirements-spec.md ensures **complete, runnable code** with no placeholders!
+
+### 2. Combine Rules for Complex Tasks
+
+The more specific your context, the better the output:
+
+```
+✅ "Refactor auth @architecture.md @security.md @error-handling.md"
+❌ "Refactor auth" (unclear what patterns to follow)
+```
+
+### 3. Reference Security for Any User Input
+
+```
+✅ "Add search feature @security.md"
+❌ "Add search feature" (might miss SQL injection prevention)
+```
+
+### 4. Use Quick Reference First
+
+If unsure which rules to use:
+
+```
+"What rules should I reference for [task]? @quick-reference.md"
+```
+
+---
+
+## 📊 Rule Priority Guide
+
+When in doubt, use this priority:
+
+1. **@requirements-spec.md** - For any implementation (enforces complete code)
+2. **@security.md** - For anything touching user data, APIs, auth
+3. **@core.md** - For general coding standards
+4. **Task-specific rule** - @api-design.md, @testing.md, @architecture.md, etc.
+
+---
+
+## 🔄 Keeping Rules Updated
+
+Rules are versioned with your project. To regenerate:
+
+```bash
+# Re-detect and sync rules with current project state
+brief sync --tool qoder
+
+# Preview changes without writing
+brief sync --tool qoder --dry-run
+
+# Force regeneration
+brief sync --tool qoder --force
+```
+
+---
+
+## 📚 Learning More
+
+**Understanding Memory System:**
+- Qoder stores project context in 4 memory categories
+- `project-info.md` feeds the `project_info` memory
+- Rules provide on-demand expertise when you `@` them
+- Memory persists across sessions
+
+**Quest Mode Best Practices:**
+- Always reference `@requirements-spec.md` for Quest tasks
+- Specify clear requirements + relevant rules
+- Review generated code to ensure no TODOs/placeholders
+- Use multiple rules for complex tasks
+
+**Agent Mode Tips:**
+- Agent mode can autonomously choose rules to reference
+- Provide clear intent in your request
+- Let Agent mode handle multi-step workflows
+
+---
+
+## ✨ Key Takeaways
+
+1. **Rules are manual** - You control when they're active with `@`
+2. **Combine multiple rules** - More context = better output
+3. **Requirements spec is critical** - Enforces complete code
+4. **Security matters** - Always reference for user-facing features
+5. **Update rules** - Use `brief sync` when project changes
+
+---
+
+## 🎓 Example Workflow
+
+```
+1. Start task:
+   "Implement user authentication system"
+
+2. Add context:
+   "@requirements-spec.md @security.md @api-design.md @error-handling.md"
+
+3. Specify requirements:
+   - JWT-based authentication
+   - Email/password login
+   - Registration endpoint
+   - Token refresh
+   - Rate limiting
+
+4. Let Qoder work in Quest Mode
+
+5. Review output:
+   - Check for TODOs (should be none!)
+   - Verify security best practices applied
+   - Confirm error handling comprehensive
+   - Test the implementation
+
+6. Commit:
+   "Commit authentication implementation @git-workflow.md"
+```
+
+---
+
+**Pro Tip**: Bookmark this file! Reference it anytime with:
+```
+@quick-reference.md
+```
+
+---
+
+*Generated by Brief v{{generated.version}} for Qoder IDE*
+*For more info: https://docs.qoder.com/user-guide/rules*
