@@ -54,9 +54,9 @@ export const LANGUAGE_TEMPLATES: TemplateDefinition[] = [
     id: "typescript",
     name: "TypeScript",
     description: "TypeScript coding standards and type safety rules",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "framework",
-    templatePath: "cursor/typescript.mdc.hbs",
+    templatePath: "common/typescript.mdc.hbs",
     outputPath: ".cursor/rules/typescript.mdc",
     globs: ["**/*.ts", "**/*.tsx"],
     priority: 900,
@@ -67,9 +67,9 @@ export const LANGUAGE_TEMPLATES: TemplateDefinition[] = [
     id: "javascript",
     name: "JavaScript",
     description: "JavaScript coding standards and best practices",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "framework",
-    templatePath: "cursor/javascript.mdc.hbs",
+    templatePath: "common/javascript.mdc.hbs",
     outputPath: ".cursor/rules/javascript.mdc",
     globs: ["**/*.js", "**/*.jsx"],
     priority: 900,
@@ -80,9 +80,9 @@ export const LANGUAGE_TEMPLATES: TemplateDefinition[] = [
     id: "python",
     name: "Python",
     description: "Python coding standards and PEP guidelines",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "framework",
-    templatePath: "cursor/python.mdc.hbs",
+    templatePath: "common/python.mdc.hbs",
     outputPath: ".cursor/rules/python.mdc",
     globs: ["**/*.py"],
     priority: 900,
@@ -100,9 +100,9 @@ export const FRAMEWORK_TEMPLATES: TemplateDefinition[] = [
     id: "react",
     name: "React",
     description: "React component patterns and hooks best practices",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "framework",
-    templatePath: "cursor/react.mdc.hbs",
+    templatePath: "common/react.mdc.hbs",
     outputPath: ".cursor/rules/react.mdc",
     globs: ["**/*.tsx", "**/*.jsx", "**/components/**/*"],
     priority: 800,
@@ -115,9 +115,9 @@ export const FRAMEWORK_TEMPLATES: TemplateDefinition[] = [
     id: "nextjs",
     name: "Next.js",
     description: "Next.js App Router patterns and conventions",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "framework",
-    templatePath: "cursor/nextjs.mdc.hbs",
+    templatePath: "common/nextjs.mdc.hbs",
     outputPath: ".cursor/rules/nextjs.mdc",
     globs: ["**/app/**/*", "**/pages/**/*", "next.config.*"],
     priority: 750,
@@ -130,9 +130,9 @@ export const FRAMEWORK_TEMPLATES: TemplateDefinition[] = [
     id: "vue",
     name: "Vue.js",
     description: "Vue 3 Composition API patterns and conventions",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "framework",
-    templatePath: "cursor/vue.mdc.hbs",
+    templatePath: "common/vue.mdc.hbs",
     outputPath: ".cursor/rules/vue.mdc",
     globs: ["**/*.vue", "**/composables/**/*"],
     priority: 800,
@@ -144,9 +144,9 @@ export const FRAMEWORK_TEMPLATES: TemplateDefinition[] = [
     id: "express",
     name: "Express.js",
     description: "Express.js API patterns and middleware conventions",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "framework",
-    templatePath: "cursor/express.mdc.hbs",
+    templatePath: "common/express.mdc.hbs",
     outputPath: ".cursor/rules/express.mdc",
     globs: ["**/routes/**/*", "**/middleware/**/*", "**/controllers/**/*"],
     priority: 800,
@@ -158,15 +158,34 @@ export const FRAMEWORK_TEMPLATES: TemplateDefinition[] = [
     id: "fastapi",
     name: "FastAPI",
     description: "FastAPI patterns and Pydantic model conventions",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "framework",
-    templatePath: "cursor/fastapi.mdc.hbs",
+    templatePath: "common/fastapi.mdc.hbs",
     outputPath: ".cursor/rules/fastapi.mdc",
     globs: ["**/routers/**/*", "**/models/**/*", "**/schemas/**/*"],
     priority: 800,
     dependencies: ["python"],
     conditions: [{ type: "framework", value: "fastapi" }],
     tags: ["framework", "fastapi", "python", "backend", "api"],
+  },
+];
+
+/**
+ * Database/ORM templates
+ */
+export const DATABASE_TEMPLATES: TemplateDefinition[] = [
+  {
+    id: "prisma",
+    name: "Prisma ORM",
+    description: "Prisma ORM patterns and type-safe database access",
+    target: ["cursor", "claude", "qoder"],
+    category: "framework",
+    templatePath: "common/prisma.mdc.hbs",
+    outputPath: ".cursor/rules/prisma.mdc",
+    globs: ["prisma/**/*", "**/*.prisma", "**/prisma.ts", "**/db.ts", "**/database.ts"],
+    priority: 850,
+    conditions: [{ type: "hasDependency", value: "@prisma/client" }],
+    tags: ["database", "orm", "prisma", "type-safety"],
   },
 ];
 
@@ -178,9 +197,9 @@ export const PATTERN_TEMPLATES: TemplateDefinition[] = [
     id: "testing",
     name: "Testing Patterns",
     description: "Testing conventions and best practices",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "pattern",
-    templatePath: "cursor/testing.mdc.hbs",
+    templatePath: "common/testing.mdc.hbs",
     outputPath: ".cursor/rules/testing.mdc",
     globs: ["**/*.test.*", "**/*.spec.*", "**/tests/**/*", "**/__tests__/**/*"],
     priority: 700,
@@ -190,9 +209,9 @@ export const PATTERN_TEMPLATES: TemplateDefinition[] = [
     id: "api-design",
     name: "API Design",
     description: "RESTful API design patterns and conventions",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "pattern",
-    templatePath: "cursor/api-design.mdc.hbs",
+    templatePath: "common/api-design.mdc.hbs",
     outputPath: ".cursor/rules/api-design.mdc",
     globs: ["**/api/**/*", "**/routes/**/*", "**/endpoints/**/*"],
     priority: 700,
@@ -202,9 +221,9 @@ export const PATTERN_TEMPLATES: TemplateDefinition[] = [
     id: "database",
     name: "Database Patterns",
     description: "Database access patterns and query optimization",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "pattern",
-    templatePath: "cursor/database.mdc.hbs",
+    templatePath: "common/database.mdc.hbs",
     outputPath: ".cursor/rules/database.mdc",
     globs: [
       "**/db/**/*",
@@ -219,9 +238,9 @@ export const PATTERN_TEMPLATES: TemplateDefinition[] = [
     id: "security",
     name: "Security Patterns",
     description: "Security best practices and vulnerability prevention",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "pattern",
-    templatePath: "cursor/security.mdc.hbs",
+    templatePath: "common/security.mdc.hbs",
     outputPath: ".cursor/rules/security.mdc",
     priority: 600,
     tags: ["pattern", "security"],
@@ -230,9 +249,9 @@ export const PATTERN_TEMPLATES: TemplateDefinition[] = [
     id: "performance",
     name: "Performance Patterns",
     description: "Performance optimization guidelines",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "pattern",
-    templatePath: "cursor/performance.mdc.hbs",
+    templatePath: "common/performance.mdc.hbs",
     outputPath: ".cursor/rules/performance.mdc",
     priority: 600,
     tags: ["pattern", "performance"],
@@ -247,9 +266,9 @@ export const PROJECT_TYPE_TEMPLATES: TemplateDefinition[] = [
     id: "cli",
     name: "CLI Application",
     description: "Command-line application patterns",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "project-type",
-    templatePath: "cursor/cli.mdc.hbs",
+    templatePath: "common/cli.mdc.hbs",
     outputPath: ".cursor/rules/cli.mdc",
     globs: ["**/cli/**/*", "**/commands/**/*", "**/bin/**/*"],
     priority: 750,
@@ -259,9 +278,9 @@ export const PROJECT_TYPE_TEMPLATES: TemplateDefinition[] = [
     id: "library",
     name: "Library/Package",
     description: "Library development patterns and API design",
-    target: ["cursor", "claude"],
+    target: ["cursor", "claude", "qoder"],
     category: "project-type",
-    templatePath: "cursor/library.mdc.hbs",
+    templatePath: "common/library.mdc.hbs",
     outputPath: ".cursor/rules/library.mdc",
     priority: 750,
     tags: ["project-type", "library"],
@@ -310,9 +329,14 @@ export const CLAUDE_TEMPLATES: TemplateDefinition[] = [
 /**
  * Qoder-specific templates (Qoder - The Agentic Coding Platform)
  * Rules are stored in .qoder/rules/ directory
+ *
+ * Note: Framework/language templates (TypeScript, React, Prisma, etc.) are now shared
+ * via LANGUAGE_TEMPLATES, FRAMEWORK_TEMPLATES, DATABASE_TEMPLATES, etc. with target: ["cursor", "claude", "qoder"]
+ *
+ * This section only contains Qoder-specific workflow/process templates.
  */
 export const QODO_TEMPLATES: TemplateDefinition[] = [
-  // Core templates (Priority: 1000-900)
+  // Core Qoder-specific templates (Priority: 1000-900)
   {
     id: "qoder-quick-reference",
     name: "Quick Reference Guide",
@@ -369,7 +393,7 @@ export const QODO_TEMPLATES: TemplateDefinition[] = [
     tags: ["qoder", "best-practices"],
   },
 
-  // Quality templates (Priority: 800-700)
+  // Qoder-specific quality templates (Priority: 800-700)
   {
     id: "qoder-security",
     name: "Security Guidelines",
@@ -405,7 +429,7 @@ export const QODO_TEMPLATES: TemplateDefinition[] = [
     tags: ["qoder", "error-handling", "resilience"],
   },
 
-  // Process templates (Priority: 700-600)
+  // Qoder-specific process templates (Priority: 700-600)
   {
     id: "qoder-git-workflow",
     name: "Git Workflow",
@@ -491,6 +515,7 @@ export const ALL_TEMPLATES: TemplateDefinition[] = [
   ...CORE_TEMPLATES,
   ...LANGUAGE_TEMPLATES,
   ...FRAMEWORK_TEMPLATES,
+  ...DATABASE_TEMPLATES,
   ...PATTERN_TEMPLATES,
   ...PROJECT_TYPE_TEMPLATES,
   ...CLAUDE_TEMPLATES,

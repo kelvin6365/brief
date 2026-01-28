@@ -1,0 +1,843 @@
+---
+description: "Apply Prisma ORM patterns when editing schema or database code for type-safe queries"
+globs:
+  - "prisma/**/*"
+  - "**/*.prisma"
+  - "**/prisma.ts"
+  - "**/db.ts"
+  - "**/database.ts"
+priority: 850
+alwaysApply: false
+tags: ["prisma", "orm", "database", "typescript", "type-safety"]
+---
+
+# Prisma ORM Best Practices (2026)
+
+## Context & Applicability
+
+**When**: Working with Prisma schema, client, or database queries
+**Purpose**: Type-safe, performant database access with modern patterns
+**Prisma Version**: 7.0+ (Rust-free architecture)
+**Performance**: 3x faster queries, 90% smaller bundles vs v6
+
+---
+
+## Prisma 7.0 Key Features (2026)
+
+### Architecture Improvements
+
+- ✅ **Rust-free**: Pure TypeScript/Node.js, better compatibility
+- ✅ **3x faster queries**: Significant performance gains
+- ✅ **90% smaller bundles**: Reduced deployment size
+- ✅ **98% fewer types**: Faster type checking (70% improvement)
+- ✅ **Generated artifacts in source**: Better hot-reload support
+
+### Custom Output Path (Next.js & Production)
+
+```prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"  // Custom output path
+}
+```
+
+**CRITICAL**: When using custom `output` path, import from that path, NOT `@prisma/client`:
+
+```typescript
+// ❌ WRONG: Default import won't work with custom output
+import { PrismaClient } from '@prisma/client';
+
+// ✅ CORRECT: Import from custom output path
+import { PrismaClient } from '@/app/generated/prisma';
+// or relative path
+import { PrismaClient } from '../app/generated/prisma';
+```
+
+**Why custom output?**
+- Next.js: Better control over generated files location
+- Monorepos: Each package can have its own client
+- Build optimization: Keep generated files in source tree
+
+### New Patterns (Prisma 7+)
+
+```typescript
+// New defineConfig pattern
+import { defineConfig } from '@prisma/client';
+
+export default defineConfig({
+  datasourceUrl: process.env.DATABASE_URL,
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error'] : ['error'],
+});
+```
+
+---
+
+## Schema Design Patterns
+
+### Multi-File Schema (Prisma 6.6+)
+
+```prisma
+// prisma/schema.prisma (main)
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Import models from separate files
+import "./models/user.prisma"
+import "./models/post.prisma"
+import "./models/comment.prisma"
+```
+
+```prisma
+// prisma/models/user.prisma
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique @db.VarChar(255)
+  name      String?  @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  posts     Post[]
+  comments  Comment[]
+
+  @@index([email])
+  @@map("users")
+}
+```
+
+### Native Database Types
+
+```prisma
+model Product {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(255)     // Limited length
+  description String   @db.Text             // Unlimited text
+  price       Decimal  @db.Decimal(10, 2)   // Precise decimals
+  stock       Int      @db.Integer
+  metadata    Json     @db.JsonB            // Indexed JSON (PostgreSQL)
+
+  @@index([name])
+  @@map("products")
+}
+```
+
+### Indexing Strategy
+
+```prisma
+model Post {
+  id        String   @id @default(cuid())
+  title     String   @db.VarChar(255)
+  content   String   @db.Text
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Single column indexes
+  @@index([authorId])
+  @@index([published])
+  @@index([createdAt])
+
+  // Composite index for common query patterns
+  @@index([published, createdAt(sort: Desc)])
+
+  // Unique constraint
+  @@unique([authorId, title])
+
+  @@map("posts")
+}
+```
+
+---
+
+## Client Instantiation (CRITICAL)
+
+### ❌ WRONG: Multiple Instances
+
+```typescript
+// ❌ BAD: Creates new connection per import
+import { PrismaClient } from '@prisma/client';
+
+export async function getUsers() {
+  const prisma = new PrismaClient(); // DON'T DO THIS!
+  return prisma.user.findMany();
+}
+```
+
+**Problem**: Exhausts connection pool, especially in serverless
+
+### ✅ CORRECT: Singleton Pattern
+
+**IMPORTANT**: Check your `generator client { output }` setting first!
+
+#### Option 1: Default Output (no custom output specified)
+
+```typescript
+// lib/prisma.ts
+import { PrismaClient } from '@prisma/client';  // Default import
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+```
+
+#### Option 2: Custom Output (Next.js, Monorepos)
+
+```prisma
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"  // Custom path
+}
+```
+
+```typescript
+// lib/prisma.ts
+// ⚠️ CRITICAL: Import from custom output path, NOT '@prisma/client'!
+import { PrismaClient } from '@/app/generated/prisma';  // Match your output path
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+```
+
+**How to verify your import path**:
+1. Check `prisma/schema.prisma` for `generator client { output }`
+2. If `output` is specified → Import from that path
+3. If no `output` → Import from `@prisma/client`
+4. After `npx prisma generate`, check the generated location
+
+### Graceful Shutdown
+
+```typescript
+// Add to your prisma.ts file
+process.on('beforeExit', async () => {
+  await prisma.$disconnect();
+});
+
+// For Next.js API routes, disconnect after request
+export async function GET(request: Request) {
+  try {
+    const data = await prisma.user.findMany();
+    return Response.json(data);
+  } finally {
+    // Optional: Disconnect in serverless (Next.js handles this automatically)
+    // await prisma.$disconnect();
+  }
+}
+```
+
+**Usage**:
+```typescript
+// anywhere in your app
+import { prisma } from '@/lib/prisma';
+
+export async function getUsers() {
+  return prisma.user.findMany();
+}
+```
+
+---
+
+## Query Optimization Patterns
+
+### 1. N+1 Query Prevention (CRITICAL)
+
+#### ❌ BAD: N+1 Problem
+
+```typescript
+// Executes N+1 queries (1 for users, N for each user's posts)
+const users = await prisma.user.findMany();
+
+for (const user of users) {
+  const posts = await prisma.post.findMany({
+    where: { authorId: user.id },
+  }); // N queries!
+}
+```
+
+#### ✅ GOOD: Use `include`
+
+```typescript
+// Executes 2 queries total (1 for users, 1 for all posts)
+const usersWithPosts = await prisma.user.findMany({
+  include: { posts: true },
+});
+```
+
+#### ✅ GOOD: Use `in` operator
+
+```typescript
+const users = await prisma.user.findMany();
+const userIds = users.map(u => u.id);
+
+const posts = await prisma.post.findMany({
+  where: { authorId: { in: userIds } },
+});
+```
+
+#### ✅ BEST: Use `relationLoadStrategy: "join"` (Prisma 5.18+)
+
+```typescript
+// Single database JOIN - fastest!
+const usersWithPosts = await prisma.user.findMany({
+  relationLoadStrategy: 'join',
+  include: { posts: true },
+});
+```
+
+### 2. Select Only Needed Fields
+
+```typescript
+// ❌ BAD: Fetches all columns
+const users = await prisma.user.findMany();
+
+// ✅ GOOD: Select specific fields
+const users = await prisma.user.findMany({
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    // Omit large fields like 'bio', 'avatar', etc.
+  },
+});
+```
+
+### 3. Bulk Operations
+
+```typescript
+// ❌ BAD: Individual inserts
+for (const user of users) {
+  await prisma.user.create({ data: user }); // Slow!
+}
+
+// ✅ GOOD: Batch insert
+await prisma.user.createMany({
+  data: users,
+  skipDuplicates: true, // Skip duplicates instead of failing
+});
+
+// ✅ NEW in Prisma 5.14+: Get created records
+const created = await prisma.user.createManyAndReturn({
+  data: users,
+});
+
+// ✅ Batch operations (50,000 records in 1,000-record batches)
+const BATCH_SIZE = 1000;
+for (let i = 0; i < users.length; i += BATCH_SIZE) {
+  const batch = users.slice(i, i + BATCH_SIZE);
+  await prisma.user.createMany({ data: batch });
+}
+```
+
+### 4. Pagination Patterns
+
+```typescript
+// ✅ Offset-based (simple, but slower for large datasets)
+const page = 2;
+const pageSize = 20;
+
+const users = await prisma.user.findMany({
+  skip: (page - 1) * pageSize,
+  take: pageSize,
+  orderBy: { createdAt: 'desc' },
+});
+
+// ✅ Cursor-based (faster, recommended for large datasets)
+const users = await prisma.user.findMany({
+  take: 20,
+  cursor: lastUserId ? { id: lastUserId } : undefined,
+  skip: lastUserId ? 1 : 0, // Skip the cursor
+  orderBy: { id: 'asc' },
+});
+```
+
+### 5. Filtering & Sorting
+
+```typescript
+// ✅ Efficient filtering with indexes
+const posts = await prisma.post.findMany({
+  where: {
+    published: true,
+    authorId: userId,
+    createdAt: {
+      gte: new Date('2026-01-01'),
+    },
+  },
+  orderBy: { createdAt: 'desc' },
+  take: 10,
+});
+
+// ✅ Full-text search (PostgreSQL)
+const posts = await prisma.post.findMany({
+  where: {
+    OR: [
+      { title: { search: 'prisma' } },
+      { content: { search: 'prisma' } },
+    ],
+  },
+});
+```
+
+---
+
+## Type Safety Patterns
+
+### 1. Generated Types
+
+```typescript
+import { Prisma, User, Post } from '@prisma/client';
+
+// ✅ Use generated types
+function processUser(user: User): void {
+  console.log(user.name, user.email);
+}
+
+// ✅ Type for partial selects
+type UserSummary = Prisma.UserGetPayload<{
+  select: { id: true; name: true; email: true };
+}>;
+
+// ✅ Type for includes
+type UserWithPosts = Prisma.UserGetPayload<{
+  include: { posts: true };
+}>;
+
+// ✅ Type for custom queries
+const userWithPostCount = await prisma.user.findMany({
+  select: {
+    id: true,
+    name: true,
+    _count: {
+      select: { posts: true },
+    },
+  },
+});
+
+type UserWithPostCount = typeof userWithPostCount[number];
+```
+
+### 2. Input Types
+
+```typescript
+// ✅ Use Prisma input types for mutations
+import { Prisma } from '@prisma/client';
+
+async function createUser(data: Prisma.UserCreateInput): Promise<User> {
+  return prisma.user.create({ data });
+}
+
+async function updateUser(
+  id: string,
+  data: Prisma.UserUpdateInput
+): Promise<User> {
+  return prisma.user.update({ where: { id }, data });
+}
+```
+
+### 3. Type-Safe Queries
+
+```typescript
+// ✅ Type-safe where clauses
+const where: Prisma.UserWhereInput = {
+  email: { contains: '@example.com' },
+  posts: {
+    some: {
+      published: true,
+    },
+  },
+};
+
+const users = await prisma.user.findMany({ where });
+```
+
+---
+
+## Transaction Patterns
+
+### Sequential Transactions
+
+```typescript
+// ✅ All-or-nothing transactions
+const result = await prisma.$transaction(async (tx) => {
+  const user = await tx.user.create({
+    data: { email: 'user@example.com', name: 'User' },
+  });
+
+  const post = await tx.post.create({
+    data: {
+      title: 'My Post',
+      content: 'Content here',
+      authorId: user.id,
+    },
+  });
+
+  return { user, post };
+});
+```
+
+### Interactive Transactions
+
+```typescript
+// ✅ Complex multi-step operations
+await prisma.$transaction(
+  async (tx) => {
+    const post = await tx.post.findUnique({ where: { id: postId } });
+
+    if (!post) {
+      throw new Error('Post not found');
+    }
+
+    await tx.post.update({
+      where: { id: postId },
+      data: { views: { increment: 1 } },
+    });
+
+    await tx.analytics.create({
+      data: {
+        postId,
+        event: 'view',
+        timestamp: new Date(),
+      },
+    });
+  },
+  {
+    maxWait: 5000, // Wait max 5s for transaction slot
+    timeout: 10000, // Timeout after 10s
+  }
+);
+```
+
+---
+
+## Migration Strategies
+
+### Development
+
+```bash
+# Create migration (development only)
+npx prisma migrate dev --name add-user-role
+
+# Reset database (development only - DESTRUCTIVE!)
+npx prisma migrate reset
+```
+
+### Production
+
+```bash
+# Deploy migrations (production)
+npx prisma migrate deploy
+
+# Generate Prisma Client
+npx prisma generate
+```
+
+### CI/CD Pipeline
+
+```yaml
+# GitHub Actions example
+- name: Run migrations
+  run: npx prisma migrate deploy
+  env:
+    DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+- name: Generate Prisma Client
+  run: npx prisma generate
+```
+
+---
+
+## Connection Pooling
+
+### Direct Connection (Development)
+
+```env
+# .env
+DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
+```
+
+### Connection Pool (Production)
+
+```env
+# .env.production
+DATABASE_URL="postgresql://user:password@localhost:5432/mydb?connection_limit=10&pool_timeout=20"
+```
+
+**Formula**: `connection_limit = num_cpus * 2 + 1`
+
+### Serverless (Prisma Accelerate)
+
+```typescript
+// For serverless/edge deployments
+import { PrismaClient } from '@prisma/client/edge';
+import { withAccelerate } from '@prisma/extension-accelerate';
+
+const prisma = new PrismaClient().$extends(withAccelerate());
+
+// Global caching
+const users = await prisma.user.findMany({
+  cacheStrategy: { ttl: 60 }, // Cache for 60 seconds
+});
+```
+
+**Why**: Eliminates cold start penalties, HTTP-based pooling
+
+---
+
+## Error Handling
+
+```typescript
+import { Prisma } from '@prisma/client';
+
+try {
+  await prisma.user.create({
+    data: { email: 'duplicate@example.com' },
+  });
+} catch (error) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    // Unique constraint violation
+    if (error.code === 'P2002') {
+      console.error('Email already exists');
+    }
+    // Foreign key constraint violation
+    if (error.code === 'P2003') {
+      console.error('Referenced record does not exist');
+    }
+    // Record not found
+    if (error.code === 'P2025') {
+      console.error('Record not found');
+    }
+  }
+
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    console.error('Invalid data provided');
+  }
+
+  throw error;
+}
+```
+
+**Common Error Codes**:
+- `P2002`: Unique constraint violation
+- `P2003`: Foreign key constraint violation
+- `P2025`: Record not found
+- `P2034`: Transaction conflict
+
+---
+
+## Performance Monitoring (Prisma Optimize)
+
+```typescript
+// Enable query logging
+const prisma = new PrismaClient({
+  log: [
+    { emit: 'event', level: 'query' },
+    { emit: 'stdout', level: 'error' },
+  ],
+});
+
+prisma.$on('query', (e) => {
+  console.log('Query: ' + e.query);
+  console.log('Duration: ' + e.duration + 'ms');
+});
+```
+
+**Prisma Optimize Tool**:
+- AI-driven query analysis
+- Identifies missing indexes
+- Detects excessive data retrieval
+- Provides p50, p99 latency metrics
+
+---
+
+## Production Checklist
+
+Before deploying:
+
+- [ ] **Import path verified** - Check `generator.output` in schema.prisma
+- [ ] **Correct import used** - Match import to output path (custom or default)
+- [ ] Connection pooling configured (10-20 connections typical)
+- [ ] Migrations tested in staging
+- [ ] Indexes on all foreign keys
+- [ ] Indexes on commonly queried fields
+- [ ] Query logging disabled in production
+- [ ] Singleton PrismaClient pattern used
+- [ ] N+1 queries eliminated (use `include` or `join`)
+- [ ] Bulk operations for large datasets
+- [ ] Graceful shutdown (`$disconnect`)
+- [ ] Error handling for constraint violations
+- [ ] Pagination for large result sets
+- [ ] `select` used to limit returned fields
+- [ ] Transactions for multi-step operations
+- [ ] Generated Client location verified after `prisma generate`
+- [ ] .gitignore updated (if using custom output in source tree)
+
+---
+
+## Common Anti-Patterns to Avoid
+
+1. **❌ Multiple PrismaClient instances** - Exhausts connections
+2. **❌ Wrong import path with custom output** - Check `generator.output` and import from correct path
+3. **❌ N+1 queries in loops** - Use `include` or `join`
+4. **❌ Fetching all columns** - Use `select` for needed fields only
+5. **❌ Individual inserts in loops** - Use `createMany`
+6. **❌ Missing indexes** - Add indexes on foreign keys and query fields
+7. **❌ Offset pagination on large tables** - Use cursor-based pagination
+8. **❌ Direct database modifications** - Always use migrations
+9. **❌ Query logging in production** - Disable for performance
+10. **❌ No connection pool limits** - Set `connection_limit`
+11. **❌ Ignoring transaction timeouts** - Set `maxWait` and `timeout`
+12. **❌ Not checking generated client location** - Always verify after `prisma generate`
+
+---
+
+## Framework Integration
+
+### Next.js 15+ App Router
+
+**Step 1: Configure Custom Output (Recommended)**
+
+```prisma
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"  // Next.js app directory
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+```
+
+**Step 2: Create Singleton Client**
+
+```typescript
+// lib/prisma.ts (or app/lib/prisma.ts)
+// IMPORTANT: Import from custom output path!
+import { PrismaClient } from '@/app/generated/prisma';
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error'] : ['error'],
+  });
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+```
+
+**Step 3: Use in Server Actions**
+
+```typescript
+// app/actions/users.ts
+'use server';
+
+import { prisma } from '@/lib/prisma';  // Import singleton
+
+export async function getUsers() {
+  return prisma.user.findMany({
+    select: { id: true, name: true, email: true },
+  });
+}
+
+export async function createUser(data: { name: string; email: string }) {
+  return prisma.user.create({ data });
+}
+```
+
+**Step 4: Use in API Routes**
+
+```typescript
+// app/api/users/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(request: NextRequest) {
+  try {
+    const users = await prisma.user.findMany();
+    return NextResponse.json({ data: users });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch users' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**Important Notes for Next.js**:
+- ✅ Custom output keeps generated client in your source tree
+- ✅ Better hot-reload (Next.js detects changes immediately)
+- ✅ Vercel deployment works seamlessly
+- ✅ No need to restart dev server after `prisma generate`
+- ⚠️ Always import from custom output path, not `@prisma/client`
+
+### tRPC Integration
+
+```typescript
+import { initTRPC } from '@trpc/server';
+import { prisma } from './prisma';
+
+const t = initTRPC.create();
+
+export const appRouter = t.router({
+  users: t.procedure.query(async () => {
+    return prisma.user.findMany();
+  }),
+});
+```
+
+---
+
+## Resources
+
+- [Prisma 7.0 Performance Gains](https://www.infoq.com/news/2026/01/prisma-7-performance/)
+- [Prisma ORM Documentation](https://www.prisma.io/orm)
+- [Query Optimization Guide](https://www.prisma.io/docs/orm/prisma-client/queries/query-optimization-performance)
+- [Prisma Optimize Tool](https://www.prisma.io/optimize)
+- [Type Safety Documentation](https://www.prisma.io/docs/orm/prisma-client/type-safety)
+- [Migration Strategies](https://www.prisma.io/dataguide/types/relational/migration-strategies)
+- [Prisma Best Practices Guide](https://codeit.mk/home/blog/Prisma-Best-Practices-for-Node.js-Developers--A-Comprehensive-Guide)
+
+---
+
+## Cross-References
+
+Related rules:
+- TypeScript → @typescript.mdc
+- API Design → @api-design.mdc
+- Performance → @performance.mdc
+- Testing → @testing.mdc
+
+---
+
+*Prisma 7.0+ Best Practices*
+*Type-safe | Performance-optimized | Production-ready*
+*Updated: 2026-01-28*
