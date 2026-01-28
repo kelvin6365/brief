@@ -3,7 +3,7 @@
  * Initialize AI configuration for a project
  */
 
-import { render } from "ink";
+import { render, type RenderOptions } from "ink";
 import chalk from "chalk";
 import { PassThrough } from "stream";
 import type { InitOptions, CommandResult } from "./types.js";
@@ -79,10 +79,28 @@ function showQoderUsageGuide(): void {
 }
 
 /**
+ * Check if stdin supports raw mode
+ */
+function canSetRawMode(): boolean {
+  // In Node.js, isTTY and setRawMode are reliable indicators
+  return process.stdin.isTTY === true && typeof process.stdin.setRawMode === 'function';
+}
+
+/**
  * Run init command in interactive mode
  */
 export async function runInitInteractive(options: InitOptions): Promise<CommandResult> {
   const projectPath = options.path || process.cwd();
+
+  // Check if stdin supports raw mode for interactive input
+  // If not, fall back to non-interactive mode
+  const isRawModeSupported = canSetRawMode();
+
+  if (!isRawModeSupported) {
+    log.info("Interactive mode requires a TTY. Running in non-interactive mode...");
+    log.info("Tip: Use 'brief init --yes' to skip this check");
+    return runInitNonInteractive(options);
+  }
 
   return new Promise((resolve) => {
     const handleComplete = (success: boolean): void => {
@@ -93,9 +111,6 @@ export async function runInitInteractive(options: InitOptions): Promise<CommandR
     };
 
     try {
-      // Always use process.stdin as-is, and let Ink detect raw mode support
-      const isRawModeSupported = process.stdin.isTTY ?? false;
-
       const { waitUntilExit } = render(
         <Wizard
           projectPath={projectPath}
@@ -105,9 +120,12 @@ export async function runInitInteractive(options: InitOptions): Promise<CommandR
           dryRun={options.dryRun}
           mergeMode={options.merge}
           autoMergeThreshold={options.autoMergeThreshold}
-          isRawModeSupported={isRawModeSupported}
+          isRawModeSupported={true}
           onComplete={handleComplete}
-        />
+        />,
+        {
+          stdin: process.stdin,
+        } as RenderOptions
       );
 
       waitUntilExit()

@@ -240,11 +240,17 @@ export function Wizard({
               borderColor="gray"
               paddingX={1}
             >
-              <Text color="gray">Press </Text>
-              <Text color="green" bold>
-                Enter
-              </Text>
-              <Text color="gray"> to continue</Text>
+              {isRawModeSupported ? (
+                <>
+                  <Text color="gray">Press </Text>
+                  <Text color="green" bold>
+                    Enter
+                  </Text>
+                  <Text color="gray"> to continue</Text>
+                </>
+              ) : (
+                <Text color="gray">Continuing automatically...</Text>
+              )}
             </Box>
             <ContinueHandler onContinue={() => goToStep("tool-select")} isRawModeSupported={isRawModeSupported} />
           </Box>
@@ -329,7 +335,7 @@ export function Wizard({
       >
         <Box flexDirection="row" gap={2}>
           <Text bold color="blue">
-            Brief CLI v{process.env.npm_package_version || "0.1.10"}
+            Brief CLI v{process.env.npm_package_version || "0.1.11"}
           </Text>
           <Text color="gray">· AI Configuration Generator</Text>
         </Box>
@@ -455,14 +461,38 @@ function ContinueHandler({
   requireSelection?: boolean;
   isRawModeSupported?: boolean;
 }): React.ReactElement | null {
-  // Only use useInput hook if raw mode is supported
-  if (isRawModeSupported) {
-    useInput((_input: string, key: { return?: boolean }) => {
-      if (key.return && !requireSelection) {
+  // Auto-continue when raw mode isn't supported (can't capture input)
+  useEffect(() => {
+    if (!isRawModeSupported && !requireSelection) {
+      // Small delay to let the user see the screen before continuing
+      const timer = setTimeout(() => {
         onContinue();
-      }
-    });
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isRawModeSupported, requireSelection, onContinue]);
+
+  // Only render input handler when raw mode is supported
+  if (!isRawModeSupported) {
+    return null;
   }
+
+  return <InputHandler onContinue={onContinue} requireSelection={requireSelection} />;
+}
+
+// Separate component that uses the hook
+function InputHandler({
+  onContinue,
+  requireSelection,
+}: {
+  onContinue: () => void;
+  requireSelection: boolean;
+}): React.ReactElement | null {
+  useInput((_input: string, key: { return?: boolean }) => {
+    if (key.return && !requireSelection) {
+      onContinue();
+    }
+  });
 
   return null;
 }
