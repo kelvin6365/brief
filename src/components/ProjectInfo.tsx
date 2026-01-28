@@ -11,19 +11,28 @@ export function ProjectInfo({ detection, projectPath }: ProjectInfoProps): React
   const { language, packageManager, frameworks, testing, database, buildTools, styling } = detection;
 
   return (
-    <Box flexDirection="column" marginY={1}>
-      <Text bold color="cyan">Project Information</Text>
-      <Box marginTop={1} flexDirection="column">
-        <InfoRow label="Path" value={projectPath} />
-        <InfoRow label="Language" value={language.primary} confidence={language.confidence} />
-        <InfoRow label="Package Manager" value={packageManager.name} />
+    <Box
+      borderStyle="round"
+      borderColor="green"
+      paddingX={2}
+      paddingY={1}
+      flexDirection="column"
+    >
+      <Box marginBottom={1}>
+        <Text bold color="green">✓ Project Detected</Text>
+      </Box>
+
+      <Box flexDirection="column">
+        <InfoRow label="📁 Path" value={projectPath} />
+        <InfoRow label="💬 Language" value={language.primary} confidence={language.confidence} />
+        <InfoRow label="📦 Package Manager" value={packageManager.name} />
 
         {frameworks.length > 0 && (
-          <Box flexDirection="column">
-            <Text color="gray">Frameworks:</Text>
+          <Box flexDirection="column" marginTop={1}>
+            <Text color="cyan">⚡ Frameworks:</Text>
             {frameworks.map((fw, i) => (
               <Box key={i} marginLeft={2}>
-                <Text>• {fw.name}</Text>
+                <Text color="white">• {fw.name}</Text>
                 {fw.version && <Text color="gray"> v{fw.version}</Text>}
                 <ConfidenceBadge confidence={fw.confidence} />
               </Box>
@@ -33,28 +42,28 @@ export function ProjectInfo({ detection, projectPath }: ProjectInfoProps): React
 
         {testing.length > 0 && (
           <InfoRow
-            label="Testing"
+            label="🧪 Testing"
             value={testing.map((t) => t.name).join(", ")}
           />
         )}
 
         {database.length > 0 && (
           <InfoRow
-            label="Database"
+            label="🗄️  Database"
             value={database.map((d) => d.name).join(", ")}
           />
         )}
 
         {buildTools.length > 0 && (
           <InfoRow
-            label="Build Tools"
+            label="🔨 Build Tools"
             value={buildTools.map((b) => b.name).join(", ")}
           />
         )}
 
         {styling.length > 0 && (
           <InfoRow
-            label="Styling"
+            label="🎨 Styling"
             value={styling.map((s) => s.name).join(", ")}
           />
         )}

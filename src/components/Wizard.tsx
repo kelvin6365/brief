@@ -208,10 +208,10 @@ export function Wizard({
                 projectPath={projectPath}
               />
             )}
-            <Box marginTop={1}>
+            <Box marginTop={1} borderStyle="single" borderColor="gray" paddingX={1}>
               <Text color="gray">Press </Text>
-              <Text color="cyan">Enter</Text>
-              <Text color="gray"> to continue...</Text>
+              <Text color="green" bold>Enter</Text>
+              <Text color="gray"> to continue</Text>
             </Box>
             <ContinueHandler onContinue={() => goToStep("tool-select")} />
           </Box>
@@ -284,59 +284,84 @@ export function Wizard({
   };
 
   return (
-    <Box flexDirection="column" paddingX={1}>
-      {/* Header */}
-      <Box marginBottom={1}>
-        <Text bold color="magenta">Brief</Text>
-        <Text color="gray"> - AI Configuration Generator</Text>
+    <Box flexDirection="column" paddingX={2} paddingY={1}>
+      {/* Header with border */}
+      <Box
+        borderStyle="round"
+        borderColor="cyan"
+        paddingX={2}
+        paddingY={0}
+        marginBottom={1}
+      >
+        <Text bold color="cyan">✨ Brief</Text>
+        <Text color="gray"> · AI Configuration Generator</Text>
       </Box>
 
       {/* Step indicator */}
       <StepIndicator currentStep={state.step} />
 
       {/* Content */}
-      {renderStep()}
+      <Box marginTop={1}>
+        {renderStep()}
+      </Box>
     </Box>
   );
 }
 
 // Step indicator component
 function StepIndicator({ currentStep }: { currentStep: WizardStep }): React.ReactElement {
-  const steps: WizardStep[] = [
-    "detecting",
-    "project-info",
-    "tool-select",
-    "template-select",
-    "confirm",
-    "generating",
-    "complete",
+  const stepConfig: Array<{ step: WizardStep; label: string; icon: string }> = [
+    { step: "detecting", label: "Detect", icon: "🔍" },
+    { step: "project-info", label: "Review", icon: "📋" },
+    { step: "tool-select", label: "Tools", icon: "🛠️" },
+    { step: "template-select", label: "Templates", icon: "📄" },
+    { step: "confirm", label: "Confirm", icon: "✓" },
+    { step: "generating", label: "Generate", icon: "⚙️" },
   ];
 
-  const currentIndex = steps.indexOf(currentStep);
+  const currentIndex = stepConfig.findIndex((s) => s.step === currentStep);
   const chars = getTerminalChars();
 
-  return (
-    <Box marginBottom={1}>
-      {steps.slice(0, -1).map((step, i) => {
-        const isCompleted = i < currentIndex;
-        const isCurrent = i === currentIndex;
+  // Don't show step indicator on complete or error
+  if (currentStep === "complete" || currentStep === "error") {
+    return <Box />;
+  }
 
-        return (
-          <React.Fragment key={step}>
-            <Text
-              color={isCompleted ? "green" : isCurrent ? "cyan" : "gray"}
-              dimColor={!isCompleted && !isCurrent}
-            >
-              {isCompleted ? chars.stepCompleted : isCurrent ? chars.stepCurrent : chars.stepPending}
-            </Text>
-            {i < steps.length - 2 && (
-              <Text color="gray" dimColor>
-                {chars.stepSeparator}
-              </Text>
-            )}
-          </React.Fragment>
-        );
-      })}
+  return (
+    <Box flexDirection="column" marginBottom={1}>
+      <Box>
+        {stepConfig.map((stepItem, i) => {
+          const isCompleted = i < currentIndex;
+          const isCurrent = i === currentIndex;
+          const isPending = i > currentIndex;
+
+          return (
+            <React.Fragment key={stepItem.step}>
+              <Box>
+                <Text
+                  bold={isCurrent}
+                  color={isCompleted ? "green" : isCurrent ? "cyan" : "gray"}
+                  dimColor={isPending}
+                >
+                  {isCompleted ? chars.check : isCurrent ? chars.cursor : chars.bullet}
+                </Text>
+                <Text> </Text>
+                <Text
+                  color={isCompleted ? "green" : isCurrent ? "cyan" : "gray"}
+                  dimColor={isPending}
+                >
+                  {stepItem.label}
+                </Text>
+              </Box>
+              {i < stepConfig.length - 1 && (
+                <Text color="gray" dimColor>
+                  {" "}→{" "}
+                </Text>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </Box>
     </Box>
   );
 }

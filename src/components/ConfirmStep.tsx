@@ -28,37 +28,46 @@ export function ConfirmStep({ state, onConfirm, onBack }: ConfirmStepProps): Rea
   const templates = config.templates || [];
 
   return (
-    <Box flexDirection="column" marginY={1}>
-      <Text bold color="cyan">Confirm Generation</Text>
+    <Box
+      borderStyle="round"
+      borderColor="yellow"
+      paddingX={2}
+      paddingY={1}
+      flexDirection="column"
+    >
+      <Box marginBottom={1}>
+        <Text bold color="yellow">✓ Confirm Generation</Text>
+      </Box>
 
-      <Box marginTop={1} flexDirection="column">
-        <Text bold>Configuration Summary:</Text>
+      {/* Configuration Summary */}
+      <Box flexDirection="column" marginBottom={1}>
+        <Text bold color="cyan">📋 Configuration Summary</Text>
 
         <Box marginLeft={2} marginTop={1} flexDirection="column">
           {/* Tools */}
           <Box>
-            <Text color="gray">Tools: </Text>
-            <Text>{formatTools(tools)}</Text>
+            <Text color="gray">🛠️  Tools: </Text>
+            <Text color="white">{formatTools(tools)}</Text>
           </Box>
 
           {/* Language */}
           <Box>
-            <Text color="gray">Language: </Text>
-            <Text>{detection?.language.primary || "Unknown"}</Text>
+            <Text color="gray">💬 Language: </Text>
+            <Text color="white">{detection?.language.primary || "Unknown"}</Text>
           </Box>
 
           {/* Frameworks */}
           {detection && detection.frameworks.length > 0 && (
             <Box>
-              <Text color="gray">Frameworks: </Text>
-              <Text>{detection.frameworks.map((f) => f.name).join(", ")}</Text>
+              <Text color="gray">⚡ Frameworks: </Text>
+              <Text color="white">{detection.frameworks.map((f) => f.name).join(", ")}</Text>
             </Box>
           )}
 
           {/* Templates */}
           <Box>
-            <Text color="gray">Templates: </Text>
-            <Text>
+            <Text color="gray">📄 Templates: </Text>
+            <Text color="white">
               {templates.length > 0
                 ? templates.length > 3
                   ? `${templates.slice(0, 3).join(", ")} +${templates.length - 3} more`
@@ -70,30 +79,35 @@ export function ConfirmStep({ state, onConfirm, onBack }: ConfirmStepProps): Rea
       </Box>
 
       {/* Files to be created */}
-      <Box marginTop={1} flexDirection="column">
-        <Text bold>Files to be created:</Text>
-        <Box marginLeft={2} flexDirection="column">
+      <Box flexDirection="column" marginBottom={1}>
+        <Text bold color="cyan">📁 Files to be created</Text>
+        <Box marginLeft={2} marginTop={1} flexDirection="column">
           {(tools.includes("cursor") || tools.includes("hybrid")) && (
-            <Text color="gray">• .cursor/rules/*.mdc</Text>
+            <Text color="green">✓ .cursor/rules/*.mdc</Text>
           )}
           {(tools.includes("claude") || tools.includes("hybrid")) && (
             <>
-              <Text color="gray">• CLAUDE.md</Text>
-              <Text color="gray">• .claude/settings.json</Text>
-              <Text color="gray">• .claude/skills/*.md</Text>
+              <Text color="green">✓ CLAUDE.md</Text>
+              <Text color="green">✓ .claude/settings.json</Text>
+              <Text color="green">✓ .claude/skills/*.md</Text>
             </>
           )}
-          <Text color="gray">• docs/ARCHITECTURE.md</Text>
-          <Text color="gray">• docs/TECH-STACK.md</Text>
+          {tools.includes("qoder") && (
+            <Text color="green">✓ .qoder/rules/*.md</Text>
+          )}
+          <Text color="green">✓ docs/ARCHITECTURE.md</Text>
+          <Text color="green">✓ docs/TECH-STACK.md</Text>
         </Box>
       </Box>
 
       {/* Prompt */}
-      <Box marginTop={2}>
-        <Text>
-          <Text color="green" bold>Proceed with generation?</Text>
-          <Text color="gray"> (y/n) </Text>
-        </Text>
+      <Box borderStyle="single" borderColor="gray" paddingX={1}>
+        <Text color="green" bold>Proceed? </Text>
+        <Text color="gray">[</Text>
+        <Text color="green">Y</Text>
+        <Text color="gray">/</Text>
+        <Text color="red">n</Text>
+        <Text color="gray">]</Text>
       </Box>
     </Box>
   );

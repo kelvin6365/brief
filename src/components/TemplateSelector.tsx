@@ -68,17 +68,29 @@ export function TemplateSelector({
   };
 
   return (
-    <Box flexDirection="column" marginY={1}>
-      <Text bold color="cyan">Select Templates</Text>
-      <Text color="gray" dimColor>Choose which rule templates to generate</Text>
-      <Box marginTop={1}>
-        <SelectList
-          options={options}
-          selected={effectiveSelected}
-          onSelect={handleSelect}
-          multiple={true}
-        />
+    <Box
+      borderStyle="round"
+      borderColor="cyan"
+      paddingX={2}
+      paddingY={1}
+      flexDirection="column"
+    >
+      <Box marginBottom={1}>
+        <Text bold color="cyan">📄 Select Templates</Text>
       </Box>
+
+      <Box marginBottom={1}>
+        <Text color="gray">
+          <Text color="green">Core</Text> templates are always included · Use <Text color="yellow">Space</Text> to toggle
+        </Text>
+      </Box>
+
+      <SelectList
+        options={options}
+        selected={effectiveSelected}
+        onSelect={handleSelect}
+        multiple={true}
+      />
     </Box>
   );
 }

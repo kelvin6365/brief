@@ -12,66 +12,102 @@ export function Results({ results }: ResultsProps): React.ReactElement {
   const { success, summary, results: generatorResults } = results;
 
   return (
-    <Box flexDirection="column" marginY={1}>
+    <Box flexDirection="column">
       {/* Header */}
-      <Box marginBottom={1}>
+      <Box
+        borderStyle="round"
+        borderColor={success ? "green" : "red"}
+        paddingX={2}
+        paddingY={1}
+        marginBottom={1}
+      >
         {success ? (
-          <StatusMessage type="success">Generation complete!</StatusMessage>
+          <Box>
+            <Text bold color="green">🎉 Generation Complete!</Text>
+          </Box>
         ) : (
-          <StatusMessage type="error">Generation completed with errors</StatusMessage>
+          <Box>
+            <Text bold color="red">⚠️  Generation Completed with Errors</Text>
+          </Box>
         )}
-      </Box>
 
-      {/* Summary */}
-      <Box flexDirection="column" marginBottom={1}>
-        <Text bold color="cyan">Summary</Text>
-        <Box marginLeft={2} flexDirection="column">
-          {summary.created > 0 && (
-            <Text color="green">✓ {summary.created} file(s) created</Text>
-          )}
-          {summary.modified > 0 && (
-            <Text color="yellow">~ {summary.modified} file(s) modified</Text>
-          )}
-          {summary.skipped > 0 && (
-            <Text color="gray">○ {summary.skipped} file(s) skipped</Text>
-          )}
-          {summary.errors > 0 && (
-            <Text color="red">✗ {summary.errors} error(s)</Text>
-          )}
+        {/* Summary */}
+        <Box flexDirection="column" marginTop={1}>
+          <Box>
+            {summary.created > 0 && (
+              <Text color="green">✓ {summary.created} created</Text>
+            )}
+            {summary.modified > 0 && (
+              <>
+                <Text color="gray"> · </Text>
+                <Text color="yellow">~ {summary.modified} modified</Text>
+              </>
+            )}
+            {summary.skipped > 0 && (
+              <>
+                <Text color="gray"> · </Text>
+                <Text color="gray">○ {summary.skipped} skipped</Text>
+              </>
+            )}
+            {summary.errors > 0 && (
+              <>
+                <Text color="gray"> · </Text>
+                <Text color="red">✗ {summary.errors} errors</Text>
+              </>
+            )}
+          </Box>
         </Box>
       </Box>
 
       {/* Files by target */}
-      {generatorResults.map((result, i) => (
-        <Box key={i} flexDirection="column" marginBottom={1}>
-          <Text bold>{getTargetLabel(result.target)}</Text>
-          <Box marginLeft={2} flexDirection="column">
-            {result.files.length === 0 ? (
-              <Text color="gray" dimColor>No files generated</Text>
-            ) : (
-              result.files.map((file, j) => (
-                <Box key={j}>
-                  <Text color={getActionColor(file.action)}>
-                    {getActionIcon(file.action)}{" "}
-                  </Text>
-                  <Text>{file.path}</Text>
-                  {file.error && (
-                    <Text color="red" dimColor> ({file.error})</Text>
-                  )}
-                </Box>
-              ))
-            )}
+      <Box
+        borderStyle="round"
+        borderColor="cyan"
+        paddingX={2}
+        paddingY={1}
+        marginBottom={1}
+        flexDirection="column"
+      >
+        <Text bold color="cyan">📁 Generated Files</Text>
+
+        {generatorResults.map((result, i) => (
+          <Box key={i} flexDirection="column" marginTop={1}>
+            <Text bold color="white">{getTargetLabel(result.target)}</Text>
+            <Box marginLeft={2} flexDirection="column">
+              {result.files.length === 0 ? (
+                <Text color="gray" dimColor>No files generated</Text>
+              ) : (
+                result.files.map((file, j) => (
+                  <Box key={j}>
+                    <Text color={getActionColor(file.action)}>
+                      {getActionIcon(file.action)}{" "}
+                    </Text>
+                    <Text color="gray">{file.path}</Text>
+                    {file.error && (
+                      <Text color="red" dimColor> ({file.error})</Text>
+                    )}
+                  </Box>
+                ))
+              )}
+            </Box>
           </Box>
-        </Box>
-      ))}
+        ))}
+      </Box>
 
       {/* Next steps */}
-      <Box marginTop={1} flexDirection="column">
-        <Text bold color="cyan">Next Steps</Text>
-        <Box marginLeft={2} flexDirection="column">
-          <Text color="gray">• Review the generated files</Text>
-          <Text color="gray">• Customize rules as needed</Text>
-          <Text color="gray">• Commit changes to version control</Text>
+      <Box
+        borderStyle="round"
+        borderColor="magenta"
+        paddingX={2}
+        paddingY={1}
+        marginBottom={1}
+        flexDirection="column"
+      >
+        <Text bold color="magenta">🚀 Next Steps</Text>
+        <Box marginTop={1} flexDirection="column">
+          <Text color="white">1. Review the generated files</Text>
+          <Text color="white">2. Customize rules as needed</Text>
+          <Text color="white">3. Commit changes to version control</Text>
         </Box>
       </Box>
 

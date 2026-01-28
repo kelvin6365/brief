@@ -16,11 +16,19 @@ export interface SpinnerProps {
 
 export function Spinner({ label, type = "dots" }: SpinnerProps): React.ReactElement {
   return (
-    <Box>
-      <Text color="cyan">
-        <InkSpinner type={type} />
-      </Text>
-      {label && <Text> {label}</Text>}
+    <Box
+      borderStyle="round"
+      borderColor="cyan"
+      paddingX={2}
+      paddingY={1}
+      flexDirection="column"
+    >
+      <Box>
+        <Text color="cyan">
+          <InkSpinner type={type} />
+        </Text>
+        {label && <Text color="cyan"> {label}</Text>}
+      </Box>
     </Box>
   );
 }

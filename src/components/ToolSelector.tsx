@@ -32,17 +32,29 @@ export function ToolSelector({ selected, onSelect }: ToolSelectorProps): React.R
   };
 
   return (
-    <Box flexDirection="column" marginY={1}>
-      <Text bold color="cyan">Select AI Tools</Text>
-      <Text color="gray" dimColor>Select one or more tools (Space to toggle, Enter to confirm)</Text>
-      <Box marginTop={1}>
-        <SelectList
-          options={TOOL_OPTIONS}
-          selected={selected}
-          onSelect={handleSelect}
-          multiple={true}
-        />
+    <Box
+      borderStyle="round"
+      borderColor="cyan"
+      paddingX={2}
+      paddingY={1}
+      flexDirection="column"
+    >
+      <Box marginBottom={1}>
+        <Text bold color="cyan">🛠️  Select AI Tools</Text>
       </Box>
+
+      <Box marginBottom={1}>
+        <Text color="gray">
+          Use <Text color="yellow">Space</Text> to toggle, <Text color="green">Enter</Text> to confirm
+        </Text>
+      </Box>
+
+      <SelectList
+        options={TOOL_OPTIONS}
+        selected={selected}
+        onSelect={handleSelect}
+        multiple={true}
+      />
     </Box>
   );
 }
