@@ -194,7 +194,12 @@ export const PATTERN_TEMPLATES: TemplateDefinition[] = [
     category: "pattern",
     templatePath: "cursor/database.mdc.hbs",
     outputPath: ".cursor/rules/database.mdc",
-    globs: ["**/db/**/*", "**/models/**/*", "**/migrations/**/*", "**/prisma/**/*"],
+    globs: [
+      "**/db/**/*",
+      "**/models/**/*",
+      "**/migrations/**/*",
+      "**/prisma/**/*",
+    ],
     priority: 700,
     tags: ["pattern", "database"],
   },
@@ -408,10 +413,21 @@ export const QODO_TEMPLATES: TemplateDefinition[] = [
     category: "pattern",
     templatePath: "qoder/api-design.md.hbs",
     outputPath: ".qoder/rules/api-design.md",
-    globs: ["**/api/**/*", "**/routes/**/*", "**/routers/**/*", "**/endpoints/**/*"],
+    globs: [
+      "**/api/**/*",
+      "**/routes/**/*",
+      "**/routers/**/*",
+      "**/endpoints/**/*",
+    ],
     priority: 700,
     conditions: [
-      { type: "has-api", value: true },
+      { type: "hasFile", value: "**/api/**" },
+      { type: "hasFile", value: "**/routes/**" },
+      { type: "hasFile", value: "**/endpoints/**" },
+      { type: "hasFile", value: "**/server.js" },
+      { type: "hasFile", value: "**/server.ts" },
+      { type: "hasFile", value: "**/app.js" },
+      { type: "hasFile", value: "**/app.ts" },
     ],
     tags: ["qoder", "api", "rest"],
   },
@@ -492,21 +508,48 @@ export const TEMPLATE_BUNDLES: TemplateBundle[] = [
     id: "nextjs-fullstack",
     name: "Next.js Full-Stack",
     description: "Next.js with API routes and database",
-    templates: ["cursor-core", "claude-core", "typescript", "react", "nextjs", "api-design", "database", "testing"],
+    templates: [
+      "cursor-core",
+      "claude-core",
+      "typescript",
+      "react",
+      "nextjs",
+      "api-design",
+      "database",
+      "testing",
+    ],
     tags: ["fullstack", "nextjs"],
   },
   {
     id: "node-api",
     name: "Node.js API",
     description: "Node.js backend API development",
-    templates: ["cursor-core", "claude-core", "typescript", "express", "api-design", "database", "security", "testing"],
+    templates: [
+      "cursor-core",
+      "claude-core",
+      "typescript",
+      "express",
+      "api-design",
+      "database",
+      "security",
+      "testing",
+    ],
     tags: ["backend", "api"],
   },
   {
     id: "python-api",
     name: "Python API",
     description: "Python backend with FastAPI",
-    templates: ["cursor-core", "claude-core", "python", "fastapi", "api-design", "database", "security", "testing"],
+    templates: [
+      "cursor-core",
+      "claude-core",
+      "python",
+      "fastapi",
+      "api-design",
+      "database",
+      "security",
+      "testing",
+    ],
     tags: ["backend", "python", "api"],
   },
   {
@@ -528,7 +571,9 @@ export function getTemplate(id: string): TemplateDefinition | undefined {
 /**
  * Get templates by target
  */
-export function getTemplatesByTarget(target: "cursor" | "claude" | "qoder" | "shared"): TemplateDefinition[] {
+export function getTemplatesByTarget(
+  target: "cursor" | "claude" | "qoder" | "shared"
+): TemplateDefinition[] {
   return ALL_TEMPLATES.filter((t) => {
     if (Array.isArray(t.target)) {
       return t.target.includes(target);
@@ -540,7 +585,9 @@ export function getTemplatesByTarget(target: "cursor" | "claude" | "qoder" | "sh
 /**
  * Get templates by category
  */
-export function getTemplatesByCategory(category: TemplateDefinition["category"]): TemplateDefinition[] {
+export function getTemplatesByCategory(
+  category: TemplateDefinition["category"]
+): TemplateDefinition[] {
   return ALL_TEMPLATES.filter((t) => t.category === category);
 }
 
