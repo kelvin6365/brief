@@ -47,6 +47,11 @@ export async function runInitInteractive(options: InitOptions): Promise<CommandR
       });
     };
 
+    // Ensure stdin is properly configured for Ink
+    if (process.stdin.isTTY) {
+      process.stdin.setRawMode(true);
+    }
+
     const { waitUntilExit } = render(
       <Wizard
         projectPath={projectPath}
@@ -57,7 +62,12 @@ export async function runInitInteractive(options: InitOptions): Promise<CommandR
         mergeMode={options.merge}
         autoMergeThreshold={options.autoMergeThreshold}
         onComplete={handleComplete}
-      />
+      />,
+      {
+        stdin: process.stdin,
+        stdout: process.stdout,
+        stderr: process.stderr,
+      }
     );
 
     waitUntilExit().catch((err: Error) => {
