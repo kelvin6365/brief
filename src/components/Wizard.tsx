@@ -3,7 +3,7 @@
  * Main interactive wizard for Brief CLI
  */
 
-import { Box, Text } from "ink";
+import { Box, Text, useInput } from "ink";
 import { exit } from "process";
 import React, { useCallback, useEffect, useReducer, type Reducer } from "react";
 import { detectProject } from "../detectors/index.js";
@@ -325,7 +325,7 @@ export function Wizard({
       >
         <Box flexDirection="row" gap={2}>
           <Text bold color="blue">
-            Brief CLI v{process.env.npm_package_version || "0.1.7"}
+            Brief CLI v{process.env.npm_package_version || "0.1.9"}
           </Text>
           <Text color="gray">· AI Configuration Generator</Text>
         </Box>
@@ -449,8 +449,6 @@ function ContinueHandler({
   onContinue: () => void;
   requireSelection?: boolean;
 }): React.ReactElement | null {
-  const { useInput } = require("ink");
-
   useInput((_input: string, key: { return?: boolean }) => {
     if (key.return && !requireSelection) {
       onContinue();
