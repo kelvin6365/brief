@@ -241,9 +241,40 @@ export function resolveTemplateDependencies(templateIds: string[]): string[] {
 }
 
 /**
+ * Check if a template matches any of the selected tools
+ */
+function templateMatchesTools(
+  template: TemplateDefinition,
+  selectedTools: string[]
+): boolean {
+  // If no tools selected, match all
+  if (!selectedTools || selectedTools.length === 0) {
+    return true;
+  }
+
+  const target = template.target;
+
+  // Handle array targets (e.g., ["cursor", "claude", "qoder"])
+  if (Array.isArray(target)) {
+    return selectedTools.some((tool) => target.includes(tool as typeof target[number]));
+  }
+
+  // Handle single target
+  // "shared" templates are always included
+  if (target === "shared") {
+    return true;
+  }
+
+  return selectedTools.includes(target);
+}
+
+/**
  * Get recommended templates for a project
  */
-export function getRecommendedTemplates(detection: FullProjectDetection): {
+export function getRecommendedTemplates(
+  detection: FullProjectDetection,
+  selectedTools?: string[]
+): {
   core: TemplateDefinition[];
   recommended: TemplateDefinition[];
   optional: TemplateDefinition[];
@@ -251,11 +282,16 @@ export function getRecommendedTemplates(detection: FullProjectDetection): {
   const applicable = getApplicableTemplates(detection);
   const sorted = sortTemplatesByPriority(applicable);
 
-  const core = sorted.filter((t) => t.category === "core");
-  const recommended = sorted.filter(
+  // Filter by selected tools if provided
+  const toolFiltered = selectedTools
+    ? sorted.filter((t) => templateMatchesTools(t, selectedTools))
+    : sorted;
+
+  const core = toolFiltered.filter((t) => t.category === "core");
+  const recommended = toolFiltered.filter(
     (t) => t.category === "framework" || (t.priority ?? 0) >= 700
   );
-  const optional = sorted.filter(
+  const optional = toolFiltered.filter(
     (t) => t.category === "pattern" || t.category === "project-type"
   );
 

@@ -281,6 +281,7 @@ export function Wizard({
               <TemplateSelector
                 detection={state.detection}
                 selected={state.config.templates || []}
+                selectedTools={state.config.tools || []}
                 onSelect={handleTemplateSelect}
               />
             )}

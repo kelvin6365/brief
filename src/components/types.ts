@@ -87,6 +87,7 @@ export interface ToolSelectorProps {
 export interface TemplateSelectorProps {
   detection: FullProjectDetection;
   selected: string[];
+  selectedTools: string[];
   onSelect: (templates: string[]) => void;
 }
 

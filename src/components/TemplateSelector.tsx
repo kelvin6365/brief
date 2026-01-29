@@ -47,14 +47,15 @@ function getCategoryDisplayName(category: string): string {
 export function TemplateSelector({
   detection,
   selected,
+  selectedTools,
   onSelect,
 }: TemplateSelectorProps): React.ReactElement {
   const [showAll, setShowAll] = useState(false);
 
-  // Get recommended templates based on detection
+  // Get recommended templates based on detection and selected tools
   const { core, recommended, optional } = useMemo(
-    () => getRecommendedTemplates(detection),
-    [detection]
+    () => getRecommendedTemplates(detection, selectedTools),
+    [detection, selectedTools]
   );
 
   // Core template IDs (always selected)
