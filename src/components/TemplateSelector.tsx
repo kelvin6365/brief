@@ -119,8 +119,11 @@ export function TemplateSelector({
       (t) => !visibleTemplateIds.has(t.id)
     );
 
-    // Build "all" groups including hidden ones
-    const allGroupsList = [...groups];
+    // Build "all" groups including hidden ones (deep copy to avoid mutation)
+    const allGroupsList = groups.map((g) => ({
+      ...g,
+      options: [...g.options],
+    }));
     if (remainingOptional.length > 0) {
       // Group remaining by category
       const byCategory = groupTemplatesByCategory(remainingOptional);
