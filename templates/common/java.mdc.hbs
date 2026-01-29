@@ -1,0 +1,681 @@
+---
+description: Java 21+ coding standards, modern patterns, and best practices
+globs:
+  - "**/*.java"
+priority: 900
+tags: ["java", "language", "jdk21"]
+---
+
+# Java Development Standards
+
+## Context & Applicability
+
+**When**: Editing any Java file in {{project.name}}
+**Java Version**: 21+ (LTS) with modern language features
+**Build Tool**: {{#if pomXml}}Maven{{else if buildGradle}}Gradle{{else}}Maven/Gradle{{/if}}
+
+---
+
+## Java 21+ Modern Features
+
+### Records (Immutable Data Carriers)
+
+Use records for DTOs, value objects, and immutable data:
+
+```java
+// GOOD: Record for DTO
+public record UserDTO(
+    Long id,
+    String name,
+    String email,
+    LocalDateTime createdAt
+) {
+    // Compact constructor for validation
+    public UserDTO {
+        Objects.requireNonNull(name, "name must not be null");
+        Objects.requireNonNull(email, "email must not be null");
+    }
+}
+
+// GOOD: Record with custom method
+public record Point(int x, int y) {
+    public double distanceFromOrigin() {
+        return Math.sqrt(x * x + y * y);
+    }
+}
+
+// BAD: Using class for simple immutable data
+public class UserDTO {
+    private final Long id;
+    private final String name;
+    // ... boilerplate getters, equals, hashCode, toString
+}
+```
+
+### Sealed Classes and Interfaces
+
+Use sealed types for controlled inheritance:
+
+```java
+// GOOD: Sealed interface for type-safe hierarchy
+public sealed interface PaymentMethod permits CreditCard, BankTransfer, DigitalWallet {
+    BigDecimal getTransactionFee();
+}
+
+public record CreditCard(String cardNumber, String cvv) implements PaymentMethod {
+    @Override
+    public BigDecimal getTransactionFee() {
+        return new BigDecimal("0.029"); // 2.9%
+    }
+}
+
+public record BankTransfer(String iban) implements PaymentMethod {
+    @Override
+    public BigDecimal getTransactionFee() {
+        return BigDecimal.ZERO;
+    }
+}
+
+public record DigitalWallet(String walletId) implements PaymentMethod {
+    @Override
+    public BigDecimal getTransactionFee() {
+        return new BigDecimal("0.015"); // 1.5%
+    }
+}
+```
+
+### Pattern Matching
+
+Use pattern matching for cleaner conditionals:
+
+```java
+// GOOD: Pattern matching for instanceof
+public String describe(Object obj) {
+    return switch (obj) {
+        case String s -> "String of length " + s.length();
+        case Integer i -> "Integer: " + i;
+        case List<?> list -> "List with " + list.size() + " elements";
+        case null -> "null value";
+        default -> "Unknown type: " + obj.getClass().getName();
+    };
+}
+
+// GOOD: Pattern matching with guards
+public String categorize(Shape shape) {
+    return switch (shape) {
+        case Circle c when c.radius() > 100 -> "Large circle";
+        case Circle c -> "Small circle";
+        case Rectangle r when r.width() == r.height() -> "Square";
+        case Rectangle r -> "Rectangle";
+        default -> "Unknown shape";
+    };
+}
+
+// BAD: Old-style instanceof chains
+if (obj instanceof String) {
+    String s = (String) obj;
+    // ...
+} else if (obj instanceof Integer) {
+    Integer i = (Integer) obj;
+    // ...
+}
+```
+
+### Text Blocks
+
+Use text blocks for multi-line strings:
+
+```java
+// GOOD: Text block for SQL
+String sql = """
+    SELECT u.id, u.name, u.email
+    FROM users u
+    WHERE u.status = 'ACTIVE'
+      AND u.created_at > :since
+    ORDER BY u.name
+    """;
+
+// GOOD: Text block for JSON
+String json = """
+    {
+        "name": "%s",
+        "email": "%s",
+        "roles": ["USER", "ADMIN"]
+    }
+    """.formatted(name, email);
+
+// BAD: String concatenation
+String sql = "SELECT u.id, u.name, u.email\n" +
+             "FROM users u\n" +
+             "WHERE u.status = 'ACTIVE'";
+```
+
+### Virtual Threads (Project Loom)
+
+Use virtual threads for I/O-bound operations:
+
+```java
+// GOOD: Virtual thread executor for I/O tasks
+try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    List<Future<Result>> futures = tasks.stream()
+        .map(task -> executor.submit(() -> processTask(task)))
+        .toList();
+
+    for (Future<Result> future : futures) {
+        results.add(future.get());
+    }
+}
+
+// GOOD: Structured concurrency (preview)
+try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+    Future<User> userFuture = scope.fork(() -> fetchUser(userId));
+    Future<List<Order>> ordersFuture = scope.fork(() -> fetchOrders(userId));
+
+    scope.join();
+    scope.throwIfFailed();
+
+    return new UserWithOrders(userFuture.resultNow(), ordersFuture.resultNow());
+}
+
+// NOTE: Virtual threads are NOT for CPU-bound work
+// They excel at I/O-bound operations (DB, HTTP, file I/O)
+```
+
+---
+
+## Code Style
+
+### Naming Conventions
+
+```java
+// Classes: PascalCase
+public class UserService {}
+public class OrderController {}
+
+// Interfaces: PascalCase (no 'I' prefix)
+public interface PaymentProcessor {}
+
+// Methods and variables: camelCase
+public void processPayment() {}
+private String userName;
+
+// Constants: SCREAMING_SNAKE_CASE
+public static final int MAX_RETRY_COUNT = 3;
+public static final String DEFAULT_TIMEZONE = "UTC";
+
+// Packages: lowercase, no underscores
+package com.example.service.user;
+
+// Enums: PascalCase for type, SCREAMING_SNAKE_CASE for values
+public enum OrderStatus {
+    PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+}
+```
+
+### Class Structure
+
+Organize class members in consistent order:
+
+```java
+public class UserService {
+    // 1. Static fields
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private static final int DEFAULT_PAGE_SIZE = 20;
+
+    // 2. Instance fields
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    // 3. Constructors
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    // 4. Public methods
+    public UserDTO findById(Long id) { /* ... */ }
+    public UserDTO create(CreateUserRequest request) { /* ... */ }
+
+    // 5. Package-private methods
+    void validateEmail(String email) { /* ... */ }
+
+    // 6. Private methods
+    private User mapToEntity(CreateUserRequest request) { /* ... */ }
+}
+```
+
+### Use `final` Liberally
+
+```java
+// GOOD: final for local variables
+public void process(final String input) {
+    final var result = transform(input);
+    final List<String> items = new ArrayList<>();
+    // items reference can't change, but list contents can
+}
+
+// GOOD: final for method parameters
+public UserDTO createUser(final CreateUserRequest request) {
+    // request reference cannot be reassigned
+}
+
+// GOOD: final for fields (immutability)
+public class UserService {
+    private final UserRepository repository;  // Cannot be reassigned
+}
+```
+
+---
+
+## Null Safety
+
+### Use Optional Correctly
+
+```java
+// GOOD: Optional for return types that may be absent
+public Optional<User> findByEmail(String email) {
+    return repository.findByEmail(email);
+}
+
+// GOOD: Proper Optional handling
+Optional<User> userOpt = findByEmail(email);
+User user = userOpt.orElseThrow(() ->
+    new UserNotFoundException("User not found: " + email));
+
+// GOOD: Optional chaining
+String city = user.getAddress()
+    .map(Address::getCity)
+    .orElse("Unknown");
+
+// BAD: Optional for parameters
+public void process(Optional<String> name) { } // Don't do this
+
+// BAD: Optional for fields
+private Optional<String> middleName; // Don't do this
+
+// BAD: Returning null from Optional method
+public Optional<User> findById(Long id) {
+    return null; // Never return null, use Optional.empty()
+}
+```
+
+### Null Annotations
+
+```java
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
+public class UserService {
+    // GOOD: Annotate nullability
+    @NonNull
+    public User findById(@NonNull Long id) {
+        return repository.findById(id)
+            .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    @Nullable
+    public User findByEmailOrNull(@NonNull String email) {
+        return repository.findByEmail(email).orElse(null);
+    }
+}
+```
+
+---
+
+## Collections & Streams
+
+### Prefer Immutable Collections
+
+```java
+// GOOD: Immutable list
+List<String> colors = List.of("red", "green", "blue");
+
+// GOOD: Immutable set
+Set<Integer> primes = Set.of(2, 3, 5, 7, 11);
+
+// GOOD: Immutable map
+Map<String, Integer> scores = Map.of(
+    "Alice", 95,
+    "Bob", 87,
+    "Charlie", 92
+);
+
+// GOOD: Convert to unmodifiable
+List<User> users = repository.findAll();
+return Collections.unmodifiableList(users);
+
+// BAD: Returning mutable internal collection
+public List<Order> getOrders() {
+    return this.orders; // Exposes internal state
+}
+
+// GOOD: Return defensive copy
+public List<Order> getOrders() {
+    return List.copyOf(this.orders);
+}
+```
+
+### Stream Best Practices
+
+```java
+// GOOD: Clear stream pipeline
+List<String> activeUserEmails = users.stream()
+    .filter(User::isActive)
+    .map(User::getEmail)
+    .sorted()
+    .toList();
+
+// GOOD: Collectors for complex operations
+Map<String, List<Order>> ordersByStatus = orders.stream()
+    .collect(Collectors.groupingBy(Order::getStatus));
+
+// GOOD: Use method references
+users.stream()
+    .map(User::getName)
+    .forEach(System.out::println);
+
+// BAD: Side effects in stream
+users.stream()
+    .forEach(user -> user.setProcessed(true)); // Side effect
+
+// GOOD: If mutation needed, use traditional loop
+for (User user : users) {
+    user.setProcessed(true);
+}
+
+// GOOD: Parallel streams for CPU-intensive work on large datasets
+long count = largeDataset.parallelStream()
+    .filter(this::expensiveComputation)
+    .count();
+```
+
+---
+
+## Exception Handling
+
+### Use Specific Exceptions
+
+```java
+// GOOD: Custom domain exceptions
+public class UserNotFoundException extends RuntimeException {
+    private final Long userId;
+
+    public UserNotFoundException(Long userId) {
+        super("User not found with ID: " + userId);
+        this.userId = userId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+}
+
+// GOOD: Throw specific exceptions
+public User findById(Long id) {
+    return repository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(id));
+}
+
+// BAD: Generic exceptions
+throw new Exception("Something went wrong");
+throw new RuntimeException("User not found");
+```
+
+### Try-with-resources
+
+```java
+// GOOD: Auto-closeable resources
+try (var connection = dataSource.getConnection();
+     var statement = connection.prepareStatement(sql);
+     var resultSet = statement.executeQuery()) {
+
+    while (resultSet.next()) {
+        // Process results
+    }
+}
+
+// GOOD: Custom AutoCloseable
+public class DatabaseTransaction implements AutoCloseable {
+    private final Connection connection;
+
+    @Override
+    public void close() {
+        // Cleanup logic
+    }
+}
+```
+
+---
+
+## Dependency Injection
+
+### Constructor Injection
+
+```java
+// GOOD: Constructor injection (testable, immutable)
+@Service
+public class OrderService {
+    private final OrderRepository orderRepository;
+    private final PaymentService paymentService;
+    private final NotificationService notificationService;
+
+    // Single constructor - @Autowired optional
+    public OrderService(
+            OrderRepository orderRepository,
+            PaymentService paymentService,
+            NotificationService notificationService) {
+        this.orderRepository = orderRepository;
+        this.paymentService = paymentService;
+        this.notificationService = notificationService;
+    }
+}
+
+// GOOD: With Lombok
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+    private final OrderRepository orderRepository;
+    private final PaymentService paymentService;
+    private final NotificationService notificationService;
+}
+
+// BAD: Field injection (harder to test)
+@Service
+public class OrderService {
+    @Autowired
+    private OrderRepository orderRepository; // Not testable without Spring
+}
+```
+
+---
+
+## Logging Best Practices
+
+```java
+// GOOD: Use SLF4J with Lombok
+@Slf4j
+public class UserService {
+    public void processUser(Long userId) {
+        log.debug("Processing user: {}", userId);
+
+        try {
+            // ... processing
+            log.info("User {} processed successfully", userId);
+        } catch (Exception e) {
+            log.error("Failed to process user {}", userId, e);
+            throw e;
+        }
+    }
+}
+
+// GOOD: Structured logging with MDC
+MDC.put("userId", userId.toString());
+MDC.put("requestId", requestId);
+try {
+    log.info("Processing request");
+    // ... processing
+} finally {
+    MDC.clear();
+}
+
+// BAD: String concatenation in log
+log.debug("Processing user: " + userId); // Always evaluates string
+
+// GOOD: Parameterized logging
+log.debug("Processing user: {}", userId); // Only evaluates if DEBUG enabled
+```
+
+---
+
+## Testing
+
+### JUnit 5 Patterns
+
+```java
+@DisplayName("UserService Tests")
+class UserServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private UserService userService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    @DisplayName("Should find user by ID")
+    void shouldFindUserById() {
+        // Given
+        Long userId = 1L;
+        User user = new User(userId, "John");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        // When
+        UserDTO result = userService.findById(userId);
+
+        // Then
+        assertThat(result.id()).isEqualTo(userId);
+        assertThat(result.name()).isEqualTo("John");
+        verify(userRepository).findById(userId);
+    }
+
+    @Test
+    @DisplayName("Should throw exception when user not found")
+    void shouldThrowWhenUserNotFound() {
+        // Given
+        Long userId = 999L;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        // When/Then
+        assertThatThrownBy(() -> userService.findById(userId))
+            .isInstanceOf(UserNotFoundException.class)
+            .hasMessageContaining("999");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "  "})
+    @DisplayName("Should reject blank names")
+    void shouldRejectBlankNames(String invalidName) {
+        assertThatThrownBy(() -> userService.create(invalidName))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+}
+```
+
+---
+
+## Performance Guidelines
+
+### Avoid Premature Optimization
+
+```java
+// GOOD: Clear code first, optimize when needed
+public List<User> findActiveUsers() {
+    return repository.findAll().stream()
+        .filter(User::isActive)
+        .toList();
+}
+
+// Only optimize if profiling shows this is a bottleneck:
+// 1. Add database-level filtering
+// 2. Add caching
+// 3. Use parallel processing for large datasets
+```
+
+### Use StringBuilder for String Building
+
+```java
+// GOOD: StringBuilder for loops
+StringBuilder sb = new StringBuilder();
+for (String item : items) {
+    sb.append(item).append(", ");
+}
+
+// GOOD: String.join for simple cases
+String result = String.join(", ", items);
+
+// GOOD: Collectors.joining for streams
+String result = items.stream()
+    .collect(Collectors.joining(", "));
+
+// BAD: String concatenation in loop
+String result = "";
+for (String item : items) {
+    result += item + ", "; // Creates new String each iteration
+}
+```
+
+---
+
+## Common Gotchas
+
+### Equals and HashCode
+
+```java
+// GOOD: Use records (automatic equals/hashCode)
+public record UserId(Long value) {}
+
+// GOOD: Use Lombok
+@Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class User {
+    @EqualsAndHashCode.Include
+    private Long id;
+    private String name;
+}
+
+// GOOD: Manual implementation with Objects
+@Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof User user)) return false;
+    return Objects.equals(id, user.id);
+}
+
+@Override
+public int hashCode() {
+    return Objects.hash(id);
+}
+```
+
+### BigDecimal for Money
+
+```java
+// GOOD: BigDecimal for financial calculations
+BigDecimal price = new BigDecimal("19.99");
+BigDecimal tax = price.multiply(new BigDecimal("0.08"));
+BigDecimal total = price.add(tax).setScale(2, RoundingMode.HALF_UP);
+
+// BAD: Double for money (precision issues)
+double price = 19.99;
+double tax = price * 0.08; // May produce 1.5991999999999997
+```
+
+---
+
+*Generated by Brief v{{generated.version}} for {{project.name}}*
+*Java 21+ standards - Updated: {{date "date"}}*

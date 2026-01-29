@@ -1,0 +1,1090 @@
+---
+description: Spring Boot 3.5.x patterns, production best practices, and modern Java integration
+globs:
+  - "**/src/main/java/**/*"
+  - "**/src/test/java/**/*"
+  - "**/application*.yml"
+  - "**/application*.yaml"
+  - "**/application*.properties"
+  - "**/pom.xml"
+  - "**/build.gradle*"
+priority: 800
+tags: ["springboot", "spring", "java", "backend", "api"]
+---
+
+# Spring Boot Development Standards
+
+## Context & Applicability
+
+**When**: Editing Spring Boot application files in {{project.name}}
+**Spring Boot Version**: 3.5.x (Spring Framework 6.x)
+**Java Version**: 21+ with virtual threads support
+**Purpose**: Production-grade Spring Boot patterns and best practices
+
+---
+
+## Project Structure
+
+### Standard Maven/Gradle Layout
+
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── com/example/app/
+│   │       ├── Application.java              # Main class
+│   │       ├── config/                       # Configuration classes
+│   │       │   ├── SecurityConfig.java
+│   │       │   ├── WebConfig.java
+│   │       │   └── DatabaseConfig.java
+│   │       ├── controller/                   # REST controllers
+│   │       │   ├── UserController.java
+│   │       │   └── OrderController.java
+│   │       ├── service/                      # Business logic
+│   │       │   ├── UserService.java
+│   │       │   └── OrderService.java
+│   │       ├── repository/                   # Data access
+│   │       │   ├── UserRepository.java
+│   │       │   └── OrderRepository.java
+│   │       ├── entity/                       # JPA entities
+│   │       │   ├── User.java
+│   │       │   └── Order.java
+│   │       ├── dto/                          # Data Transfer Objects
+│   │       │   ├── request/
+│   │       │   │   └── CreateUserRequest.java
+│   │       │   └── response/
+│   │       │       └── UserResponse.java
+│   │       └── exception/                    # Custom exceptions
+│   │           ├── GlobalExceptionHandler.java
+│   │           └── UserNotFoundException.java
+│   └── resources/
+│       ├── application.yml                   # Main config
+│       ├── application-dev.yml               # Dev profile
+│       ├── application-prod.yml              # Prod profile
+│       └── db/migration/                     # Flyway migrations
+└── test/
+    └── java/
+        └── com/example/app/
+            ├── controller/                   # Controller tests
+            ├── service/                      # Service tests
+            └── repository/                   # Repository tests
+```
+
+---
+
+## Layered Architecture
+
+### Architecture Principles
+
+```
+┌─────────────────────────────────────────┐
+│            Controller Layer             │  ← HTTP handling only
+│         (REST API endpoints)            │
+├─────────────────────────────────────────┤
+│             Service Layer               │  ← Business logic
+│    (Transaction boundaries, validation) │
+├─────────────────────────────────────────┤
+│           Repository Layer              │  ← Data access
+│        (Spring Data JPA/JDBC)           │
+├─────────────────────────────────────────┤
+│            Entity/Domain                │  ← Domain model
+│         (JPA entities, records)         │
+└─────────────────────────────────────────┘
+```
+
+### Key Rules
+
+1. **Controllers**: HTTP handling ONLY, delegate to services immediately
+2. **Services**: ALL business logic, transaction boundaries, return DTOs
+3. **Repositories**: Data access only, no business logic
+4. **DTOs**: Use Java Records, NEVER expose JPA entities in API responses
+
+---
+
+## REST Controllers
+
+### Controller Pattern
+
+```java
+@RestController
+@RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Users", description = "User management API")
+public class UserController {
+
+    private final UserService userService;
+
+    @GetMapping
+    public ResponseEntity<Page<UserResponse>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String[] sort) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+        return ResponseEntity.ok(userService.findAll(pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUser(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.findById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<UserResponse> createUser(
+            @Valid @RequestBody CreateUserRequest request) {
+
+        UserResponse created = userService.create(request);
+        URI location = URI.create("/api/v1/users/" + created.id());
+        return ResponseEntity.created(location).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponse> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateUserRequest request) {
+
+        return ResponseEntity.ok(userService.update(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+```
+
+### Validation
+
+```java
+// Request DTO with validation
+public record CreateUserRequest(
+    @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 100, message = "Name must be 2-100 characters")
+    String name,
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    String email,
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$",
+             message = "Password must contain uppercase, lowercase, and digit")
+    String password
+) {}
+```
+
+---
+
+## Service Layer
+
+### Service Pattern
+
+```java
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
+
+    @Transactional(readOnly = true)
+    public Page<UserResponse> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable)
+            .map(userMapper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse findById(Long id) {
+        return userRepository.findById(id)
+            .map(userMapper::toResponse)
+            .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    @Transactional
+    public UserResponse create(CreateUserRequest request) {
+        // Business validation
+        if (userRepository.existsByEmail(request.email())) {
+            throw new DuplicateEmailException(request.email());
+        }
+
+        User user = User.builder()
+            .name(request.name())
+            .email(request.email())
+            .password(passwordEncoder.encode(request.password()))
+            .status(UserStatus.ACTIVE)
+            .build();
+
+        User saved = userRepository.save(user);
+        log.info("Created user: id={}, email={}", saved.getId(), saved.getEmail());
+
+        return userMapper.toResponse(saved);
+    }
+
+    @Transactional
+    public UserResponse update(Long id, UpdateUserRequest request) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new UserNotFoundException(id));
+
+        // Update fields if present
+        Optional.ofNullable(request.name()).ifPresent(user::setName);
+        Optional.ofNullable(request.email()).ifPresent(email -> {
+            if (!email.equals(user.getEmail()) &&
+                userRepository.existsByEmail(email)) {
+                throw new DuplicateEmailException(email);
+            }
+            user.setEmail(email);
+        });
+
+        User saved = userRepository.save(user);
+        return userMapper.toResponse(saved);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new UserNotFoundException(id);
+        }
+        userRepository.deleteById(id);
+        log.info("Deleted user: id={}", id);
+    }
+}
+```
+
+### Transaction Best Practices
+
+```java
+// GOOD: Read-only transaction for queries (performance optimization)
+@Transactional(readOnly = true)
+public List<UserResponse> findActiveUsers() {
+    return userRepository.findByStatus(UserStatus.ACTIVE).stream()
+        .map(userMapper::toResponse)
+        .toList();
+}
+
+// GOOD: Explicit transaction boundaries
+@Transactional
+public void transferFunds(Long fromId, Long toId, BigDecimal amount) {
+    Account from = accountRepository.findByIdForUpdate(fromId)
+        .orElseThrow(() -> new AccountNotFoundException(fromId));
+    Account to = accountRepository.findByIdForUpdate(toId)
+        .orElseThrow(() -> new AccountNotFoundException(toId));
+
+    from.debit(amount);
+    to.credit(amount);
+
+    accountRepository.save(from);
+    accountRepository.save(to);
+}
+
+// GOOD: Programmatic transaction for complex scenarios
+@Autowired
+private TransactionTemplate transactionTemplate;
+
+public void complexOperation() {
+    transactionTemplate.execute(status -> {
+        try {
+            // ... operations
+            return null;
+        } catch (Exception e) {
+            status.setRollbackOnly();
+            throw e;
+        }
+    });
+}
+```
+
+---
+
+## Data Layer
+
+### JPA Entity
+
+```java
+@Entity
+@Table(name = "users", indexes = {
+    @Index(name = "idx_user_email", columnList = "email", unique = true),
+    @Index(name = "idx_user_status", columnList = "status")
+})
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    @Version
+    private Long version;
+
+    // Relationships
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Order> orders = new ArrayList<>();
+
+    // Helper methods for bidirectional relationship
+    public void addOrder(Order order) {
+        orders.add(order);
+        order.setUser(this);
+    }
+
+    public void removeOrder(Order order) {
+        orders.remove(order);
+        order.setUser(null);
+    }
+}
+```
+
+### Repository with N+1 Prevention
+
+```java
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    // Simple query methods
+    Optional<User> findByEmail(String email);
+    boolean existsByEmail(String email);
+    List<User> findByStatus(UserStatus status);
+
+    // GOOD: Use @EntityGraph to prevent N+1
+    @EntityGraph(attributePaths = {"orders"})
+    @Query("SELECT u FROM User u WHERE u.id = :id")
+    Optional<User> findByIdWithOrders(@Param("id") Long id);
+
+    // GOOD: Fetch join in JPQL
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        LEFT JOIN FETCH u.orders
+        WHERE u.status = :status
+        """)
+    List<User> findByStatusWithOrders(@Param("status") UserStatus status);
+
+    // GOOD: Projection for read-only views
+    @Query("SELECT u.id as id, u.name as name, u.email as email FROM User u")
+    List<UserSummary> findAllSummaries();
+
+    // GOOD: Pagination with count query optimization
+    @Query(value = "SELECT u FROM User u WHERE u.status = :status",
+           countQuery = "SELECT COUNT(u) FROM User u WHERE u.status = :status")
+    Page<User> findByStatus(@Param("status") UserStatus status, Pageable pageable);
+
+    // GOOD: Native query for complex cases
+    @Query(value = """
+        SELECT u.* FROM users u
+        WHERE u.created_at > :since
+        AND u.status = 'ACTIVE'
+        ORDER BY u.created_at DESC
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<User> findRecentActiveUsers(
+        @Param("since") LocalDateTime since,
+        @Param("limit") int limit);
+}
+
+// Projection interface
+public interface UserSummary {
+    Long getId();
+    String getName();
+    String getEmail();
+}
+```
+
+---
+
+## DTOs with Java Records
+
+### Response DTOs
+
+```java
+// Response DTO - immutable record
+public record UserResponse(
+    Long id,
+    String name,
+    String email,
+    UserStatus status,
+    LocalDateTime createdAt,
+    List<OrderSummary> orders
+) {
+    // Compact constructor for validation if needed
+    public UserResponse {
+        orders = orders != null ? List.copyOf(orders) : List.of();
+    }
+}
+
+public record OrderSummary(
+    Long id,
+    String orderNumber,
+    OrderStatus status,
+    BigDecimal total
+) {}
+```
+
+### Mapper (MapStruct Recommended)
+
+```java
+@Mapper(componentModel = "spring")
+public interface UserMapper {
+
+    @Mapping(target = "orders", source = "orders")
+    UserResponse toResponse(User user);
+
+    List<UserResponse> toResponseList(List<User> users);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "orders", ignore = true)
+    User toEntity(CreateUserRequest request);
+
+    OrderSummary toOrderSummary(Order order);
+}
+```
+
+---
+
+## Exception Handling
+
+### Global Exception Handler
+
+```java
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+    // Domain exceptions - 404
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleUserNotFound(UserNotFoundException ex) {
+        log.warn("User not found: {}", ex.getMessage());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+            HttpStatus.NOT_FOUND,
+            ex.getMessage()
+        );
+        problem.setTitle("User Not Found");
+        problem.setProperty("userId", ex.getUserId());
+        return problem;
+    }
+
+    // Business rule violations - 409
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ProblemDetail handleDuplicateEmail(DuplicateEmailException ex) {
+        log.warn("Duplicate email: {}", ex.getMessage());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            ex.getMessage()
+        );
+        problem.setTitle("Duplicate Email");
+        return problem;
+    }
+
+    // Validation errors - 400
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
+            .collect(Collectors.toMap(
+                FieldError::getField,
+                error -> error.getDefaultMessage() != null ?
+                    error.getDefaultMessage() : "Invalid value",
+                (a, b) -> a
+            ));
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+            HttpStatus.BAD_REQUEST,
+            "Validation failed"
+        );
+        problem.setTitle("Validation Error");
+        problem.setProperty("errors", errors);
+        return problem;
+    }
+
+    // Catch-all - 500
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleGeneral(Exception ex) {
+        log.error("Unexpected error", ex);
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "An unexpected error occurred"
+        );
+        problem.setTitle("Internal Server Error");
+        return problem;
+    }
+}
+```
+
+### Custom Exceptions
+
+```java
+public class UserNotFoundException extends RuntimeException {
+    @Getter
+    private final Long userId;
+
+    public UserNotFoundException(Long userId) {
+        super("User not found with ID: " + userId);
+        this.userId = userId;
+    }
+}
+
+public class DuplicateEmailException extends RuntimeException {
+    public DuplicateEmailException(String email) {
+        super("Email already exists: " + email);
+    }
+}
+```
+
+---
+
+## Configuration
+
+### Application YAML
+
+```yaml
+# application.yml
+spring:
+  application:
+    name: {{kebabCase project.name}}
+
+  # Virtual threads (Java 21+)
+  threads:
+    virtual:
+      enabled: true
+
+  # Database
+  datasource:
+    url: jdbc:postgresql://localhost:5432/myapp
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  # JPA
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Use Flyway for migrations
+    open-in-view: false   # Disable OSIV anti-pattern
+    properties:
+      hibernate:
+        default_batch_fetch_size: 20
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+
+  # Flyway
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# application-dev.yml
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  h2:
+    console:
+      enabled: true
+
+---
+# application-prod.yml
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+
+logging:
+  level:
+    root: WARN
+    com.example: INFO
+```
+
+### Security Configuration (Spring Security 6.x)
+
+```java
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+            .build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+```
+
+---
+
+## Testing
+
+### Controller Tests (Slice Test)
+
+```java
+@WebMvcTest(UserController.class)
+@Import(SecurityConfig.class)
+class UserControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean  // Spring Boot 3.4+ (replaces @MockBean)
+    private UserService userService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /api/v1/users/{id} - Should return user")
+    void shouldReturnUser() throws Exception {
+        // Given
+        Long userId = 1L;
+        UserResponse user = new UserResponse(
+            userId, "John", "john@example.com",
+            UserStatus.ACTIVE, LocalDateTime.now(), List.of()
+        );
+        when(userService.findById(userId)).thenReturn(user);
+
+        // When/Then
+        mockMvc.perform(get("/api/v1/users/{id}", userId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(userId))
+            .andExpect(jsonPath("$.name").value("John"))
+            .andExpect(jsonPath("$.email").value("john@example.com"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /api/v1/users - Should create user")
+    void shouldCreateUser() throws Exception {
+        // Given
+        CreateUserRequest request = new CreateUserRequest(
+            "John", "john@example.com", "Password123"
+        );
+        UserResponse response = new UserResponse(
+            1L, "John", "john@example.com",
+            UserStatus.ACTIVE, LocalDateTime.now(), List.of()
+        );
+        when(userService.create(any())).thenReturn(response);
+
+        // When/Then
+        mockMvc.perform(post("/api/v1/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(header().exists("Location"))
+            .andExpect(jsonPath("$.id").value(1L));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("POST /api/v1/users - Should return 400 for invalid request")
+    void shouldReturn400ForInvalidRequest() throws Exception {
+        // Given
+        CreateUserRequest request = new CreateUserRequest("", "invalid-email", "short");
+
+        // When/Then
+        mockMvc.perform(post("/api/v1/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.errors").isMap());
+    }
+}
+```
+
+### Service Tests (Unit Test)
+
+```java
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private UserMapper userMapper;
+
+    @InjectMocks
+    private UserService userService;
+
+    @Test
+    @DisplayName("Should create user successfully")
+    void shouldCreateUser() {
+        // Given
+        CreateUserRequest request = new CreateUserRequest(
+            "John", "john@example.com", "password123"
+        );
+        User user = User.builder()
+            .id(1L)
+            .name("John")
+            .email("john@example.com")
+            .build();
+        UserResponse response = new UserResponse(
+            1L, "John", "john@example.com",
+            UserStatus.ACTIVE, LocalDateTime.now(), List.of()
+        );
+
+        when(userRepository.existsByEmail("john@example.com")).thenReturn(false);
+        when(passwordEncoder.encode("password123")).thenReturn("encoded");
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userMapper.toResponse(user)).thenReturn(response);
+
+        // When
+        UserResponse result = userService.create(request);
+
+        // Then
+        assertThat(result.id()).isEqualTo(1L);
+        assertThat(result.name()).isEqualTo("John");
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should throw when email already exists")
+    void shouldThrowWhenEmailExists() {
+        // Given
+        CreateUserRequest request = new CreateUserRequest(
+            "John", "existing@example.com", "password123"
+        );
+        when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
+
+        // When/Then
+        assertThatThrownBy(() -> userService.create(request))
+            .isInstanceOf(DuplicateEmailException.class)
+            .hasMessageContaining("existing@example.com");
+
+        verify(userRepository, never()).save(any());
+    }
+}
+```
+
+### Integration Tests
+
+```java
+@SpringBootTest
+@AutoConfigureMockMvc
+@Testcontainers
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+class UserIntegrationTest {
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
+    }
+
+    @Test
+    @DisplayName("Full user CRUD flow")
+    void shouldPerformFullCrudFlow() throws Exception {
+        // Create
+        CreateUserRequest createRequest = new CreateUserRequest(
+            "John", "john@example.com", "Password123"
+        );
+
+        String response = mockMvc.perform(post("/api/v1/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString();
+
+        Long userId = objectMapper.readTree(response).get("id").asLong();
+
+        // Read
+        mockMvc.perform(get("/api/v1/users/{id}", userId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("John"));
+
+        // Update
+        UpdateUserRequest updateRequest = new UpdateUserRequest("John Doe", null);
+        mockMvc.perform(put("/api/v1/users/{id}", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("John Doe"));
+
+        // Delete
+        mockMvc.perform(delete("/api/v1/users/{id}", userId))
+            .andExpect(status().isNoContent());
+
+        // Verify deleted
+        mockMvc.perform(get("/api/v1/users/{id}", userId))
+            .andExpect(status().isNotFound());
+    }
+}
+```
+
+### Repository Tests (Slice Test)
+
+```java
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Testcontainers
+class UserRepositoryTest {
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Test
+    @DisplayName("Should find user by email")
+    void shouldFindByEmail() {
+        // Given
+        User user = User.builder()
+            .name("John")
+            .email("john@example.com")
+            .password("encoded")
+            .status(UserStatus.ACTIVE)
+            .build();
+        userRepository.save(user);
+
+        // When
+        Optional<User> found = userRepository.findByEmail("john@example.com");
+
+        // Then
+        assertThat(found).isPresent();
+        assertThat(found.get().getName()).isEqualTo("John");
+    }
+}
+```
+
+---
+
+## Virtual Threads (Java 21+)
+
+### Configuration
+
+```yaml
+# application.yml
+spring:
+  threads:
+    virtual:
+      enabled: true  # Enables virtual threads for all request handling
+```
+
+### When to Use
+
+```java
+// GOOD: I/O-bound operations benefit from virtual threads
+@Service
+public class ExternalApiService {
+
+    private final RestClient restClient;
+
+    // Virtual threads handle blocking I/O efficiently
+    public List<Data> fetchFromMultipleApis(List<String> urls) {
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            return urls.stream()
+                .map(url -> executor.submit(() -> restClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .body(Data.class)))
+                .map(future -> {
+                    try {
+                        return future.get();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+        }
+    }
+}
+
+// WARNING: CPU-bound work doesn't benefit
+// Virtual threads excel at I/O, not computation
+```
+
+---
+
+## Production Checklist
+
+### Pre-deployment
+
+- [ ] `spring.jpa.hibernate.ddl-auto=validate` (not create/update)
+- [ ] Database migrations with Flyway/Liquibase
+- [ ] `spring.jpa.open-in-view=false` (disable OSIV)
+- [ ] Connection pool configured (HikariCP)
+- [ ] Actuator endpoints secured
+- [ ] Secrets externalized (env vars or secrets manager)
+- [ ] Health checks configured
+- [ ] Logging levels appropriate
+- [ ] Error handling comprehensive
+- [ ] Input validation on all endpoints
+
+### Observability
+
+- [ ] Health endpoint exposed (`/actuator/health`)
+- [ ] Metrics with Micrometer
+- [ ] Structured logging (JSON format)
+- [ ] Distributed tracing (if microservices)
+- [ ] Alerting configured
+
+### Security
+
+- [ ] HTTPS enforced
+- [ ] CORS configured properly
+- [ ] CSRF protection (if needed)
+- [ ] Rate limiting
+- [ ] Input sanitization
+- [ ] SQL injection prevention (parameterized queries)
+- [ ] Authentication/Authorization
+
+---
+
+## Common Anti-Patterns
+
+### Avoid These
+
+```java
+// BAD: Exposing JPA entities in API
+@GetMapping("/{id}")
+public User getUser(@PathVariable Long id) {
+    return userRepository.findById(id).orElseThrow();
+}
+
+// BAD: Business logic in controller
+@PostMapping
+public UserResponse createUser(@RequestBody CreateUserRequest request) {
+    if (userRepository.existsByEmail(request.email())) {
+        throw new DuplicateEmailException(request.email());
+    }
+    // ... more business logic
+}
+
+// BAD: Field injection
+@Autowired
+private UserRepository userRepository;
+
+// BAD: Open Session in View (causes lazy loading issues)
+spring.jpa.open-in-view=true
+
+// BAD: Using @Transactional on controller
+@Transactional
+@GetMapping("/{id}")
+public UserResponse getUser(@PathVariable Long id) { ... }
+
+// BAD: Catching generic Exception
+catch (Exception e) {
+    log.error("Error", e);
+    return null;
+}
+```
+
+---
+
+*Generated by Brief v{{generated.version}} for {{project.name}}*
+*Spring Boot 3.5.x standards - Updated: {{date "date"}}*

@@ -5,7 +5,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { globby } from "globby";
-import type { DetectionContext, PackageJson } from "./types.js";
+import type { DetectionContext, PackageJson, PomXmlInfo, MavenDependency } from "./types.js";
 
 /**
  * Read and parse package.json from a directory
@@ -46,6 +46,98 @@ export async function readPythonRequirements(projectPath: string): Promise<strin
     // Read error
   }
   return [];
+}
+
+/**
+ * Read and parse Maven pom.xml file
+ * Uses simple regex parsing to avoid XML parser dependency
+ */
+export async function readPomXml(projectPath: string): Promise<PomXmlInfo | null> {
+  const pomPath = path.join(projectPath, "pom.xml");
+  try {
+    if (await fs.pathExists(pomPath)) {
+      const content = await fs.readFile(pomPath, "utf-8");
+      return parsePomXml(content);
+    }
+  } catch {
+    // Read or parse error
+  }
+  return null;
+}
+
+/**
+ * Parse pom.xml content using regex (simple parser without XML dependency)
+ */
+function parsePomXml(content: string): PomXmlInfo {
+  const dependencies: MavenDependency[] = [];
+
+  // Extract parent info
+  const parentMatch = content.match(/<parent>([\s\S]*?)<\/parent>/);
+  let parent: PomXmlInfo["parent"] | undefined;
+  if (parentMatch) {
+    const parentContent = parentMatch[1];
+    if (parentContent) {
+      const parentGroupId = parentContent.match(/<groupId>([^<]+)<\/groupId>/)?.[1];
+      const parentArtifactId = parentContent.match(/<artifactId>([^<]+)<\/artifactId>/)?.[1];
+      const parentVersion = parentContent.match(/<version>([^<]+)<\/version>/)?.[1];
+      if (parentGroupId && parentArtifactId) {
+        parent = { groupId: parentGroupId, artifactId: parentArtifactId, version: parentVersion };
+      }
+    }
+  }
+
+  // Extract project-level groupId, artifactId, version (outside of parent and dependencies)
+  // Remove parent section first to avoid matching parent values
+  const contentWithoutParent = content.replace(/<parent>[\s\S]*?<\/parent>/, "");
+  const projectGroupId = contentWithoutParent.match(/<groupId>([^<]+)<\/groupId>/)?.[1];
+  const projectArtifactId = contentWithoutParent.match(/<artifactId>([^<]+)<\/artifactId>/)?.[1];
+  const projectVersion = contentWithoutParent.match(/<version>([^<]+)<\/version>/)?.[1];
+
+  // Extract dependencies
+  const dependenciesMatch = content.match(/<dependencies>([\s\S]*?)<\/dependencies>/);
+  if (dependenciesMatch) {
+    const depsContent = dependenciesMatch[1];
+    if (depsContent) {
+      const depMatches = depsContent.matchAll(/<dependency>([\s\S]*?)<\/dependency>/g);
+      for (const match of depMatches) {
+        const depContent = match[1];
+        if (!depContent) continue;
+        const groupId = depContent.match(/<groupId>([^<]+)<\/groupId>/)?.[1];
+        const artifactId = depContent.match(/<artifactId>([^<]+)<\/artifactId>/)?.[1];
+        const version = depContent.match(/<version>([^<]+)<\/version>/)?.[1];
+        if (groupId && artifactId) {
+          dependencies.push({ groupId, artifactId, version });
+        }
+      }
+    }
+  }
+
+  return {
+    groupId: projectGroupId,
+    artifactId: projectArtifactId,
+    version: projectVersion,
+    parent,
+    dependencies,
+  };
+}
+
+/**
+ * Read build.gradle or build.gradle.kts content
+ */
+export async function readBuildGradle(projectPath: string): Promise<string | null> {
+  const gradlePath = path.join(projectPath, "build.gradle");
+  const gradleKtsPath = path.join(projectPath, "build.gradle.kts");
+  try {
+    if (await fs.pathExists(gradlePath)) {
+      return await fs.readFile(gradlePath, "utf-8");
+    }
+    if (await fs.pathExists(gradleKtsPath)) {
+      return await fs.readFile(gradleKtsPath, "utf-8");
+    }
+  } catch {
+    // Read error
+  }
+  return null;
 }
 
 /**
@@ -96,6 +188,52 @@ export function hasPythonPackage(context: DetectionContext, name: string): boole
 }
 
 /**
+ * Check if a Maven dependency exists in pom.xml
+ * Matches by artifactId (and optionally groupId)
+ */
+export function hasMavenDependency(
+  context: DetectionContext,
+  artifactId: string,
+  groupId?: string
+): boolean {
+  if (!context.pomXml) return false;
+
+  // Check in dependencies
+  const found = context.pomXml.dependencies.some((dep) => {
+    if (groupId) {
+      return dep.artifactId === artifactId && dep.groupId === groupId;
+    }
+    return dep.artifactId === artifactId || dep.artifactId.includes(artifactId);
+  });
+
+  if (found) return true;
+
+  // Check in parent (for Spring Boot starter parent)
+  if (context.pomXml.parent) {
+    if (groupId) {
+      return (
+        context.pomXml.parent.artifactId === artifactId &&
+        context.pomXml.parent.groupId === groupId
+      );
+    }
+    return (
+      context.pomXml.parent.artifactId === artifactId ||
+      context.pomXml.parent.artifactId.includes(artifactId)
+    );
+  }
+
+  return false;
+}
+
+/**
+ * Check if build.gradle contains a specific pattern (for Spring Boot plugin/dependency)
+ */
+export function hasGradleDependency(context: DetectionContext, pattern: string): boolean {
+  if (!context.buildGradleContent) return false;
+  return context.buildGradleContent.includes(pattern);
+}
+
+/**
  * Count files matching a pattern
  */
 export function countFiles(context: DetectionContext, pattern: RegExp): number {
@@ -126,12 +264,15 @@ export async function buildDetectionContext(projectPath: string): Promise<Detect
     dot: true,
   });
 
-  const [packageJson, pythonRequirements, goMod, cargoToml] = await Promise.all([
-    readPackageJson(projectPath),
-    readPythonRequirements(projectPath),
-    fileExists(projectPath, "go.mod"),
-    fileExists(projectPath, "Cargo.toml"),
-  ]);
+  const [packageJson, pythonRequirements, goMod, cargoToml, pomXml, buildGradleContent] =
+    await Promise.all([
+      readPackageJson(projectPath),
+      readPythonRequirements(projectPath),
+      fileExists(projectPath, "go.mod"),
+      fileExists(projectPath, "Cargo.toml"),
+      readPomXml(projectPath),
+      readBuildGradle(projectPath),
+    ]);
 
   return {
     projectPath,
@@ -140,5 +281,8 @@ export async function buildDetectionContext(projectPath: string): Promise<Detect
     pythonRequirements,
     goMod,
     cargoToml,
+    pomXml,
+    buildGradle: buildGradleContent !== null,
+    buildGradleContent,
   };
 }

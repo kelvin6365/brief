@@ -8,12 +8,19 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🆕 What's New (2026-01-28)
+## 🆕 What's New (2026-01-29)
 
-### 🚀 Production-Grade Enhancements
+### ☕ Java & Spring Boot Support
+
+- **🌱 Spring Boot 3.5.x** - 700+ lines of production patterns, virtual threads, layered architecture
+- **☕ Java 21+ Template** - Records, sealed classes, pattern matching, modern idioms
+- **🔍 Auto-Detection** - Maven pom.xml & Gradle build.gradle support for Spring Boot projects
+- **📦 New Bundle** - `spring-boot-api` bundle with Java, Spring Boot, API, security, testing
+
+### 🚀 Previous: Production-Grade Enhancements (2026-01-28)
 
 - **✨ Prisma ORM Support** - 750+ lines of Prisma 7.0 best practices, N+1 prevention, type safety patterns
-- **🧠 AI Memory Management** - Context optimization, token efficiency, 4-layer memory system (NEW!)
+- **🧠 AI Memory Management** - Context optimization, token efficiency, 4-layer memory system
 - **📈 2026 Cursor Rules** - Enhanced core & TypeScript templates with AI agent protocol
 - **🔧 Template Engine Fix** - Fixed `contains` helper for framework detection in Qoder templates
 - **📚 Complete Documentation** - ARCHITECTURE.md & TECH-STACK.md fully updated
@@ -139,6 +146,10 @@ npx @tszhim_tech/brief templates
 | **Distribution**             |            |                                          |
 | NPM Package                  | ✅ Done    | `npm install -g @tszhim_tech/brief`      |
 | Standalone Binary            | ⏳ Planned | `bun build --compile`                    |
+| **Java/Spring Boot (NEW)**   |            |                                          |
+| Java Language Rules          | ✅ Done    | Java 21+ patterns, records, virtual threads |
+| Spring Boot Rules            | ✅ Done    | Spring Boot 3.5.x patterns, 700+ lines   |
+| Spring Boot Detection        | ✅ Done    | Maven pom.xml & Gradle detection         |
 | **Future Features**          |            |                                          |
 | AI-powered Generation        | 💡 Future  | LLM-assisted templates                   |
 | Template Marketplace         | 💡 Future  | Share/download templates                 |
@@ -295,9 +306,11 @@ brief templates
 
 # Output includes:
 # - cursor-core (424 lines, 2026 enhanced)
-# - cursor-memory (450 lines, NEW!)
+# - cursor-memory (450 lines)
 # - typescript (577 lines, TS 5.x+ advanced)
-# - prisma (750+ lines, Prisma 7.0, NEW!)
+# - java (400+ lines, Java 21+, NEW!)
+# - springboot (700+ lines, Spring Boot 3.5.x, NEW!)
+# - prisma (750+ lines, Prisma 7.0)
 # - react, nextjs, vue, express, fastapi
 # - testing, security, performance, api-design
 # - 10 Qoder templates (core, security, testing, etc.)
@@ -382,13 +395,14 @@ docs/
 - TypeScript (5.x+ advanced patterns)
 - JavaScript (ES2022+)
 - Python (PEP 8, type hints)
+- **Java** (21+ with records, virtual threads, pattern matching)
 - Go
-- Java
 
 ### Frameworks
 - **Frontend**: React, Next.js, Vue, Nuxt, Svelte, SvelteKit, Astro
 - **Backend**: Express, Fastify, Koa, NestJS
 - **Python**: FastAPI, Django, Flask
+- **Java**: **Spring Boot** (3.5.x), Spring Data JPA, Spring Security
 - **Full-Stack**: Next.js, Remix, SvelteKit
 
 ### Databases & ORMs
@@ -469,9 +483,13 @@ brief/
 ├── templates/              # Handlebars templates
 │   ├── cursor/
 │   │   ├── core.mdc.hbs            # 424 lines (2026 enhanced)
-│   │   ├── memory-management.mdc.hbs # 450 lines (NEW!)
+│   │   ├── memory-management.mdc.hbs # 450 lines
+│   │   └── ...
+│   ├── common/
 │   │   ├── typescript.mdc.hbs      # 577 lines (TS 5.x+)
-│   │   ├── prisma.mdc.hbs          # 750+ lines (NEW!)
+│   │   ├── java.mdc.hbs            # 400+ lines (Java 21+, NEW!)
+│   │   ├── springboot.mdc.hbs      # 700+ lines (Spring Boot 3.5.x, NEW!)
+│   │   ├── prisma.mdc.hbs          # 750+ lines
 │   │   └── ...
 │   ├── claude/
 │   │   ├── CLAUDE.md.hbs

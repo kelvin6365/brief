@@ -14,6 +14,26 @@ export interface PackageJson {
   scripts?: Record<string, string>;
 }
 
+/** Maven pom.xml dependency info */
+export interface MavenDependency {
+  groupId: string;
+  artifactId: string;
+  version?: string;
+}
+
+/** Parsed pom.xml info */
+export interface PomXmlInfo {
+  groupId?: string;
+  artifactId?: string;
+  version?: string;
+  parent?: {
+    groupId: string;
+    artifactId: string;
+    version?: string;
+  };
+  dependencies: MavenDependency[];
+}
+
 /** Detection context shared across all detectors */
 export interface DetectionContext {
   projectPath: string;
@@ -22,6 +42,12 @@ export interface DetectionContext {
   pythonRequirements: string[];
   goMod: boolean;
   cargoToml: boolean;
+  /** Parsed Maven pom.xml info */
+  pomXml: PomXmlInfo | null;
+  /** Whether build.gradle or build.gradle.kts exists */
+  buildGradle: boolean;
+  /** Content of build.gradle for dependency checking */
+  buildGradleContent: string | null;
 }
 
 /** Generic detector result with confidence score */

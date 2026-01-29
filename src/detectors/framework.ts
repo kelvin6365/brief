@@ -3,7 +3,15 @@
  */
 
 import type { DetectionContext, FrameworkInfo, FrameworkCategory } from "./types.js";
-import { hasDependency, getDependencyVersion, hasFile, hasPythonPackage, countFiles } from "./utils.js";
+import {
+  hasDependency,
+  getDependencyVersion,
+  hasFile,
+  hasPythonPackage,
+  countFiles,
+  hasMavenDependency,
+  hasGradleDependency,
+} from "./utils.js";
 
 interface FrameworkDefinition {
   name: string;
@@ -225,6 +233,68 @@ const frameworkDefinitions: FrameworkDefinition[] = [
     },
   },
 
+  // Java frameworks
+  {
+    name: "Spring Boot",
+    category: "backend",
+    detect: (ctx) => {
+      const hasAppConfig =
+        hasFile(ctx, "application.properties") ||
+        hasFile(ctx, "application.yml") ||
+        hasFile(ctx, "application.yaml") ||
+        hasFile(ctx, /src\/main\/resources\/application/);
+
+      // Check Maven pom.xml for Spring Boot
+      if (ctx.pomXml) {
+        // Check parent (spring-boot-starter-parent)
+        const hasSpringParent =
+          ctx.pomXml.parent?.artifactId === "spring-boot-starter-parent" ||
+          ctx.pomXml.parent?.groupId === "org.springframework.boot";
+
+        // Check dependencies for any spring-boot-starter
+        const hasSpringDep = hasMavenDependency(ctx, "spring-boot-starter");
+
+        if (hasSpringParent || hasSpringDep) {
+          return {
+            confidence: hasAppConfig ? 95 : 85,
+            source: hasAppConfig
+              ? "pom.xml spring-boot + application config"
+              : "pom.xml spring-boot dependency",
+          };
+        }
+      }
+
+      // Check Gradle build.gradle for Spring Boot
+      if (ctx.buildGradle && ctx.buildGradleContent) {
+        const hasSpringPlugin =
+          hasGradleDependency(ctx, "org.springframework.boot") ||
+          hasGradleDependency(ctx, "spring-boot-starter");
+
+        if (hasSpringPlugin) {
+          return {
+            confidence: hasAppConfig ? 95 : 90,
+            source: hasAppConfig
+              ? "build.gradle spring-boot + application config"
+              : "build.gradle spring-boot plugin",
+          };
+        }
+      }
+
+      // Fallback: Check for Spring Boot application class pattern
+      const hasAppClass = ctx.files.some(
+        (f) => /Application\.java$/.test(f) || /@SpringBootApplication/.test(f)
+      );
+      if (hasAppClass && hasAppConfig) {
+        return {
+          confidence: 80,
+          source: "Spring Boot application class + config",
+        };
+      }
+
+      return null;
+    },
+  },
+
   // Mobile frameworks
   {
     name: "React Native",
@@ -324,6 +394,7 @@ function getMainDependency(frameworkName: string): string {
     Expo: "expo",
     Electron: "electron",
     Storybook: "@storybook/react",
+    "Spring Boot": "spring-boot-starter-web",
   };
   return dependencyMap[frameworkName] || frameworkName.toLowerCase();
 }

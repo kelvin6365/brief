@@ -89,6 +89,19 @@ export const LANGUAGE_TEMPLATES: TemplateDefinition[] = [
     conditions: [{ type: "language", value: "python" }],
     tags: ["language", "python"],
   },
+  {
+    id: "java",
+    name: "Java",
+    description: "Java 21+ coding standards and modern patterns",
+    target: ["cursor", "claude", "qoder"],
+    category: "framework",
+    templatePath: "common/java.mdc.hbs",
+    outputPath: ".cursor/rules/java.mdc",
+    globs: ["**/*.java"],
+    priority: 900,
+    conditions: [{ type: "language", value: "java" }],
+    tags: ["language", "java", "jdk21"],
+  },
 ];
 
 /**
@@ -167,6 +180,27 @@ export const FRAMEWORK_TEMPLATES: TemplateDefinition[] = [
     dependencies: ["python"],
     conditions: [{ type: "framework", value: "fastapi" }],
     tags: ["framework", "fastapi", "python", "backend", "api"],
+  },
+  // Spring Boot
+  {
+    id: "springboot",
+    name: "Spring Boot",
+    description: "Spring Boot 3.5.x patterns and production best practices",
+    target: ["cursor", "claude", "qoder"],
+    category: "framework",
+    templatePath: "common/springboot.mdc.hbs",
+    outputPath: ".cursor/rules/springboot.mdc",
+    globs: [
+      "**/src/main/java/**/*",
+      "**/src/test/java/**/*",
+      "**/application*.yml",
+      "**/application*.yaml",
+      "**/application*.properties",
+    ],
+    priority: 800,
+    dependencies: ["java"],
+    conditions: [{ type: "framework", value: "spring" }],
+    tags: ["framework", "springboot", "java", "backend", "api"],
   },
 ];
 
@@ -595,6 +629,22 @@ export const TEMPLATE_BUNDLES: TemplateBundle[] = [
     description: "Command-line application",
     templates: ["cursor-core", "claude-core", "typescript", "cli", "testing"],
     tags: ["cli"],
+  },
+  {
+    id: "spring-boot-api",
+    name: "Spring Boot API",
+    description: "Spring Boot backend API development with Java 21+",
+    templates: [
+      "cursor-core",
+      "claude-core",
+      "java",
+      "springboot",
+      "api-design",
+      "database",
+      "security",
+      "testing",
+    ],
+    tags: ["backend", "java", "api", "spring"],
   },
 ];
 
