@@ -61,6 +61,16 @@ export interface SelectOption<T = string> {
   disabled?: boolean;
 }
 
+/** Grouped select option with section header */
+export interface SelectOptionGroup<T = string> {
+  /** Group header label */
+  header: string;
+  /** Options in this group */
+  options: SelectOption<T>[];
+  /** Whether this group is collapsed */
+  collapsed?: boolean;
+}
+
 /** Props for ProjectInfo component */
 export interface ProjectInfoProps {
   detection: FullProjectDetection;

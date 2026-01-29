@@ -9,6 +9,7 @@ export type {
   WizardAction,
   WizardConfig,
   SelectOption,
+  SelectOptionGroup,
   ProjectInfoProps,
   ToolSelectorProps,
   TemplateSelectorProps,
@@ -26,6 +27,8 @@ export type { ProgressBarProps } from "./ProgressBar.js";
 export { ProjectInfo } from "./ProjectInfo.js";
 export { SelectList } from "./SelectList.js";
 export type { SelectListProps } from "./SelectList.js";
+export { GroupedSelectList } from "./GroupedSelectList.js";
+export type { GroupedSelectListProps } from "./GroupedSelectList.js";
 export { ToolSelector } from "./ToolSelector.js";
 export { TemplateSelector } from "./TemplateSelector.js";
 export { Results } from "./Results.js";
