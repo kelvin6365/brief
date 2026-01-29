@@ -11,7 +11,7 @@
     "releaseName": "v${version}"
   },
   "npm": {
-    "publish": false
+    "publish": true
   },
   "hooks": {
     "before:init": ["bun run type-check", "bun run build", "bun test"]
