@@ -332,7 +332,7 @@ export function dirname(filePath: string): string {
  * Get file name from path
  */
 export function basename(filePath: string, ext?: string): string {
-  return path.basename(filePath, ext);
+  return ext !== undefined ? path.basename(filePath, ext) : path.basename(filePath);
 }
 
 /**
