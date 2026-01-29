@@ -3,28 +3,39 @@
  * Displays detected project information
  */
 
+import { Box, Text } from "ink";
 import React from "react";
-import { Text, Box } from "ink";
 import type { ProjectInfoProps } from "./types.js";
 
-export function ProjectInfo({ detection, projectPath }: ProjectInfoProps): React.ReactElement {
-  const { language, packageManager, frameworks, testing, database, buildTools, styling } = detection;
+export function ProjectInfo({
+  detection,
+  projectPath,
+}: ProjectInfoProps): React.ReactElement {
+  const {
+    language,
+    packageManager,
+    frameworks,
+    testing,
+    database,
+    buildTools,
+    styling,
+  } = detection;
 
   return (
-    <Box
-      borderStyle="round"
-      borderColor="green"
-      paddingX={2}
-      paddingY={1}
-      flexDirection="column"
-    >
+    <Box flexDirection="column">
       <Box marginBottom={1}>
-        <Text bold color="green">✓ Project Detected</Text>
+        <Text bold color="green">
+          ✓ Project Detected
+        </Text>
       </Box>
 
       <Box flexDirection="column">
         <InfoRow label="📁 Path" value={projectPath} />
-        <InfoRow label="💬 Language" value={language.primary} confidence={language.confidence} />
+        <InfoRow
+          label="💬 Language"
+          value={language.primary}
+          confidence={language.confidence}
+        />
         <InfoRow label="📦 Package Manager" value={packageManager.name} />
 
         {frameworks.length > 0 && (
@@ -78,7 +89,11 @@ interface InfoRowProps {
   confidence?: number;
 }
 
-function InfoRow({ label, value, confidence }: InfoRowProps): React.ReactElement {
+function InfoRow({
+  label,
+  value,
+  confidence,
+}: InfoRowProps): React.ReactElement {
   return (
     <Box>
       <Text color="gray">{label}: </Text>
@@ -92,13 +107,19 @@ interface ConfidenceBadgeProps {
   confidence: number;
 }
 
-function ConfidenceBadge({ confidence }: ConfidenceBadgeProps): React.ReactElement {
+function ConfidenceBadge({
+  confidence,
+}: ConfidenceBadgeProps): React.ReactElement {
   // Confidence is already 0-100, not 0-1
   const percentage = Math.round(confidence);
-  const color = confidence >= 80 ? "green" : confidence >= 50 ? "yellow" : "red";
+  const color =
+    confidence >= 80 ? "green" : confidence >= 50 ? "yellow" : "red";
 
   return (
-    <Text color={color} dimColor> ({percentage}%)</Text>
+    <Text color={color} dimColor>
+      {" "}
+      ({percentage}%)
+    </Text>
   );
 }
 

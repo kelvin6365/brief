@@ -3,20 +3,26 @@
  * Main interactive wizard for Brief CLI
  */
 
-import React, { useReducer, useEffect, useCallback, type Reducer } from "react";
-import { Text, Box, useApp } from "ink";
-import type { WizardState, WizardAction, WizardStep, WizardConfig } from "./types.js";
-import type { AiInitConfig, AiTool } from "../types/index.js";
-import { Spinner } from "./Spinner.js";
-import { StatusMessage } from "./StatusMessage.js";
-import { ProjectInfo } from "./ProjectInfo.js";
-import { ToolSelector } from "./ToolSelector.js";
-import { TemplateSelector } from "./TemplateSelector.js";
-import { ConfirmStep } from "./ConfirmStep.js";
-import { Results } from "./Results.js";
+import { Box, Text, useInput } from "ink";
+import { exit } from "process";
+import React, { useCallback, useEffect, useReducer, type Reducer } from "react";
 import { detectProject } from "../detectors/index.js";
 import { runGenerators } from "../generators/index.js";
+import type { AiInitConfig, AiTool } from "../types/index.js";
 import { getTerminalChars } from "../utils/terminal.js";
+import { ConfirmStep } from "./ConfirmStep.js";
+import { ProjectInfo } from "./ProjectInfo.js";
+import { Results } from "./Results.js";
+import { Spinner } from "./Spinner.js";
+import { StatusMessage } from "./StatusMessage.js";
+import { TemplateSelector } from "./TemplateSelector.js";
+import { ToolSelector } from "./ToolSelector.js";
+import type {
+  WizardAction,
+  WizardConfig,
+  WizardState,
+  WizardStep,
+} from "./types.js";
 
 export interface WizardProps {
   /** Project path to configure */
@@ -33,6 +39,8 @@ export interface WizardProps {
   mergeMode?: boolean;
   /** Similarity threshold for auto-merge (0-1) */
   autoMergeThreshold?: number;
+  /** Whether raw mode is supported on stdin */
+  isRawModeSupported?: boolean;
   /** Callback when wizard completes */
   onComplete?: (success: boolean) => void;
 }
@@ -101,18 +109,21 @@ export function Wizard({
   dryRun = false,
   mergeMode = false,
   autoMergeThreshold,
+  isRawModeSupported = true,
   onComplete,
 }: WizardProps): React.ReactElement {
-  const { exit } = useApp();
-  const [state, dispatch] = useReducer<Reducer<WizardState, WizardAction>>(wizardReducer, {
-    ...initialState,
-    projectPath,
-    config: {
-      ...initialConfig,
-      tools: preselectedTools || [],
-      templates: preselectedTemplates || [],
-    },
-  });
+  const [state, dispatch] = useReducer<Reducer<WizardState, WizardAction>>(
+    wizardReducer,
+    {
+      ...initialState,
+      projectPath,
+      config: {
+        ...initialConfig,
+        tools: preselectedTools || [],
+        templates: preselectedTemplates || [],
+      },
+    }
+  );
 
   // Run detection on mount
   useEffect(() => {
@@ -147,7 +158,8 @@ export function Wizard({
       }
 
       try {
-        const tools = state.config.tools.length > 0 ? state.config.tools : ["hybrid"];
+        const tools =
+          state.config.tools.length > 0 ? state.config.tools : ["hybrid"];
         const config: AiInitConfig = {
           version: state.config.version || "1.0.0",
           projectType: state.config.projectType || "app",
@@ -183,7 +195,16 @@ export function Wizard({
     if (state.step === "generating") {
       runGeneration();
     }
-  }, [state.step, state.detection, state.config, projectPath, dryRun, mergeMode, autoMergeThreshold, onComplete, exit]);
+  }, [
+    state.step,
+    state.detection,
+    state.config,
+    projectPath,
+    dryRun,
+    mergeMode,
+    autoMergeThreshold,
+    onComplete,
+  ]);
 
   // Navigation handlers
   const goToStep = useCallback((step: WizardStep) => {
@@ -213,12 +234,28 @@ export function Wizard({
                 projectPath={projectPath}
               />
             )}
-            <Box marginTop={1} borderStyle="single" borderColor="gray" paddingX={1}>
-              <Text color="gray">Press </Text>
-              <Text color="green" bold>Enter</Text>
-              <Text color="gray"> to continue</Text>
+            <Box
+              marginTop={1}
+              borderStyle="single"
+              borderColor="gray"
+              paddingX={1}
+            >
+              {isRawModeSupported ? (
+                <>
+                  <Text color="gray">Press </Text>
+                  <Text color="green" bold>
+                    Enter
+                  </Text>
+                  <Text color="gray"> to continue</Text>
+                </>
+              ) : (
+                <Text color="gray">Continuing automatically...</Text>
+              )}
             </Box>
-            <ContinueHandler onContinue={() => goToStep("tool-select")} />
+            <ContinueHandler
+              onContinue={() => goToStep("tool-select")}
+              isRawModeSupported={isRawModeSupported}
+            />
           </Box>
         );
 
@@ -232,6 +269,7 @@ export function Wizard({
             <ContinueHandler
               onContinue={() => goToStep("template-select")}
               requireSelection={state.config.tools?.length === 0}
+              isRawModeSupported={isRawModeSupported}
             />
           </Box>
         );
@@ -246,7 +284,10 @@ export function Wizard({
                 onSelect={handleTemplateSelect}
               />
             )}
-            <ContinueHandler onContinue={() => goToStep("confirm")} />
+            <ContinueHandler
+              onContinue={() => goToStep("confirm")}
+              isRawModeSupported={isRawModeSupported}
+            />
           </Box>
         );
 
@@ -289,32 +330,72 @@ export function Wizard({
   };
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1}>
-      {/* Header with border */}
+    <Box flexDirection="column" width="100%">
+      {/* Claude-style header with box */}
       <Box
-        borderStyle="round"
-        borderColor="cyan"
+        borderStyle="double"
+        borderColor="blue"
         paddingX={2}
-        paddingY={0}
-        marginBottom={1}
+        paddingY={1}
+        width="100%"
       >
-        <Text bold color="cyan">✨ Brief</Text>
-        <Text color="gray"> · AI Configuration Generator</Text>
+        <Box flexDirection="row" gap={2}>
+          <Text bold color="blue">
+            Brief CLI v{process.env.npm_package_version || "0.1.11"}
+          </Text>
+          <Text color="gray">· AI Configuration Generator</Text>
+        </Box>
       </Box>
 
-      {/* Step indicator */}
-      <StepIndicator currentStep={state.step} />
+      {/* TODO: Main content area (Focus MVP)*/}
+      {/* <Box flexDirection="column" paddingX={1} paddingY={0.5}>
+        <Box
+          flexDirection="column"
+          borderStyle="round"
+          borderColor="cyan"
+          paddingX={2}
+          paddingY={1}
+          marginBottom={1}
+          alignItems="center"
+        >
+          <Text bold color="cyan" fontSize="large">
+            ██████╗ ███████╗ ██████╗ ██╗   ██╗
+          </Text>
+          <Text bold color="cyan" fontSize="large">
+            ██╔══██╗██╔════╝██╔═══██╗╚██╗ ██╔╝
+          </Text>
+          <Text bold color="cyan" fontSize="large">
+            ██████╔╝█████╗  ██║   ██║ ╚████╔╝
+          </Text>
+          <Text bold color="cyan" fontSize="large">
+            ██╔══██╗██╔══╝  ██║   ██║  ╚██╔╝
+          </Text>
+          <Text bold color="cyan" fontSize="large">
+            ██║  ██║███████╗╚██████╔╝   ██║
+          </Text>
+          <Text bold color="cyan" fontSize="large">
+            ╚═╝  ╚═╝╚══════╝ ╚═════╝    ╚═╝
+          </Text>
+        </Box>
+      </Box> */}
 
-      {/* Content */}
-      <Box marginTop={1}>
-        {renderStep()}
+      <Box flexDirection="column" width="100%" paddingTop={1}>
+        {/* Step indicator */}
+        <StepIndicator currentStep={state.step} />
+
+        {/* Content */}
+        <Box flexGrow={1}>{renderStep()}</Box>
       </Box>
     </Box>
   );
 }
 
 // Step indicator component
-function StepIndicator({ currentStep }: { currentStep: WizardStep }): React.ReactElement {
+function StepIndicator({
+  currentStep,
+}: {
+  currentStep: WizardStep;
+}): React.ReactElement {
   const stepConfig: Array<{ step: WizardStep; label: string; icon: string }> = [
     { step: "detecting", label: "Detect", icon: "🔍" },
     { step: "project-info", label: "Review", icon: "📋" },
@@ -348,7 +429,11 @@ function StepIndicator({ currentStep }: { currentStep: WizardStep }): React.Reac
                   color={isCompleted ? "green" : isCurrent ? "cyan" : "gray"}
                   dimColor={isPending}
                 >
-                  {isCompleted ? chars.check : isCurrent ? chars.cursor : chars.bullet}
+                  {isCompleted
+                    ? chars.check
+                    : isCurrent
+                    ? chars.cursor
+                    : chars.bullet}
                 </Text>
                 <Text> </Text>
                 <Text
@@ -360,7 +445,8 @@ function StepIndicator({ currentStep }: { currentStep: WizardStep }): React.Reac
               </Box>
               {i < stepConfig.length - 1 && (
                 <Text color="gray" dimColor>
-                  {" "}→{" "}
+                  {" "}
+                  →{" "}
                 </Text>
               )}
             </React.Fragment>
@@ -375,12 +461,42 @@ function StepIndicator({ currentStep }: { currentStep: WizardStep }): React.Reac
 function ContinueHandler({
   onContinue,
   requireSelection = false,
+  isRawModeSupported = true,
 }: {
   onContinue: () => void;
   requireSelection?: boolean;
+  isRawModeSupported?: boolean;
 }): React.ReactElement | null {
-  const { useInput } = require("ink");
+  // Auto-continue when raw mode isn't supported (can't capture input)
+  useEffect(() => {
+    if (!isRawModeSupported && !requireSelection) {
+      // Small delay to let the user see the screen before continuing
+      const timer = setTimeout(() => {
+        onContinue();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+    return () => {};
+  }, [isRawModeSupported, requireSelection, onContinue]);
 
+  // Only render input handler when raw mode is supported
+  if (!isRawModeSupported) {
+    return null;
+  }
+
+  return (
+    <InputHandler onContinue={onContinue} requireSelection={requireSelection} />
+  );
+}
+
+// Separate component that uses the hook
+function InputHandler({
+  onContinue,
+  requireSelection,
+}: {
+  onContinue: () => void;
+  requireSelection: boolean;
+}): React.ReactElement | null {
   useInput((_input: string, key: { return?: boolean }) => {
     if (key.return && !requireSelection) {
       onContinue();

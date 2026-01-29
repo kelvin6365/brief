@@ -3,14 +3,14 @@
  * Initialize AI configuration for a project
  */
 
-import { render } from "ink";
 import chalk from "chalk";
-import type { InitOptions, CommandResult } from "./types.js";
-import type { AiTool, AiInitConfig } from "../types/index.js";
+import { render, type RenderOptions } from "ink";
 import { Wizard } from "../components/Wizard.js";
 import { detectProject } from "../detectors/index.js";
 import { runGenerators } from "../generators/index.js";
+import type { AiInitConfig, AiTool } from "../types/index.js";
 import { createLogger } from "../utils/logger.js";
+import type { CommandResult, InitOptions } from "./types.js";
 
 const log = createLogger("init");
 
@@ -38,7 +38,6 @@ function getActionSymbol(action: string): string {
  * Show post-generation usage guide for Qoder
  */
 function showQoderUsageGuide(): void {
-
   console.log("");
   console.log(chalk.cyan.bold("━".repeat(60)));
   console.log(chalk.cyan.bold("  🎉 Qoder Rules Generated Successfully!"));
@@ -46,102 +45,179 @@ function showQoderUsageGuide(): void {
   console.log("");
   console.log(chalk.white("📖 How to Use These Rules:"));
   console.log("");
-  console.log(chalk.gray("  Rules use ") + chalk.yellow("trigger: manual") + chalk.gray(" - reference them with ") + chalk.green("@rule-name.md"));
+  console.log(
+    chalk.gray("  Rules use ") +
+      chalk.yellow("trigger: manual") +
+      chalk.gray(" - reference them with ") +
+      chalk.green("@rule-name.md")
+  );
   console.log("");
   console.log(chalk.white("💡 Quick Start:"));
   console.log("");
-  console.log(chalk.gray("  1. ") + chalk.green("@quick-reference.md") + chalk.gray(" - Start here! Complete usage guide"));
-  console.log(chalk.gray("  2. ") + chalk.green("@requirements-spec.md") + chalk.gray(" - Critical for Quest Mode (no TODOs!)"));
-  console.log(chalk.gray("  3. ") + chalk.green("@security.md") + chalk.gray(" - When handling auth, validation, APIs"));
-  console.log(chalk.gray("  4. ") + chalk.green("@api-design.md") + chalk.gray(" - When creating API endpoints"));
-  console.log(chalk.gray("  5. ") + chalk.green("@testing.md") + chalk.gray(" - When writing tests"));
+  console.log(
+    chalk.gray("  1. ") +
+      chalk.green("@quick-reference.md") +
+      chalk.gray(" - Start here! Complete usage guide")
+  );
+  console.log(
+    chalk.gray("  2. ") +
+      chalk.green("@requirements-spec.md") +
+      chalk.gray(" - Critical for Quest Mode (no TODOs!)")
+  );
+  console.log(
+    chalk.gray("  3. ") +
+      chalk.green("@security.md") +
+      chalk.gray(" - When handling auth, validation, APIs")
+  );
+  console.log(
+    chalk.gray("  4. ") +
+      chalk.green("@api-design.md") +
+      chalk.gray(" - When creating API endpoints")
+  );
+  console.log(
+    chalk.gray("  5. ") +
+      chalk.green("@testing.md") +
+      chalk.gray(" - When writing tests")
+  );
   console.log("");
   console.log(chalk.white("🚀 Example Usage:"));
   console.log("");
-  console.log(chalk.gray('  "Implement login endpoint ') + chalk.green("@requirements-spec.md @security.md @api-design.md") + chalk.gray('"'));
-  console.log(chalk.gray('  "Write tests for UserService ') + chalk.green("@testing.md @core.md") + chalk.gray('"'));
-  console.log(chalk.gray('  "Commit changes ') + chalk.green("@git-workflow.md") + chalk.gray('"'));
+  console.log(
+    chalk.gray('  "Implement login endpoint ') +
+      chalk.green("@requirements-spec.md @security.md @api-design.md") +
+      chalk.gray('"')
+  );
+  console.log(
+    chalk.gray('  "Write tests for UserService ') +
+      chalk.green("@testing.md @core.md") +
+      chalk.gray('"')
+  );
+  console.log(
+    chalk.gray('  "Commit changes ') +
+      chalk.green("@git-workflow.md") +
+      chalk.gray('"')
+  );
   console.log("");
   console.log(chalk.white("📚 Common Combinations:"));
   console.log("");
-  console.log(chalk.gray("  • API Development: ") + chalk.green("@api-design.md @security.md @error-handling.md"));
-  console.log(chalk.gray("  • New Features: ") + chalk.green("@requirements-spec.md @core.md @security.md"));
-  console.log(chalk.gray("  • Architecture: ") + chalk.green("@architecture.md @core.md"));
+  console.log(
+    chalk.gray("  • API Development: ") +
+      chalk.green("@api-design.md @security.md @error-handling.md")
+  );
+  console.log(
+    chalk.gray("  • New Features: ") +
+      chalk.green("@requirements-spec.md @core.md @security.md")
+  );
+  console.log(
+    chalk.gray("  • Architecture: ") + chalk.green("@architecture.md @core.md")
+  );
   console.log("");
-  console.log(chalk.yellow("⚠️  Important: ") + chalk.gray("Always reference ") + chalk.green("@requirements-spec.md") + chalk.gray(" for new features"));
-  console.log(chalk.gray("   to ensure complete, runnable code with no TODOs/placeholders!"));
+  console.log(
+    chalk.yellow("⚠️  Important: ") +
+      chalk.gray("Always reference ") +
+      chalk.green("@requirements-spec.md") +
+      chalk.gray(" for new features")
+  );
+  console.log(
+    chalk.gray(
+      "   to ensure complete, runnable code with no TODOs/placeholders!"
+    )
+  );
   console.log("");
-  console.log(chalk.white("📖 Read the full guide: ") + chalk.cyan(".qoder/rules/quick-reference.md"));
+  console.log(
+    chalk.white("📖 Read the full guide: ") +
+      chalk.cyan(".qoder/rules/quick-reference.md")
+  );
   console.log("");
   console.log(chalk.cyan.bold("━".repeat(60)));
   console.log("");
 }
 
 /**
+ * Check if stdin supports raw mode
+ */
+function canSetRawMode(): boolean {
+  // In Node.js, isTTY and setRawMode are reliable indicators
+  return (
+    process.stdin.isTTY === true &&
+    typeof process.stdin.setRawMode === "function"
+  );
+}
+
+/**
  * Run init command in interactive mode
  */
-export async function runInitInteractive(options: InitOptions): Promise<CommandResult> {
+export async function runInitInteractive(
+  options: InitOptions
+): Promise<CommandResult> {
   const projectPath = options.path || process.cwd();
+
+  // Check if stdin supports raw mode for interactive input
+  // If not, fall back to non-interactive mode
+  const isRawModeSupported = canSetRawMode();
+
+  if (!isRawModeSupported) {
+    log.info(
+      "Interactive mode requires a TTY. Running in non-interactive mode..."
+    );
+    log.info("Tip: Use 'brief init --yes' to skip this check");
+    return runInitNonInteractive(options);
+  }
 
   return new Promise((resolve) => {
     const handleComplete = (success: boolean): void => {
-      // Restore stdin to normal mode before resolving
-      if (process.stdin.isTTY && process.stdin.setRawMode) {
-        process.stdin.setRawMode(false);
-      }
       resolve({
         success,
-        message: success ? "Configuration generated successfully" : "Generation failed",
+        message: success
+          ? "Configuration generated successfully"
+          : "Generation failed",
       });
     };
 
-    // Ensure stdin is properly configured for Ink
-    if (process.stdin.isTTY) {
-      process.stdin.setRawMode(true);
-    }
+    try {
+      const { waitUntilExit } = render(
+        <Wizard
+          projectPath={projectPath}
+          skipPrompts={false}
+          tools={options.tool ? [options.tool] : undefined}
+          templates={options.templates}
+          dryRun={options.dryRun}
+          mergeMode={options.merge}
+          autoMergeThreshold={options.autoMergeThreshold}
+          isRawModeSupported={true}
+          onComplete={handleComplete}
+        />,
+        {
+          stdin: process.stdin,
+        } as RenderOptions
+      );
 
-    const { waitUntilExit } = render(
-      <Wizard
-        projectPath={projectPath}
-        skipPrompts={false}
-        tools={options.tool ? [options.tool] : undefined}
-        templates={options.templates}
-        dryRun={options.dryRun}
-        mergeMode={options.merge}
-        autoMergeThreshold={options.autoMergeThreshold}
-        onComplete={handleComplete}
-      />,
-      {
-        stdin: process.stdin,
-        stdout: process.stdout,
-        stderr: process.stderr,
-      }
-    );
-
-    waitUntilExit()
-      .then(() => {
-        // Ensure stdin is restored even if handleComplete wasn't called
-        if (process.stdin.isTTY && process.stdin.setRawMode) {
-          process.stdin.setRawMode(false);
-        }
-      })
-      .catch((err: Error) => {
-        // Restore stdin on error too
-        if (process.stdin.isTTY && process.stdin.setRawMode) {
-          process.stdin.setRawMode(false);
-        }
-        resolve({
-          success: false,
-          error: err.message,
+      waitUntilExit()
+        .then(() => {
+          // Ink will handle stdin cleanup automatically
+        })
+        .catch((err: Error) => {
+          resolve({
+            success: false,
+            error: err.message,
+          });
         });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      resolve({
+        success: false,
+        error: `Failed to initialize wizard: ${message}`,
       });
+    }
   });
 }
 
 /**
  * Run init command in non-interactive mode
  */
-export async function runInitNonInteractive(options: InitOptions): Promise<CommandResult> {
+export async function runInitNonInteractive(
+  options: InitOptions
+): Promise<CommandResult> {
   const projectPath = options.path || process.cwd();
 
   try {
@@ -150,7 +226,9 @@ export async function runInitNonInteractive(options: InitOptions): Promise<Comma
 
     log.info(`Detected: ${detection.language.primary} project`);
     if (detection.frameworks.length > 0) {
-      log.info(`Frameworks: ${detection.frameworks.map(f => f.name).join(", ")}`);
+      log.info(
+        `Frameworks: ${detection.frameworks.map((f) => f.name).join(", ")}`
+      );
     }
 
     // Determine tools to use
@@ -182,7 +260,7 @@ export async function runInitNonInteractive(options: InitOptions): Promise<Comma
 
     if (results.success) {
       // Count generated files from all results
-      const allFiles = results.results.flatMap(r => r.files);
+      const allFiles = results.results.flatMap((r) => r.files);
       log.success(`Generated ${allFiles.length} files`);
       for (const file of allFiles) {
         const actionSymbol = getActionSymbol(file.action);
@@ -204,8 +282,8 @@ export async function runInitNonInteractive(options: InitOptions): Promise<Comma
     } else {
       log.error("Generation failed");
       const errors = results.results
-        .filter(r => r.error)
-        .map(r => r.error as string);
+        .filter((r) => r.error)
+        .map((r) => r.error as string);
       for (const error of errors) {
         log.error(`  ${error}`);
       }
@@ -227,7 +305,9 @@ export async function runInitNonInteractive(options: InitOptions): Promise<Comma
 /**
  * Main init command handler
  */
-export async function initCommand(options: InitOptions): Promise<CommandResult> {
+export async function initCommand(
+  options: InitOptions
+): Promise<CommandResult> {
   if (options.yes) {
     return runInitNonInteractive(options);
   }

@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Brief CLI
  * AI-optimized configuration generator for Cursor IDE and Claude Code
