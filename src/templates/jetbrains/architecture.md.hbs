@@ -1,0 +1,71 @@
+# Architecture Patterns for JetBrains AI Assistant
+
+## Architectural Principles
+- Follow SOLID principles for object-oriented design
+- Apply KISS (Keep It Simple, Stupid) principle
+- Embrace DRY (Don't Repeat Yourself) principle
+- Follow YAGNI (You Aren't Gonna Need It) principle
+- Design for testability and maintainability
+
+## Layered Architecture
+- Separate concerns into distinct layers (presentation, business, data)
+- Maintain clear boundaries between layers
+- Use dependency inversion principle
+- Implement proper abstraction layers
+- Minimize coupling between layers
+
+## Design Patterns
+- Use creational patterns (Factory, Builder, Singleton) appropriately
+- Apply structural patterns (Adapter, Decorator, Facade) for flexibility
+- Implement behavioral patterns (Observer, Strategy, Command) for interactions
+- Choose patterns based on specific problems to solve
+- Avoid over-engineering with unnecessary patterns
+
+## Microservices Considerations
+- Design services around business capabilities
+- Maintain data independence between services
+- Implement proper service communication patterns
+- Use circuit breakers for resilience
+- Implement distributed logging and monitoring
+
+## Data Architecture
+- Design data models to support business requirements
+- Implement proper data validation and integrity
+- Use appropriate storage solutions for different data types
+- Plan for data migration and versioning
+- Ensure data privacy and compliance requirements
+
+## Security Architecture
+- Implement security at all architectural levels
+- Use defense in depth strategy
+- Apply zero-trust security model
+- Implement proper authentication and authorization
+- Encrypt data at rest and in transit
+
+## Scalability Patterns
+- Design for horizontal and vertical scaling
+- Implement caching strategies appropriately
+- Use load balancing for traffic distribution
+- Apply event-driven architecture where suitable
+- Consider eventual consistency models
+
+## Integration Patterns
+- Use APIs for service communication
+- Implement proper error handling in integrations
+- Apply asynchronous messaging for decoupling
+- Use API gateways for traffic management
+- Implement proper transaction management
+
+## Monitoring and Observability
+- Design for observability from the start
+- Implement proper logging, metrics, and tracing
+- Use structured logging for analysis
+- Monitor system health and performance
+- Plan for alerting and incident response
+
+## Deployment Architecture
+- Implement CI/CD pipelines for automated deployment
+- Use infrastructure as code for consistency
+- Plan for blue-green or rolling deployments
+- Implement proper rollback strategies
+- Use containerization for consistency across environments

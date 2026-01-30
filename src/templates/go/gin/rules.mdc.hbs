@@ -1,0 +1,107 @@
+# Go with Gin Framework Guidelines
+
+## Project Structure
+- Follow the idiomatic Go project layout
+- Use cmd/ for application binaries
+- Use internal/ for private application code
+- Use pkg/ for library code that's ok to import externally
+- Use api/ for protocol buffer definitions and generated code
+- Organize by feature or domain
+
+## Gin Framework Patterns
+- Use Gin's routing groups for organization
+- Implement middleware for common functionality
+- Use context for request-scoped values
+- Leverage Gin's binding and validation features
+- Use middleware for authentication and authorization
+
+## Error Handling
+- Use Go's error handling patterns consistently
+- Implement custom error types when needed
+- Use errors.Wrap and errors.Cause for stack traces
+- Return appropriate HTTP status codes
+- Log errors with proper context
+
+## HTTP Handlers
+- Keep handlers thin and focused on HTTP concerns
+- Use service layer for business logic
+- Validate inputs at handler level
+- Return consistent JSON responses
+- Handle different content types appropriately
+
+## Routing and Middleware
+- Use route parameters appropriately
+- Implement middleware for cross-cutting concerns
+- Use route groups for common prefixes
+- Implement proper authentication middleware
+- Use middleware for CORS, logging, recovery
+
+## Data Validation and Binding
+- Use struct tags for binding and validation
+- Implement custom validators when needed
+- Validate inputs before processing
+- Use binding modes (Bind, ShouldBind, etc.) appropriately
+- Handle binding errors gracefully
+
+## Database Integration
+- Use proper connection pooling
+- Implement repository pattern for data access
+- Use prepared statements to prevent SQL injection
+- Handle database errors appropriately
+- Implement proper transaction management
+
+## Testing
+- Write unit tests for business logic
+- Use table-driven tests for multiple scenarios
+- Implement integration tests for handlers
+- Use httptest package for HTTP testing
+- Mock external dependencies appropriately
+
+## Configuration
+- Use environment variables for configuration
+- Implement proper configuration validation
+- Use viper for complex configuration management
+- Keep secrets out of configuration files
+- Implement configuration reloading when appropriate
+
+## Security
+- Validate and sanitize all inputs
+- Implement proper authentication and authorization
+- Use HTTPS in production
+- Implement rate limiting to prevent abuse
+- Follow OWASP Go security guidelines
+
+## Performance
+- Use appropriate data structures
+- Implement caching where beneficial
+- Use goroutines for concurrent operations
+- Profile applications to identify bottlenecks
+- Use sync.Pool for memory reuse when appropriate
+
+## Logging
+- Use structured logging with appropriate levels
+- Include request IDs for tracing
+- Log errors with sufficient context
+- Avoid logging sensitive information
+- Use logrus or zap for structured logging
+
+## Concurrency
+- Use goroutines for I/O bound operations
+- Implement proper synchronization
+- Use channels for communication between goroutines
+- Be aware of race conditions
+- Use context for cancellation and timeouts
+
+## Code Style
+- Follow Go's official style guide
+- Use consistent naming conventions
+- Keep functions focused and concise
+- Use proper indentation and formatting
+- Write clear, descriptive comments and documentation
+
+## Dependency Management
+- Use Go modules for dependency management
+- Keep dependencies updated and secure
+- Only include necessary dependencies
+- Use vendor directory if required by deployment
+- Follow semantic versioning for dependencies

@@ -85,7 +85,7 @@ export interface GeneratorResult {
   /** Whether the generation was successful */
   success: boolean;
   /** Target that was generated */
-  target: "cursor" | "claude" | "qoder" | "shared";
+  target: "cursor" | "claude" | "qoder" | "jetbrains" | "shared";
   /** Files that were generated */
   files: GeneratedFile[];
   /** Error message if failed */
@@ -140,7 +140,7 @@ export interface Generator {
   /** Generator name */
   name: string;
   /** Target this generator produces */
-  target: "cursor" | "claude" | "qoder" | "shared";
+  target: "cursor" | "claude" | "qoder" | "jetbrains" | "shared";
   /** Generate files */
   generate(options: GeneratorOptions): Promise<GeneratorResult>;
 }

@@ -1,0 +1,85 @@
+# Vue.js Guidelines
+
+## Project Structure
+- Organize components in a modular fashion
+- Use clear folder structure (components, views, composables, assets, etc.)
+- Follow Vue's recommended style guide
+- Keep related files together (component, styles, tests)
+- Use PascalCase for component names
+
+## Composition API
+- Use Composition API with `<script setup>` syntax
+- Leverage Vue 3's reactivity system
+- Use composables for reusable logic
+- Follow proper naming conventions for refs and reactive variables
+- Organize composables by functionality
+
+## Component Best Practices
+- Keep components focused on a single responsibility
+- Use props for data passing from parent to child
+- Emit events for child-to-parent communication
+- Use slots for flexible content distribution
+- Implement proper prop validation
+
+## State Management
+- Use Pinia for complex state management
+- Keep simple state in components when appropriate
+- Use getters for computed derived state
+- Implement proper actions for mutations
+- Follow predictable state update patterns
+
+## Performance Optimization
+- Use v-memo for expensive re-renders (Vue 3.2+)
+- Implement proper key attributes for list rendering
+- Use dynamic imports for code splitting
+- Implement lazy loading for routes
+- Use v-show vs v-if appropriately
+
+## TypeScript Integration
+- Use proper type annotations for props
+- Define interfaces for complex objects
+- Use generic types when applicable
+- Leverage Vue's type inference
+- Implement proper typing for emits
+
+## Styling
+- Use scoped styles or CSS modules
+- Follow BEM methodology for class naming
+- Leverage Vue's CSS variables support
+- Use preprocessors (SCSS, PostCSS) when needed
+- Implement responsive design patterns
+
+## Testing
+- Use Vue Test Utils for component testing
+- Implement unit tests for composables
+- Write integration tests for complex components
+- Use Vue-specific testing utilities
+- Follow testing best practices (given-when-then)
+
+## Routing
+- Use Vue Router for navigation
+- Implement route guards for access control
+- Use dynamic routes appropriately
+- Implement lazy loading for route components
+- Handle route parameters properly
+
+## Accessibility
+- Implement proper semantic HTML
+- Use ARIA attributes when necessary
+- Ensure proper focus management
+- Implement keyboard navigation
+- Follow WCAG guidelines
+
+## Security
+- Sanitize user inputs before rendering
+- Use v-html cautiously with proper sanitization
+- Implement proper authentication flows
+- Secure API communications
+- Follow Vue security best practices
+
+## Code Style
+- Follow Vue's official style guide
+- Use consistent naming conventions
+- Keep component files concise and readable
+- Use proper indentation and formatting
+- Write clear, descriptive comments when needed

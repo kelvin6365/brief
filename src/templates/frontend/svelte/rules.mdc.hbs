@@ -1,0 +1,106 @@
+# Svelte Guidelines
+
+## Project Structure
+- Organize components in a logical folder structure
+- Use SvelteKit's file-based routing (src/routes/)
+- Separate components, layouts, and pages appropriately
+- Keep related files together (components, styles, tests)
+- Use descriptive names for components and folders
+
+## Component Architecture
+- Use Svelte's component lifecycle effectively
+- Leap properties and reactive declarations properly
+- Use reactive assignments with $: for complex reactions
+- Implement proper state management patterns
+- Keep components focused on a single responsibility
+
+## Svelte 5 Runes (if applicable)
+- Use $state for mutable state
+- Use $derived for computed values
+- Use $effect for side effects
+- Use $props for component properties
+- Understand the new reactivity model
+
+## SvelteKit Specifics
+- Leverage SvelteKit's server-side rendering
+- Use load functions for data fetching
+- Implement proper error handling with error pages
+- Use hooks for global functionality
+- Implement proper form handling with actions
+
+## State Management
+- Use stores for global state management
+- Leverage Svelte's built-in reactivity
+- Use derived stores for computed state
+- Implement proper cleanup of subscriptions
+- Consider context API for component communication
+
+## Styling
+- Use component-scoped styles
+- Leverage Svelte's style features (global, media queries)
+- Use preprocessors (Sass, Less) when needed
+- Implement CSS custom properties for theming
+- Follow accessibility best practices
+
+## Performance Optimization
+- Use runes effectively for performance (Svelte 5)
+- Implement code splitting with dynamic imports
+- Use Svelte's built-in optimizations
+- Implement proper hydration strategies
+- Optimize bundle sizes
+
+## TypeScript Integration
+- Use TypeScript for type safety
+- Define interfaces for props and events
+- Leverage Svelte's TypeScript support
+- Use proper type annotations for stores
+- Implement strict typing patterns
+
+## Routing (SvelteKit)
+- Use file-based routing system
+- Implement dynamic routes with [slug] syntax
+- Use +page.svelte for pages, +layout.svelte for layouts
+- Implement proper error pages (_error.svelte)
+- Use server load functions appropriately
+
+## Forms and Actions (SvelteKit)
+- Use SvelteKit's form actions for server-side handling
+- Implement proper form validation
+- Handle form submissions with progressive enhancement
+- Use use:enhance for client-side interactivity
+- Implement proper error handling for forms
+
+## Testing
+- Use Svelte Testing Library for component testing
+- Implement unit tests for utilities and stores
+- Write integration tests for complex components
+- Use Vite's testing capabilities
+- Follow testing best practices
+
+## Accessibility
+- Implement proper semantic HTML
+- Use ARIA attributes when necessary
+- Ensure proper keyboard navigation
+- Follow WCAG guidelines
+- Use Svelte's accessibility warnings
+
+## Security
+- Sanitize user inputs properly
+- Implement proper authentication patterns
+- Secure API communications
+- Follow Svelte/SvelteKit security best practices
+- Handle errors gracefully without exposing internals
+
+## Code Style
+- Follow Svelte's official style guide
+- Use consistent naming conventions
+- Keep components concise and readable
+- Use proper indentation and formatting
+- Write clear, descriptive comments when needed
+
+## Build and Deployment
+- Use Vite for bundling and development
+- Implement proper environment configurations
+- Optimize for production builds
+- Use SvelteKit adapters for deployment
+- Implement proper CI/CD pipelines

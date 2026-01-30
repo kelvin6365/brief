@@ -1,0 +1,63 @@
+# Testing Rules for JetBrains AI Assistant
+
+## Testing Philosophy
+- Write tests that are readable, maintainable, and reliable
+- Follow the testing pyramid: many unit tests, fewer integration tests, minimal end-to-end tests
+- Tests should run fast and provide quick feedback
+- Aim for quality over quantity in test coverage
+
+## Unit Testing
+- Test individual functions and methods in isolation
+- Use mocking to isolate units from dependencies
+- Test both happy path and error conditions
+- Name tests descriptively using Given-When-Then pattern
+- Keep tests independent of each other
+
+## Integration Testing
+- Test interactions between components/modules
+- Test integration with external services and databases
+- Use test containers or in-memory services when possible
+- Cover critical business workflows
+- Ensure tests clean up after themselves
+
+## Test Organization
+- Group related tests logically (describe/it blocks)
+- Use appropriate test fixtures and setup
+- Follow AAA pattern (Arrange, Act, Assert)
+- Keep tests focused on a single concern
+- Use meaningful test names that describe the behavior
+
+## Test Data Management
+- Use factory patterns to create test data
+- Keep test data consistent and predictable
+- Use realistic but isolated test data
+- Clean up test data after tests run
+- Avoid sharing state between tests
+
+## Mocking and Stubbing
+- Mock external dependencies and services
+- Use real implementations for core business logic
+- Avoid over-mocking which can lead to false positives
+- Verify interactions with mocks appropriately
+- Use dependency injection to facilitate testing
+
+## Performance Testing
+- Include performance benchmarks in critical areas
+- Test under expected load conditions
+- Monitor resource usage during tests
+- Set performance thresholds and alerts
+- Profile slow tests and optimize when needed
+
+## Test Automation
+- Run unit tests on every commit
+- Run integration tests in CI pipeline
+- Use mutation testing to verify test quality
+- Maintain high test coverage for critical paths
+- Ensure tests are deterministic and reproducible
+
+## Testing Patterns
+- Follow Arrange-Act-Assert (AAA) pattern
+- Use Behavior-Driven Development (BDD) style when appropriate
+- Apply Test-Driven Development (TDD) where beneficial
+- Use property-based testing for complex logic
+- Implement contract testing for service interactions

@@ -1,0 +1,61 @@
+# Security Guidelines for JetBrains AI Assistant
+
+## Input Validation
+- Validate all inputs at the boundaries of the application
+- Use allowlists rather than blocklists when possible
+- Sanitize inputs to prevent injection attacks
+- Encode outputs appropriately to prevent XSS
+
+## Authentication & Authorization
+- Implement strong password policies
+- Use multi-factor authentication where appropriate
+- Apply principle of least privilege
+- Implement proper session management
+- Use secure authentication protocols (OAuth 2.0, OpenID Connect)
+
+## Data Protection
+- Encrypt sensitive data at rest and in transit
+- Use industry-standard encryption algorithms
+- Implement proper key management
+- Mask sensitive data in logs
+- Apply data retention policies
+
+## Injection Prevention
+- Use parameterized queries/prepared statements
+- Implement proper output encoding
+- Validate and sanitize file uploads
+- Apply content security policies
+
+## Dependency Security
+- Keep all dependencies up to date
+- Monitor for known vulnerabilities (use tools like Snyk, Dependabot)
+- Use only trusted dependencies
+- Implement dependency scanning in CI/CD
+
+## API Security
+- Implement proper authentication and authorization
+- Use rate limiting to prevent abuse
+- Validate and sanitize all API inputs
+- Implement proper error handling without exposing internals
+- Use HTTPS for all API communications
+
+## Logging & Monitoring
+- Log security-relevant events
+- Protect log data from unauthorized access
+- Monitor for suspicious activities
+- Implement alerting for security events
+- Don't log sensitive information
+
+## Secure Coding Practices
+- Follow the principle of defense in depth
+- Fail securely by default
+- Implement proper error handling
+- Conduct security code reviews
+- Perform regular security assessments
+
+## AI-Specific Security Considerations
+- Validate AI-generated code for security vulnerabilities
+- Be cautious of AI-generated cryptographic implementations
+- Review AI-generated configurations for security misconfigurations
+- Ensure AI prompts don't leak sensitive information
+- Validate AI-generated regex patterns for ReDoS vulnerabilities

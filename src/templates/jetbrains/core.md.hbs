@@ -1,0 +1,47 @@
+# JetBrains AI Assistant Core Rules
+
+## Project Context
+This project uses {{project.name}} with {{detection.packageManager}} as the package manager. The primary language is {{project.language}}.
+
+## General Guidelines
+- Follow the official {{project.language}} style guide and conventions
+- Maintain consistency with existing code patterns
+- Prioritize readability and maintainability
+- Use meaningful variable and function names
+- Write clear, concise comments only when necessary to explain 'why' not 'what'
+
+## Code Style
+- Use consistent indentation ({{#if (eq project.language "javascript")}}2 spaces{{else if (eq project.language "typescript")}}2 spaces{{else if (eq project.language "python")}}4 spaces{{else if (eq project.language "java")}}4 spaces{{else}}your standard{{/if}})
+- Follow naming conventions for the language (camelCase, snake_case, PascalCase, etc.)
+- Keep lines under 80-100 characters where possible
+- Use meaningful prefixes/suffixes for specific types (e.g., `is`, `has`, `can` for booleans)
+
+## Error Handling
+- Implement proper error handling strategies
+- Use specific error types when available
+- Log errors appropriately with context
+- Fail gracefully when possible
+
+## Performance Considerations
+- Optimize for the {{project.language}} runtime environment
+- Avoid unnecessary computations in loops
+- Use efficient data structures for the use case
+- Consider memory usage in long-running applications
+
+## Testing Approach
+- Write unit tests for pure functions
+- Use integration tests for complex interactions
+- Follow the testing pyramid (more unit tests, fewer integration/end-to-end tests)
+- Mock external dependencies appropriately
+
+## Security Practices
+- Validate and sanitize all inputs
+- Use parameterized queries to prevent injection attacks
+- Follow secure coding practices for {{project.language}}
+- Protect sensitive data and credentials
+
+## Documentation Standards
+- Use appropriate documentation format for the language
+- Document public APIs thoroughly
+- Update documentation when making changes to public interfaces
+- Include examples where helpful

@@ -4,33 +4,37 @@
 
 // Types
 export type {
-  GeneratorOptions,
-  GeneratedFile,
-  GeneratorResult,
   FullGeneratorResult,
-  GeneratorContext,
+  GeneratedFile,
   Generator,
+  GeneratorContext,
+  GeneratorOptions,
+  GeneratorResult,
 } from "./types.js";
 
 // Base utilities
 export {
   createGeneratorContext,
-  renderTemplateWithContext,
-  writeGeneratedFile,
   generateFromTemplates,
+  renderTemplateWithContext,
   summarizeResults,
+  writeGeneratedFile,
 } from "./base.js";
 
 // Individual generators
-export { cursorGenerator, getCursorTemplates } from "./cursor/index.js";
 export { claudeGenerator, getClaudeTemplates } from "./claude/index.js";
-export { qoderGenerator, getQoderTemplates } from "./qoder/index.js";
-export { sharedGenerator, getSharedTemplates } from "./shared/index.js";
+export { cursorGenerator, getCursorTemplates } from "./cursor/index.js";
+export {
+  getJetBrainsTemplates,
+  jetbrainsGenerator,
+} from "./jetbrains/index.js";
+export { getQoderTemplates, qoderGenerator } from "./qoder/index.js";
+export { getSharedTemplates, sharedGenerator } from "./shared/index.js";
 
 // Orchestrator
 export {
   getGeneratorsForConfig,
-  runGenerators,
-  runGenerator,
   previewGeneration,
+  runGenerator,
+  runGenerators,
 } from "./orchestrator.js";

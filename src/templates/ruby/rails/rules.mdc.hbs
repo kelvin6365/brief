@@ -1,0 +1,78 @@
+# Ruby on Rails Guidelines
+
+## Rails Architecture
+- Follow MVC (Model-View-Controller) pattern
+- Use Rails conventions over configuration
+- Follow RESTful routing patterns
+- Keep controllers thin, models fat (but not too fat)
+- Use Service Objects and Form Objects for complex logic
+
+## Models
+- Use appropriate validations (presence, uniqueness, format)
+- Implement custom validations when needed
+- Use scopes for commonly used queries
+- Follow naming conventions (singular model names)
+- Use associations properly (belongs_to, has_many, etc.)
+
+## Controllers
+- Follow RESTful actions (index, show, new, create, edit, update, destroy)
+- Keep controller actions focused and concise
+- Use strong parameters for mass assignment protection
+- Handle errors gracefully with proper status codes
+- Use before_action and after_action filters appropriately
+
+## Views
+- Use ERB or HAML for templates
+- Keep logic out of views (use helpers when necessary)
+- Use partials for reusable components
+- Follow accessibility best practices
+- Use Rails form helpers when appropriate
+
+## Routing
+- Use resourceful routes when possible
+- Follow Rails naming conventions
+- Use nested resources appropriately
+- Implement custom routes sparingly
+- Use route constraints for advanced routing
+
+## Database
+- Follow Rails migration conventions
+- Use proper data types and constraints
+- Implement proper indexing strategies
+- Use transactions for complex database operations
+- Follow naming conventions (snake_case for tables/columns)
+
+## Testing
+- Use RSpec or MiniTest for testing
+- Follow TDD/BDD practices
+- Test models, controllers, and features separately
+- Use factories for test data (FactoryBot)
+- Keep tests fast, isolated, and deterministic
+
+## Gems and Dependencies
+- Use Gemfile for dependency management
+- Keep gems updated and secure
+- Only include necessary gems
+- Document custom or unusual gem usage
+- Follow security best practices for dependencies
+
+## Security
+- Use strong parameters to prevent mass assignment
+- Implement proper authentication and authorization
+- Prevent common vulnerabilities (XSS, CSRF, SQL injection)
+- Use secure session management
+- Validate and sanitize user inputs
+
+## Performance
+- Use eager loading to prevent N+1 queries
+- Implement proper caching strategies
+- Optimize database queries and indexes
+- Use background job processing for heavy tasks
+- Monitor and profile application performance
+
+## Code Style
+- Follow the Ruby Style Guide (RuboCop)
+- Use consistent indentation and formatting
+- Write clear, descriptive method and variable names
+- Keep methods short and focused
+- Use comments sparingly but effectively

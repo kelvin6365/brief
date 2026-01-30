@@ -2,21 +2,27 @@
  * Framework detection
  */
 
-import type { DetectionContext, FrameworkInfo, FrameworkCategory } from "./types.js";
+import type {
+  DetectionContext,
+  FrameworkCategory,
+  FrameworkInfo,
+} from "./types.js";
 import {
-  hasDependency,
-  getDependencyVersion,
-  hasFile,
-  hasPythonPackage,
   countFiles,
-  hasMavenDependency,
+  getDependencyVersion,
+  hasDependency,
+  hasFile,
   hasGradleDependency,
+  hasMavenDependency,
+  hasPythonPackage,
 } from "./utils.js";
 
 interface FrameworkDefinition {
   name: string;
   category: FrameworkCategory;
-  detect: (context: DetectionContext) => { confidence: number; source: string } | null;
+  detect: (
+    context: DetectionContext
+  ) => { confidence: number; source: string } | null;
 }
 
 const frameworkDefinitions: FrameworkDefinition[] = [
@@ -26,7 +32,10 @@ const frameworkDefinitions: FrameworkDefinition[] = [
     category: "fullstack",
     detect: (ctx) => {
       if (!hasDependency(ctx, "next")) return null;
-      const hasConfig = hasFile(ctx, "next.config.js") || hasFile(ctx, "next.config.mjs") || hasFile(ctx, "next.config.ts");
+      const hasConfig =
+        hasFile(ctx, "next.config.js") ||
+        hasFile(ctx, "next.config.mjs") ||
+        hasFile(ctx, "next.config.ts");
       return {
         confidence: hasConfig ? 95 : 80,
         source: hasConfig ? "next dependency + config" : "next dependency",
@@ -42,7 +51,9 @@ const frameworkDefinitions: FrameworkDefinition[] = [
       const confidence = jsxCount > 5 ? 85 : 70;
       return {
         confidence,
-        source: `react dependency${jsxCount > 0 ? ` + ${jsxCount} jsx files` : ""}`,
+        source: `react dependency${
+          jsxCount > 0 ? ` + ${jsxCount} jsx files` : ""
+        }`,
       };
     },
   },
@@ -54,7 +65,9 @@ const frameworkDefinitions: FrameworkDefinition[] = [
       const vueCount = countFiles(ctx, /\.vue$/);
       return {
         confidence: vueCount > 0 ? 90 : 75,
-        source: `vue dependency${vueCount > 0 ? ` + ${vueCount} .vue files` : ""}`,
+        source: `vue dependency${
+          vueCount > 0 ? ` + ${vueCount} .vue files` : ""
+        }`,
       };
     },
   },
@@ -63,7 +76,8 @@ const frameworkDefinitions: FrameworkDefinition[] = [
     category: "fullstack",
     detect: (ctx) => {
       if (!hasDependency(ctx, "nuxt")) return null;
-      const hasConfig = hasFile(ctx, "nuxt.config.js") || hasFile(ctx, "nuxt.config.ts");
+      const hasConfig =
+        hasFile(ctx, "nuxt.config.js") || hasFile(ctx, "nuxt.config.ts");
       return {
         confidence: hasConfig ? 95 : 80,
         source: hasConfig ? "nuxt dependency + config" : "nuxt dependency",
@@ -78,7 +92,9 @@ const frameworkDefinitions: FrameworkDefinition[] = [
       const svelteCount = countFiles(ctx, /\.svelte$/);
       return {
         confidence: svelteCount > 0 ? 90 : 75,
-        source: `svelte dependency${svelteCount > 0 ? ` + ${svelteCount} .svelte files` : ""}`,
+        source: `svelte dependency${
+          svelteCount > 0 ? ` + ${svelteCount} .svelte files` : ""
+        }`,
       };
     },
   },
@@ -98,7 +114,8 @@ const frameworkDefinitions: FrameworkDefinition[] = [
     category: "frontend",
     detect: (ctx) => {
       if (!hasDependency(ctx, "astro")) return null;
-      const hasConfig = hasFile(ctx, "astro.config.mjs") || hasFile(ctx, "astro.config.ts");
+      const hasConfig =
+        hasFile(ctx, "astro.config.mjs") || hasFile(ctx, "astro.config.ts");
       return {
         confidence: hasConfig ? 95 : 80,
         source: hasConfig ? "astro dependency + config" : "astro dependency",
@@ -124,7 +141,9 @@ const frameworkDefinitions: FrameworkDefinition[] = [
       const hasConfig = hasFile(ctx, "angular.json");
       return {
         confidence: hasConfig ? 95 : 85,
-        source: hasConfig ? "@angular/core + angular.json" : "@angular/core dependency",
+        source: hasConfig
+          ? "@angular/core + angular.json"
+          : "@angular/core dependency",
       };
     },
   },
@@ -332,16 +351,87 @@ const frameworkDefinitions: FrameworkDefinition[] = [
     },
   },
 
+  // Ruby on Rails
+  {
+    name: "Ruby on Rails",
+    category: "fullstack",
+    detect: (ctx) => {
+      if (!hasFile(ctx, "Gemfile") || !hasFile(ctx, "config/application.rb"))
+        return null;
+      // Check for rails in Gemfile (the ctx.rubyGems would need to be added, but we'll use a simpler approach)
+      // Just checking for the presence of Gemfile and application.rb is strong indicator
+      return {
+        confidence: 90,
+        source: "Gemfile + config/application.rb",
+      };
+    },
+  },
+
+  // Go frameworks
+  {
+    name: "Gin",
+    category: "backend",
+    detect: (ctx) => {
+      if (!ctx.goMod) return null; // go.mod exists
+      // Since we can't easily check the content of go.mod, we'll check for typical Gin project structure
+      // Gin projects often have main.go or server.go in the root
+      const hasMainGo = hasFile(ctx, "main.go");
+      const hasServerGo = hasFile(ctx, "server.go");
+      if (hasMainGo || hasServerGo) {
+        return {
+          confidence: 85,
+          source: "go.mod + main.go or server.go",
+        };
+      }
+      return {
+        confidence: 75,
+        source: "go.mod exists",
+      };
+    },
+  },
+
+  // Rust frameworks
+  {
+    name: "Actix",
+    category: "backend",
+    detect: (ctx) => {
+      if (!ctx.cargoToml) return null; // Cargo.toml exists
+      // Since we can't easily check the content of Cargo.toml, we'll check for typical Actix project structure
+      // Actix projects often have main.rs or server.rs in src/
+      const hasMainRs = hasFile(ctx, "src/main.rs");
+      const hasServerRs = hasFile(ctx, "src/server.rs");
+      if (hasMainRs || hasServerRs) {
+        return {
+          confidence: 85,
+          source: "Cargo.toml + src/main.rs or src/server.rs",
+        };
+      }
+      return {
+        confidence: 75,
+        source: "Cargo.toml exists",
+      };
+    },
+  },
+
   // Testing frameworks as libraries
   {
     name: "Storybook",
     category: "library",
     detect: (ctx) => {
-      if (!hasDependency(ctx, "@storybook/react") && !hasDependency(ctx, "@storybook/vue3") && !hasDependency(ctx, "@storybook/svelte")) return null;
-      const hasConfig = hasFile(ctx, ".storybook/main.js") || hasFile(ctx, ".storybook/main.ts");
+      if (
+        !hasDependency(ctx, "@storybook/react") &&
+        !hasDependency(ctx, "@storybook/vue3") &&
+        !hasDependency(ctx, "@storybook/svelte")
+      )
+        return null;
+      const hasConfig =
+        hasFile(ctx, ".storybook/main.js") ||
+        hasFile(ctx, ".storybook/main.ts");
       return {
         confidence: hasConfig ? 90 : 75,
-        source: hasConfig ? "storybook dependency + config" : "storybook dependency",
+        source: hasConfig
+          ? "storybook dependency + config"
+          : "storybook dependency",
       };
     },
   },
@@ -359,7 +449,10 @@ export function detectFrameworks(context: DetectionContext): FrameworkInfo[] {
       detected.push({
         name: definition.name,
         category: definition.category,
-        version: getDependencyVersion(context, getMainDependency(definition.name)),
+        version: getDependencyVersion(
+          context,
+          getMainDependency(definition.name)
+        ),
         confidence: result.confidence,
         source: result.source,
       });
@@ -395,6 +488,9 @@ function getMainDependency(frameworkName: string): string {
     Electron: "electron",
     Storybook: "@storybook/react",
     "Spring Boot": "spring-boot-starter-web",
+    "Ruby on Rails": "rails",
+    Gin: "github.com/gin-gonic/gin",
+    Actix: "actix-web",
   };
   return dependencyMap[frameworkName] || frameworkName.toLowerCase();
 }

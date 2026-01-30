@@ -2,7 +2,7 @@
  * Template registry - defines all available templates
  */
 
-import type { TemplateDefinition, TemplateBundle } from "./types.js";
+import type { TemplateBundle, TemplateDefinition } from "./types.js";
 
 /**
  * Core templates - always included
@@ -543,6 +543,133 @@ export const SHARED_TEMPLATES: TemplateDefinition[] = [
 ];
 
 /**
+ * JetBrains-specific templates (JetBrains AI Assistant)
+ * Rules are stored in .aiassistant/rules/ directory
+ */
+export const JETBRAINS_TEMPLATES: TemplateDefinition[] = [
+  // Core JetBrains-specific templates (Priority: 1000-900)
+  {
+    id: "jetbrains-core",
+    name: "JetBrains Core Rules",
+    description: "Core coding standards and JetBrains AI Assistant instructions",
+    target: "jetbrains",
+    category: "core",
+    templatePath: "jetbrains/core.md.hbs",
+    outputPath: ".aiassistant/rules/core.md",
+    priority: 1000,
+    tags: ["jetbrains", "core", "essential"],
+  },
+  {
+    id: "jetbrains-workflow",
+    name: "JetBrains Workflow Guidelines",
+    description: "Development workflow and IDE-specific practices for JetBrains AI Assistant",
+    target: "jetbrains",
+    category: "core",
+    templatePath: "jetbrains/workflow.md.hbs",
+    outputPath: ".aiassistant/rules/workflow.md",
+    priority: 950,
+    tags: ["jetbrains", "workflow", "productivity"],
+  },
+  {
+    id: "jetbrains-code-review",
+    name: "Code Review Standards",
+    description: "Code review guidelines and best practices for JetBrains AI Assistant",
+    target: "jetbrains",
+    category: "pattern",
+    templatePath: "jetbrains/code-review.md.hbs",
+    outputPath: ".aiassistant/rules/code-review.md",
+    priority: 900,
+    tags: ["jetbrains", "code-review", "quality"],
+  },
+
+  // JetBrains-specific quality templates (Priority: 800-700)
+  {
+    id: "jetbrains-security",
+    name: "Security Guidelines",
+    description: "Security best practices and vulnerability prevention for JetBrains AI Assistant",
+    target: "jetbrains",
+    category: "pattern",
+    templatePath: "jetbrains/security.md.hbs",
+    outputPath: ".aiassistant/rules/security.md",
+    priority: 800,
+    tags: ["jetbrains", "security", "owasp"],
+  },
+  {
+    id: "jetbrains-testing",
+    name: "Testing Rules",
+    description: "Testing patterns and conventions for JetBrains AI Assistant",
+    target: "jetbrains",
+    category: "pattern",
+    templatePath: "jetbrains/testing.md.hbs",
+    outputPath: ".aiassistant/rules/testing.md",
+    globs: ["**/*.test.*", "**/*.spec.*", "**/tests/**", "**/__tests__/**"],
+    priority: 750,
+    tags: ["jetbrains", "testing"],
+  },
+  {
+    id: "jetbrains-error-handling",
+    name: "Error Handling Patterns",
+    description: "Comprehensive error handling and recovery strategies for JetBrains",
+    target: "jetbrains",
+    category: "pattern",
+    templatePath: "jetbrains/error-handling.md.hbs",
+    outputPath: ".aiassistant/rules/error-handling.md",
+    priority: 750,
+    tags: ["jetbrains", "error-handling", "resilience"],
+  },
+
+  // JetBrains-specific process templates (Priority: 700-600)
+  {
+    id: "jetbrains-git-workflow",
+    name: "Git Workflow",
+    description: "Git conventions, commit messages, and PR guidelines for JetBrains",
+    target: "jetbrains",
+    category: "pattern",
+    templatePath: "jetbrains/git-workflow.md.hbs",
+    outputPath: ".aiassistant/rules/git-workflow.md",
+    priority: 700,
+    tags: ["jetbrains", "git", "workflow"],
+  },
+  {
+    id: "jetbrains-api-design",
+    name: "API Design Patterns",
+    description: "RESTful API conventions and best practices for JetBrains",
+    target: "jetbrains",
+    category: "pattern",
+    templatePath: "jetbrains/api-design.md.hbs",
+    outputPath: ".aiassistant/rules/api-design.md",
+    globs: [
+      "**/api/**/*",
+      "**/routes/**/*",
+      "**/routers/**/*",
+      "**/endpoints/**/*",
+    ],
+    priority: 700,
+    conditions: [
+      { type: "hasFile", value: "**/api/**" },
+      { type: "hasFile", value: "**/routes/**" },
+      { type: "hasFile", value: "**/endpoints/**" },
+      { type: "hasFile", value: "**/server.js" },
+      { type: "hasFile", value: "**/server.ts" },
+      { type: "hasFile", value: "**/app.js" },
+      { type: "hasFile", value: "**/app.ts" },
+    ],
+    tags: ["jetbrains", "api", "rest"],
+  },
+  {
+    id: "jetbrains-architecture",
+    name: "Architecture Patterns",
+    description: "Design patterns and architectural guidelines for JetBrains",
+    target: "jetbrains",
+    category: "pattern",
+    templatePath: "jetbrains/architecture.md.hbs",
+    outputPath: ".aiassistant/rules/architecture.md",
+    priority: 650,
+    tags: ["jetbrains", "architecture", "design-patterns"],
+  },
+];
+
+/**
  * All templates combined
  */
 export const ALL_TEMPLATES: TemplateDefinition[] = [
@@ -554,6 +681,7 @@ export const ALL_TEMPLATES: TemplateDefinition[] = [
   ...PROJECT_TYPE_TEMPLATES,
   ...CLAUDE_TEMPLATES,
   ...QODO_TEMPLATES,
+  ...JETBRAINS_TEMPLATES,
   ...SHARED_TEMPLATES,
 ];
 
@@ -659,7 +787,7 @@ export function getTemplate(id: string): TemplateDefinition | undefined {
  * Get templates by target
  */
 export function getTemplatesByTarget(
-  target: "cursor" | "claude" | "qoder" | "shared"
+  target: "cursor" | "claude" | "qoder" | "jetbrains" | "shared"
 ): TemplateDefinition[] {
   return ALL_TEMPLATES.filter((t) => {
     if (Array.isArray(t.target)) {

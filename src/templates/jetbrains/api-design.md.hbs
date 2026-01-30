@@ -1,0 +1,78 @@
+# API Design Patterns for JetBrains AI Assistant
+
+## API Design Philosophy
+- Design APIs with the consumer in mind
+- Follow RESTful principles where appropriate
+- Maintain backward compatibility when possible
+- Use consistent naming and structure patterns
+- Document APIs thoroughly and keep documentation up to date
+
+## Resource Naming Conventions
+- Use nouns to represent resources (users, orders, products)
+- Use plural nouns for collections (users, not user)
+- Use lowercase letters and hyphens for readability
+- Use hierarchical paths for relationships (users/{id}/orders)
+- Avoid verbs in resource paths
+
+## HTTP Methods Usage
+- GET: Retrieve resources (safe, idempotent)
+- POST: Create new resources or trigger processes
+- PUT: Update entire resources (idempotent)
+- PATCH: Partial resource updates
+- DELETE: Remove resources (idempotent)
+
+## Response Design
+- Use appropriate HTTP status codes (200, 201, 400, 404, 500, etc.)
+- Provide consistent response structures
+- Include meaningful error messages
+- Support content negotiation (JSON, XML)
+- Use pagination for large collections
+
+## Request Design
+- Use query parameters for filtering, sorting, and pagination
+- Limit the number of query parameters per endpoint
+- Use consistent parameter naming conventions
+- Validate input parameters and provide clear error messages
+- Support request validation and sanitization
+
+## Versioning Strategy
+- Implement API versioning (URL path or headers)
+- Maintain backward compatibility when possible
+- Deprecate old versions with advance notice
+- Document breaking changes clearly
+- Use semantic versioning for API versions
+
+## Authentication and Authorization
+- Implement secure authentication (OAuth 2.0, API keys, JWT)
+- Use HTTPS for all API communications
+- Implement rate limiting to prevent abuse
+- Include proper authorization checks
+- Follow security best practices
+
+## Error Handling
+- Use consistent error response format
+- Provide meaningful error codes and messages
+- Include correlation IDs for debugging
+- Document error responses in API specifications
+- Log errors appropriately for monitoring
+
+## Performance Considerations
+- Implement caching strategies where appropriate
+- Use compression for large responses
+- Support partial responses (fields selection)
+- Implement efficient querying and indexing
+- Monitor API performance metrics
+
+## Documentation Standards
+- Provide comprehensive API documentation
+- Use tools like OpenAPI/Swagger for specification
+- Include example requests and responses
+- Document authentication and authorization requirements
+- Provide SDKs or client libraries when beneficial
+
+## Testing APIs
+- Implement comprehensive API testing
+- Test both positive and negative scenarios
+- Validate response schemas and data formats
+- Test authentication and authorization flows
+- Monitor API performance and reliability

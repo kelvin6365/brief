@@ -3,10 +3,19 @@
  */
 
 /** Target tool for template generation */
-export type TemplateTarget = "cursor" | "claude" | "qoder" | "shared";
+export type TemplateTarget =
+  | "cursor"
+  | "claude"
+  | "qoder"
+  | "jetbrains"
+  | "shared";
 
 /** Template category */
-export type TemplateCategory = "core" | "framework" | "pattern" | "project-type";
+export type TemplateCategory =
+  | "core"
+  | "framework"
+  | "pattern"
+  | "project-type";
 
 /** Template definition */
 export interface TemplateDefinition {

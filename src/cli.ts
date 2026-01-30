@@ -34,14 +34,18 @@ console.error = (...args: unknown[]) => {
 
 import { Command } from "commander";
 import {
-  initCommand,
-  detectCommand,
   addCommand,
+  detectCommand,
+  getAvailableTemplates,
+  initCommand,
+  parseTool,
   removeCommand,
+  skillsAddCommand,
+  skillsInfoCommand,
+  skillsListCommand,
+  skillsRemoveCommand,
   syncCommand,
   validateCommand,
-  getAvailableTemplates,
-  parseTool,
 } from "./commands/index.js";
 import type { AiTool } from "./types/index.js";
 
@@ -278,5 +282,118 @@ program
     }
     console.log("");
   });
+
+// Skills command group
+const skillsCommand = program
+  .command("skills")
+  .description("Manage AI skills for Claude, Cursor, and Qoder");
+
+// Skills list subcommand
+skillsCommand
+  .command("list")
+  .alias("ls")
+  .description("List available skills")
+  .option("-p, --platform <platform>", "Filter by platform (cursor, claude, qoder)")
+  .action(
+    async (options: {
+      platform?: "cursor" | "claude" | "qoder";
+    }): Promise<void> => {
+      try {
+        const result = await skillsListCommand(options.platform);
+        if (!result.success) {
+          console.error(result.error);
+          process.exit(1);
+        }
+      } catch (error) {
+        console.error("Error:", error instanceof Error ? error.message : error);
+        process.exit(1);
+      }
+    }
+  );
+
+// Skills add subcommand
+skillsCommand
+  .command("add <skill>")
+  .description("Add a skill to your project")
+  .option("-p, --path <path>", "Project path", process.cwd())
+  .option("-f, --force", "Force overwrite if already exists")
+  .option("-t, --tool <tool>", "Target tool (cursor, claude, qoder)", "hybrid")
+  .action(
+    async (
+      skill: string,
+      options: {
+        path: string;
+        force: boolean;
+        tool: string;
+      }
+    ): Promise<void> => {
+      try {
+        const result = await skillsAddCommand(skill, {
+          path: options.path,
+          force: options.force,
+          tool: options.tool as any,
+        });
+
+        if (!result.success) {
+          console.error(result.error);
+          process.exit(1);
+        }
+      } catch (error) {
+        console.error("Error:", error instanceof Error ? error.message : error);
+        process.exit(1);
+      }
+    }
+  );
+
+// Skills remove subcommand
+skillsCommand
+  .command("remove <skill>")
+  .description("Remove a skill from your project")
+  .option("-p, --path <path>", "Project path", process.cwd())
+  .option("--remove-files", "Also remove generated files")
+  .action(
+    async (
+      skill: string,
+      options: {
+        path: string;
+        removeFiles: boolean;
+      }
+    ): Promise<void> => {
+      try {
+        const result = await skillsRemoveCommand(skill, {
+          path: options.path,
+          removeFiles: options.removeFiles,
+        });
+
+        if (!result.success) {
+          console.error(result.error);
+          process.exit(1);
+        }
+      } catch (error) {
+        console.error("Error:", error instanceof Error ? error.message : error);
+        process.exit(1);
+      }
+    }
+  );
+
+// Skills info subcommand
+skillsCommand
+  .command("info <skill>")
+  .description("Show detailed information about a skill")
+  .action(
+    async (skill: string): Promise<void> => {
+      try {
+        const result = await skillsInfoCommand(skill);
+
+        if (!result.success) {
+          console.error(result.error);
+          process.exit(1);
+        }
+      } catch (error) {
+        console.error("Error:", error instanceof Error ? error.message : error);
+        process.exit(1);
+      }
+    }
+  );
 
 program.parse();

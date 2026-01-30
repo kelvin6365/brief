@@ -1,0 +1,65 @@
+# Git Workflow for JetBrains AI Assistant
+
+## Branching Strategy
+- Use `main` (or `master`) as the primary stable branch
+- Use `develop` as the integration branch for ongoing work
+- Create feature branches for new functionality: `feature/description`
+- Create hotfix branches for urgent fixes: `hotfix/issue-description`
+- Create release branches for preparing releases: `release/version`
+
+## Commit Guidelines
+- Write clear, descriptive commit messages
+- Use present tense: "Add feature" not "Added feature"
+- Limit first line to 50 characters
+- Use imperative mood: "Fix bug" not "Fixes bug" or "Fixed bug"
+- Include issue numbers if applicable: "Fix #123: Add user authentication"
+
+## Pull Request Process
+- Create pull requests for all feature and bug fix branches
+- Include a clear description of the changes
+- Link to related issues or tickets
+- Request reviews from team members
+- Ensure all automated checks pass before merging
+- Squash commits if necessary to maintain clean history
+
+## Code Review in JetBrains
+- Use JetBrains IDE's built-in Git integration for reviewing changes
+- Leverage AI Assistant to help analyze code changes during review
+- Focus on code quality, functionality, and adherence to standards
+- Ensure all feedback is addressed before approving
+- Use code review as a learning opportunity
+
+## Git Best Practices
+- Commit frequently with logical groupings of changes
+- Write meaningful commit messages that explain the 'why'
+- Keep commits focused on a single responsibility
+- Use `git rebase` to clean up commit history before merging
+- Regularly pull from the main branch to stay up-to-date
+
+## Collaboration Guidelines
+- Use `.gitignore` to exclude unnecessary files
+- Follow the project's branching model consistently
+- Communicate branch names and purposes clearly
+- Coordinate with team members on shared branches
+- Use tags for releases and important milestones
+
+## JetBrains-Specific Git Features
+- Use the built-in Git tool window for staging and committing
+- Leverage local history for recovery of accidental changes
+- Use annotated tags for releases with descriptions
+- Take advantage of Git tool windows for conflict resolution
+- Use the Log tab to visualize branch history
+
+## Security Considerations
+- Never commit credentials, API keys, or secrets
+- Use environment variables or configuration files excluded by `.gitignore`
+- Scan commits for accidentally included sensitive data
+- Review changes carefully before pushing to shared repositories
+- Use signed commits if required by the project
+
+## Handling Conflicts
+- Address merge conflicts promptly
+- Understand the changes before resolving conflicts
+- Test functionality after resolving conflicts
+- Use JetBrains' merge tool for complex conflicts
+- Communicate with team members when conflicts are complex

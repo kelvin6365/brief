@@ -1,0 +1,106 @@
+# Docker Guidelines
+
+## Container Design
+- Follow the single responsibility principle (one process per container)
+- Use minimal base images (Alpine, Distroless) when possible
+- Implement multi-stage builds to reduce attack surface
+- Keep containers immutable (avoid writing to containers at runtime)
+- Use non-root users when possible
+
+## Image Building
+- Use .dockerignore to exclude unnecessary files
+- Leverage Docker layer caching with proper instruction ordering
+- Use specific base image tags (not latest)
+- Minimize the number of layers in the image
+- Clean up package managers and temporary files
+
+## Security
+- Scan images for vulnerabilities regularly
+- Use minimal base images to reduce attack surface
+- Run containers as non-root users
+- Implement proper secret management (avoid hardcoding credentials)
+- Use read-only root filesystem when possible
+
+## Multi-stage Builds
+- Use builder pattern for compiling applications
+- Separate build dependencies from runtime dependencies
+- Copy artifacts between stages efficiently
+- Minimize final image size
+- Keep sensitive build-time secrets out of final image
+
+## Dockerfile Best Practices
+- Combine RUN commands to reduce layers
+- Use specific version tags for base images
+- Install only necessary packages
+- Clean package caches after installation
+- Use HEALTHCHECK for container health monitoring
+
+## Networking
+- Use custom networks for container communication
+- Implement proper service discovery
+- Use DNS names instead of IP addresses
+- Configure appropriate port mappings
+- Consider using service mesh for complex applications
+
+## Storage and Volumes
+- Use volumes for persistent data storage
+- Avoid storing data in writable container layers
+- Implement proper backup strategies for volumes
+- Use bind mounts for development purposes
+- Consider using volume plugins for advanced storage needs
+
+## Orchestration
+- Use Docker Compose for multi-container applications in development
+- Implement proper service dependencies
+- Use environment variables for configuration
+- Implement health checks for services
+- Configure appropriate resource limits
+
+## Environment Configuration
+- Use environment variables for configuration
+- Implement proper secret management
+- Use .env files for development configurations
+- Avoid hardcoding environment-specific values
+- Implement configuration validation
+
+## Logging
+- Use stdout/stderr for application logs
+- Implement structured logging
+- Use logging drivers for centralized logging
+- Implement log rotation and retention policies
+- Avoid logging sensitive information
+
+## Performance
+- Optimize image size to reduce deployment time
+- Use appropriate resource limits (CPU, memory)
+- Implement proper caching strategies
+- Use volume mounting for development iteration
+- Consider using build cache optimization
+
+## CI/CD Integration
+- Implement proper image tagging strategies
+- Use build arguments for version information
+- Implement image signing for security
+- Scan images in CI/CD pipeline
+- Implement automated deployment processes
+
+## Multi-platform Builds
+- Use docker buildx for multi-platform builds
+- Test images on target platforms
+- Consider architecture-specific optimizations
+- Implement proper cross-compilation strategies
+- Use manifest lists for multi-platform images
+
+## Docker Compose
+- Use compose files for local development
+- Implement proper service dependencies
+- Use overrides for different environments
+- Implement proper networking between services
+- Use compose profiles for different scenarios
+
+## Code Style
+- Use consistent formatting in Dockerfiles
+- Include comments for complex instructions
+- Use meaningful labels for images
+- Organize instructions logically
+- Follow security best practices in Dockerfiles

@@ -1,0 +1,106 @@
+# Rust with Actix Framework Guidelines
+
+## Project Structure
+- Follow Rust's idiomatic project layout
+- Use Cargo.toml for dependency management
+- Organize code in src/ directory with clear module structure
+- Separate application logic, domain models, and infrastructure
+- Use feature flags for optional functionality
+
+## Actix Web Patterns
+- Use Actix's routing macros effectively (#[get], #[post], etc.)
+- Implement middleware for cross-cutting concerns
+- Use App::configure for modular route organization
+- Leverage extractors for request data handling
+- Use Actix's error handling system appropriately
+
+## Async/Await Patterns
+- Use async functions for I/O-bound operations
+- Understand Future execution and spawning
+- Use appropriate executors (Tokio, async-std)
+- Handle async error propagation with proper Result types
+- Be mindful of Send and Sync requirements
+
+## Error Handling
+- Implement custom error types with proper traits
+- Use thiserror crate for ergonomic error handling
+- Convert errors to appropriate HTTP status codes
+- Log errors with sufficient context
+- Implement proper error response formatting
+
+## Request/Response Handling
+- Use serde for serialization/deserialization
+- Implement proper input validation
+- Use extractors for request data
+- Return consistent response formats
+- Handle different content types appropriately
+
+## State Management
+- Use web::Data for application state
+- Implement proper state initialization
+- Handle shared mutable state safely
+- Use application state for configuration
+- Consider Arc<Mutex<T>> for shared mutable data
+
+## Database Integration
+- Use diesel or sqlx for database operations
+- Implement repository pattern for data access
+- Use connection pooling appropriately
+- Handle database transactions properly
+- Implement proper error handling for DB operations
+
+## Testing
+- Write unit tests with #[cfg(test)]
+- Use integration tests for API endpoints
+- Use tokio::test for async tests
+- Mock external dependencies when needed
+- Test error cases and edge conditions
+
+## Configuration
+- Use config crate for complex configuration
+- Leverage environment variables
+- Implement configuration validation
+- Keep secrets secure and out of code
+- Use different configurations for environments
+
+## Security
+- Validate and sanitize all inputs
+- Implement proper authentication and authorization
+- Use HTTPS in production
+- Implement rate limiting and request throttling
+- Follow Rust security best practices
+
+## Performance
+- Use async/await for I/O concurrency
+- Implement proper caching strategies
+- Optimize critical paths with profiling
+- Use appropriate data structures
+- Consider using unsafe code only when necessary
+
+## Logging
+- Use env_logger or tracing for structured logging
+- Include appropriate log levels
+- Add correlation IDs for request tracing
+- Avoid logging sensitive information
+- Configure log rotation and management
+
+## Concurrency
+- Leverage Rust's ownership for thread safety
+- Use tokio for async runtime
+- Implement proper task spawning
+- Use channels for inter-task communication
+- Consider using rayon for CPU-intensive tasks
+
+## Code Style
+- Follow Rust's official style guide
+- Use rustfmt for consistent formatting
+- Use clippy for code quality checks
+- Write clear, descriptive names
+- Document public APIs with rustdoc
+
+## Dependency Management
+- Use Cargo for dependency management
+- Keep dependencies updated and secure
+- Audit dependencies regularly
+- Use workspace for multi-package projects
+- Follow semantic versioning practices

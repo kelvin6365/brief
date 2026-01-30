@@ -1,0 +1,113 @@
+# React Native Guidelines
+
+## Project Structure
+- Organize components by feature or screens
+- Separate native modules from shared code
+- Use proper folder structure (components, screens, services, utils)
+- Keep platform-specific code separate when necessary
+- Use consistent naming conventions for files and directories
+
+## Component Architecture
+- Use functional components with hooks
+- Keep components focused on a single responsibility
+- Use TypeScript for type safety
+- Implement proper prop validation
+- Leverage React Native's built-in components appropriately
+
+## State Management
+- Use useState and useContext for simple state
+- Implement Redux or Zustand for complex state management
+- Use React Query or SWR for server state management
+- Implement proper state normalization
+- Handle async state updates correctly
+
+## Styling
+- Use StyleSheet for consistent styling
+- Leverage Flexbox for layout management
+- Use platform-specific styling when necessary
+- Implement responsive design patterns
+- Consider using styled-components if preferred
+
+## Platform Differences
+- Handle iOS and Android differences appropriately
+- Use Platform module for platform-specific code
+- Implement proper navigation patterns for each platform
+- Consider different UI guidelines for each platform
+- Test on both platforms regularly
+
+## Navigation
+- Use React Navigation for navigation management
+- Implement proper navigation structure
+- Use deep linking for better user experience
+- Handle navigation state properly
+- Implement proper navigation guards if needed
+
+## Performance Optimization
+- Implement proper list rendering with FlatList or SectionList
+- Use React.memo for component optimization
+- Implement proper image optimization
+- Use InteractionManager for smooth UI interactions
+- Profile and optimize critical rendering paths
+
+## Native Modules
+- Use native modules for performance-critical operations
+- Implement proper bridging for native functionality
+- Handle permissions properly
+- Test native modules thoroughly on both platforms
+- Document native module usage and requirements
+
+## Testing
+- Use Jest for unit testing
+- Implement React Native Testing Library for component testing
+- Write integration tests for critical user flows
+- Test on both iOS and Android simulators/devices
+- Use Detox for end-to-end testing
+
+## Networking
+- Use fetch or axios for API calls
+- Implement proper error handling for network requests
+- Use proper caching strategies
+- Handle offline scenarios appropriately
+- Implement proper request/response logging
+
+## Security
+- Store sensitive data securely using appropriate libraries
+- Implement proper authentication and authorization
+- Handle permissions appropriately
+- Sanitize user inputs properly
+- Follow mobile security best practices
+
+## Device Capabilities
+- Access device features properly (camera, GPS, etc.)
+- Handle device permissions correctly
+- Implement proper background task management
+- Use appropriate APIs for device-specific features
+- Consider battery usage in performance decisions
+
+## Code Sharing
+- Maximize code sharing between platforms
+- Use platform-specific code only when necessary
+- Implement proper abstraction layers
+- Use libraries that support cross-platform development
+- Maintain consistent behavior across platforms
+
+## Build and Deployment
+- Use proper environment configurations
+- Implement code signing and certificates
+- Use appropriate build tools and processes
+- Implement proper release management
+- Use services like EAS Build or Fastlane for automation
+
+## Code Style
+- Follow React Native style guide
+- Use consistent naming conventions
+- Keep components and functions concise
+- Use proper indentation and formatting
+- Write clear, descriptive comments when needed
+
+## Debugging
+- Use React Native Debugger or Flipper for debugging
+- Implement proper logging strategies
+- Use Chrome DevTools for JavaScript debugging
+- Leverage React Native's built-in debugging tools
+- Implement proper error reporting for production

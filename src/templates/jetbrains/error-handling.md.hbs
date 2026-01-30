@@ -1,0 +1,63 @@
+# Error Handling Patterns for JetBrains AI Assistant
+
+## Error Handling Philosophy
+- Handle errors gracefully without crashing the application
+- Provide meaningful error messages for debugging
+- Fail safely when errors occur
+- Log errors appropriately for monitoring and debugging
+- Follow consistent error handling patterns throughout the application
+
+## Error Classification
+- **System Errors**: Infrastructure or platform-level issues
+- **Application Errors**: Issues within the application logic
+- **User Errors**: Invalid inputs or requests from users
+- **External Errors**: Issues with external services or APIs
+
+## Exception Handling Patterns
+- Use specific exception types when available
+- Catch exceptions at the appropriate level
+- Don't catch exceptions just to log them without handling
+- Use finally blocks or try-with-resources for cleanup
+- Avoid catching generic exceptions when possible
+
+## Error Recovery Strategies
+- Retry mechanisms for transient failures
+- Circuit breaker pattern for external dependencies
+- Graceful degradation when features fail
+- Fallback mechanisms for critical functionality
+- Timeouts for operations that might hang
+
+## Logging Best Practices
+- Log errors with appropriate context and correlation IDs
+- Don't log sensitive information or credentials
+- Use structured logging for easier analysis
+- Include stack traces for debugging purposes
+- Differentiate between expected and unexpected errors
+
+## API Error Handling
+- Use appropriate HTTP status codes
+- Provide meaningful error responses
+- Include error codes for client-side handling
+- Don't expose internal implementation details
+- Document error responses in API specifications
+
+## Resource Management
+- Always release resources in finally blocks
+- Use RAII (Resource Acquisition Is Initialization) patterns
+- Close streams, connections, and other resources properly
+- Implement proper cleanup in destructors when applicable
+- Use connection pooling appropriately
+
+## Validation and Precondition Checks
+- Validate inputs early in function calls
+- Use assertions for internal consistency checks
+- Fail fast when preconditions are not met
+- Provide clear error messages for validation failures
+- Use defensive programming techniques
+
+## Error Monitoring and Alerting
+- Implement centralized error tracking
+- Set up alerts for critical error patterns
+- Monitor error rates and trends
+- Track error recovery success rates
+- Use APM tools for comprehensive error monitoring

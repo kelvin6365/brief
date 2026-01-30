@@ -3,18 +3,19 @@
  * Coordinates all generators based on configuration
  */
 
-import type {
-  GeneratorOptions,
-  GeneratorResult,
-  FullGeneratorResult,
-  Generator,
-} from "./types.js";
+import { createLogger } from "../utils/logger.js";
 import { summarizeResults } from "./base.js";
-import { cursorGenerator } from "./cursor/index.js";
 import { claudeGenerator } from "./claude/index.js";
+import { cursorGenerator } from "./cursor/index.js";
+import { jetbrainsGenerator } from "./jetbrains/index.js";
 import { qoderGenerator } from "./qoder/index.js";
 import { sharedGenerator } from "./shared/index.js";
-import { createLogger } from "../utils/logger.js";
+import type {
+  FullGeneratorResult,
+  Generator,
+  GeneratorOptions,
+  GeneratorResult,
+} from "./types.js";
 
 const log = createLogger("orchestrator");
 
@@ -23,6 +24,7 @@ const GENERATORS: Generator[] = [
   cursorGenerator,
   claudeGenerator,
   qoderGenerator,
+  jetbrainsGenerator,
   sharedGenerator,
 ];
 
@@ -34,9 +36,13 @@ export function getGeneratorsForConfig(tools: string[]): Generator[] {
 
   // Check which tools are enabled
   const enableAll = tools.includes("all");
-  const enableCursor = enableAll || tools.includes("cursor") || tools.includes("hybrid");
-  const enableClaude = enableAll || tools.includes("claude") || tools.includes("hybrid");
+  const enableCursor =
+    enableAll || tools.includes("cursor") || tools.includes("hybrid");
+  const enableClaude =
+    enableAll || tools.includes("claude") || tools.includes("hybrid");
   const enableQoder = enableAll || tools.includes("qoder");
+  const enableJetBrains =
+    enableAll || tools.includes("jetbrains") || tools.includes("hybrid");
 
   if (enableCursor) {
     generators.push(cursorGenerator);
@@ -50,6 +56,10 @@ export function getGeneratorsForConfig(tools: string[]): Generator[] {
     generators.push(qoderGenerator);
   }
 
+  if (enableJetBrains) {
+    generators.push(jetbrainsGenerator);
+  }
+
   // Shared documentation is always included
   generators.push(sharedGenerator);
 
@@ -59,7 +69,9 @@ export function getGeneratorsForConfig(tools: string[]): Generator[] {
 /**
  * Run all applicable generators
  */
-export async function runGenerators(options: GeneratorOptions): Promise<FullGeneratorResult> {
+export async function runGenerators(
+  options: GeneratorOptions
+): Promise<FullGeneratorResult> {
   const { config, dryRun } = options;
 
   log.debug(`Starting generation for tools: ${config.tools.join(", ")}`);
@@ -116,7 +128,9 @@ export async function runGenerators(options: GeneratorOptions): Promise<FullGene
     log.debug("Dry run completed - no files were written");
   }
 
-  log.debug(`Generation complete: ${summary.created} created, ${summary.modified} modified, ${summary.skipped} skipped, ${summary.errors} errors`);
+  log.debug(
+    `Generation complete: ${summary.created} created, ${summary.modified} modified, ${summary.skipped} skipped, ${summary.errors} errors`
+  );
 
   return {
     success: allSuccess,
@@ -129,7 +143,7 @@ export async function runGenerators(options: GeneratorOptions): Promise<FullGene
  * Run a single generator by target
  */
 export async function runGenerator(
-  target: "cursor" | "claude" | "qoder" | "shared",
+  target: "cursor" | "claude" | "qoder" | "jetbrains" | "shared",
   options: GeneratorOptions
 ): Promise<GeneratorResult> {
   const generator = GENERATORS.find((g) => g.target === target);
@@ -149,6 +163,8 @@ export async function runGenerator(
 /**
  * Preview what would be generated (dry run)
  */
-export async function previewGeneration(options: GeneratorOptions): Promise<FullGeneratorResult> {
+export async function previewGeneration(
+  options: GeneratorOptions
+): Promise<FullGeneratorResult> {
   return runGenerators({ ...options, dryRun: true });
 }
