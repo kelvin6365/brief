@@ -1,0 +1,99 @@
+# Flutter Guidelines
+
+## Project Structure
+- Follow Flutter's recommended project structure
+- Use lib/ for application code
+- Store assets in assets/ directory
+- Place tests in test/ directory
+- Organize code in logical folders (widgets, models, services, etc.)
+
+## Widget Architecture
+- Use StatelessWidget for immutable widgets
+- Use StatefulWidget for mutable state
+- Implement proper state management patterns
+- Follow widget composition principles
+- Keep widgets focused and reusable
+
+## State Management
+- Choose appropriate state management solution
+- Use Provider for simple state management
+- Consider Riverpod for advanced use cases
+- Use Bloc/Cubit for complex business logic
+- Follow unidirectional data flow
+
+## UI/UX Patterns
+- Follow Material Design or Cupertino guidelines
+- Implement responsive design patterns
+- Use Flutter's layout widgets effectively
+- Apply consistent color schemes and typography
+- Implement proper navigation patterns
+
+## Performance
+- Optimize widget rebuilds with const constructors
+- Use ListView.builder for large lists
+- Implement proper image caching and loading
+- Minimize unnecessary rebuilds
+- Profile and optimize performance bottlenecks
+
+## Testing
+- Write comprehensive unit tests
+- Implement widget tests for UI components
+- Write integration tests for end-to-end flows
+- Use golden tests for UI consistency
+- Follow testing best practices (AAA pattern)
+
+## Architecture
+- Separate business logic from UI
+- Use Repository pattern for data access
+- Implement proper dependency injection
+- Follow clean architecture principles
+- Use services for external API communication
+
+## Navigation
+- Use Navigator 2.0 for complex navigation
+- Implement proper route management
+- Use named routes when appropriate
+- Handle deep linking properly
+- Implement proper state restoration
+
+## Forms and Validation
+- Use Form widget for form handling
+- Implement proper input validation
+- Use TextFormField for text inputs
+- Handle form submission appropriately
+- Show validation errors clearly
+
+## Assets and Images
+- Organize assets in structured directories
+- Use appropriate image formats and sizes
+- Implement proper image caching
+- Handle different screen densities
+- Optimize assets for different platforms
+
+## Platform Integration
+- Use platform channels for native code
+- Handle platform-specific features appropriately
+- Implement proper error handling for native calls
+- Follow platform-specific UI guidelines
+- Use plugins when available
+
+## Internationalization
+- Implement localization properly
+- Use arb files for translations
+- Handle RTL languages appropriately
+- Implement proper text scaling
+- Consider cultural differences
+
+## Code Quality
+- Follow Dart and Flutter style guides
+- Use meaningful names for classes and functions
+- Write clear, concise comments
+- Implement proper error handling
+- Maintain consistent code formatting
+
+## Build and Release
+- Use flavors for different environments
+- Implement proper signing configurations
+- Optimize builds for different platforms
+- Use appropriate build configurations
+- Follow release best practices

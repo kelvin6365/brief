@@ -367,6 +367,21 @@ const frameworkDefinitions: FrameworkDefinition[] = [
     },
   },
 
+  // Flutter
+  {
+    name: "Flutter",
+    category: "mobile",
+    detect: (ctx) => {
+      if (!hasFile(ctx, "pubspec.yaml")) return null;
+      // For now, we can only check for the existence of pubspec.yaml
+      // Actual content checking would require additional context in DetectionContext
+      return {
+        confidence: 80,
+        source: "pubspec.yaml exists",
+      };
+    },
+  },
+
   // Go frameworks
   {
     name: "Gin",
@@ -385,6 +400,26 @@ const frameworkDefinitions: FrameworkDefinition[] = [
       }
       return {
         confidence: 75,
+        source: "go.mod exists",
+      };
+    },
+  },
+  {
+    name: "Echo",
+    category: "backend",
+    detect: (ctx) => {
+      if (!ctx.goMod) return null; // go.mod exists
+      // Echo projects often have main.go or server.go in the root
+      const hasMainGo = hasFile(ctx, "main.go");
+      const hasServerGo = hasFile(ctx, "server.go");
+      if (hasMainGo || hasServerGo) {
+        return {
+          confidence: 80,
+          source: "go.mod + main.go or server.go",
+        };
+      }
+      return {
+        confidence: 70,
         source: "go.mod exists",
       };
     },
@@ -408,6 +443,26 @@ const frameworkDefinitions: FrameworkDefinition[] = [
       }
       return {
         confidence: 75,
+        source: "Cargo.toml exists",
+      };
+    },
+  },
+  {
+    name: "Axum",
+    category: "backend",
+    detect: (ctx) => {
+      if (!ctx.cargoToml) return null; // Cargo.toml exists
+      // Axum projects often have main.rs or server.rs in src/
+      const hasMainRs = hasFile(ctx, "src/main.rs");
+      const hasServerRs = hasFile(ctx, "src/server.rs");
+      if (hasMainRs || hasServerRs) {
+        return {
+          confidence: 80,
+          source: "Cargo.toml + src/main.rs or src/server.rs",
+        };
+      }
+      return {
+        confidence: 70,
         source: "Cargo.toml exists",
       };
     },
@@ -490,7 +545,10 @@ function getMainDependency(frameworkName: string): string {
     "Spring Boot": "spring-boot-starter-web",
     "Ruby on Rails": "rails",
     Gin: "github.com/gin-gonic/gin",
+    Echo: "github.com/labstack/echo",
     Actix: "actix-web",
+    Axum: "axum",
+    Flutter: "flutter",
   };
   return dependencyMap[frameworkName] || frameworkName.toLowerCase();
 }

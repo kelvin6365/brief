@@ -1,0 +1,99 @@
+# Angular Guidelines
+
+## Project Structure
+- Follow Angular's recommended project structure
+- Organize code by feature modules
+- Use shared modules for reusable components
+- Separate components, services, and models appropriately
+- Follow naming conventions consistently
+
+## Component Architecture
+- Keep components focused on a single responsibility
+- Use OnPush change detection strategy when appropriate
+- Implement proper input/output bindings
+- Use template reference variables sparingly
+- Leverage Angular's built-in directives effectively
+
+## Service and Dependency Injection
+- Use services for shared logic and data management
+- Implement proper singleton patterns with providedIn: 'root'
+- Use providedIn for lazy-loaded modules
+- Follow service responsibilities (data, business logic, etc.)
+- Implement proper error handling in services
+
+## RxJS and Reactive Programming
+- Use Observables for asynchronous operations
+- Implement proper subscription management
+- Use operators effectively (map, filter, switchMap, etc.)
+- Handle errors in observables properly
+- Unsubscribe to prevent memory leaks
+
+## TypeScript Integration
+- Use strict typing throughout the application
+- Implement interfaces for complex objects
+- Use enums for fixed sets of values
+- Leverage TypeScript generics when appropriate
+- Follow Angular's typing patterns
+
+## Routing and Navigation
+- Use lazy loading for feature modules
+- Implement route guards for access control
+- Use route parameters effectively
+- Implement proper error handling for navigation
+- Use Angular's routerLink directive properly
+
+## State Management
+- Use Angular's built-in state management for simple cases
+- Consider NgRx for complex state management
+- Implement proper selectors for data access
+- Use effects for side effects
+- Follow unidirectional data flow
+
+## Performance Optimization
+- Implement OnPush change detection strategy
+- Use trackBy functions for *ngFor directives
+- Implement proper lazy loading strategies
+- Use Angular's built-in performance tools
+- Optimize bundle sizes with tree-shaking
+
+## Styling and Theming
+- Use component-scoped styles
+- Leverage Angular Material for consistent UI
+- Use CSS custom properties for theming
+- Follow BEM methodology for class naming
+- Implement responsive design patterns
+
+## Testing
+- Use Jasmine and Karma for unit testing
+- Implement component testing with ComponentFixture
+- Write service tests with TestBed
+- Use Angular's testing utilities effectively
+- Follow testing best practices (AAA pattern)
+
+## Forms
+- Use Reactive Forms for complex forms
+- Implement proper validation patterns
+- Use template-driven forms for simple cases
+- Implement custom validators when needed
+- Handle form submission properly
+
+## Security
+- Sanitize user inputs to prevent XSS
+- Use Angular's built-in sanitization
+- Implement proper authentication patterns
+- Secure API communications
+- Follow Angular security best practices
+
+## Code Style
+- Follow Angular's style guide
+- Use consistent naming conventions
+- Keep components and services concise
+- Use proper indentation and formatting
+- Write clear, descriptive comments when needed
+
+## Build and Deployment
+- Use Angular CLI for builds
+- Implement proper environment configurations
+- Use Ahead-of-Time (AOT) compilation
+- Optimize for production builds
+- Implement proper CI/CD pipelines

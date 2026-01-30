@@ -1,0 +1,92 @@
+# Rust Guidelines
+
+## Code Style
+- Follow the Rust Style Guide conventions
+- Use consistent indentation (4 spaces)
+- Use snake_case for functions, variables, and modules
+- Use PascalCase for structs, enums, traits, and type parameters
+- Use SCREAMING_SNAKE_CASE for constants
+
+## Naming Conventions
+- Use descriptive names for functions, variables, and types
+- Use verbs for functions that perform actions
+- Use noun phrases for functions that return values
+- Use predicates (is_, has_, can_) for boolean-returning functions
+- Use clear, unambiguous names that express intent
+
+## Memory Safety
+- Embrace ownership, borrowing, and lifetimes
+- Use stack allocation when possible
+- Minimize heap allocations in performance-critical code
+- Understand when and how to use Box, Rc, Arc
+- Leverage RAII and Drop trait for resource management
+
+## Error Handling
+- Use Result<T, E> for recoverable errors
+- Use Option<T> for absence of value
+- Use ? operator for propagating errors
+- Create custom error types when appropriate
+- Distinguish between panic! and proper error handling
+
+## Traits and Generics
+- Use traits for defining shared behavior
+- Implement the zero-cost abstractions principle
+- Use associated types for related type relationships
+- Apply bounds to constrain generic parameters
+- Leverage trait objects when dynamic dispatch is needed
+
+## Concurrency
+- Use async/await for asynchronous programming
+- Leverage Send and Sync traits for thread safety
+- Use channels for communication between threads
+- Apply the "fearless concurrency" principle
+- Use tokio or async-std for async runtime
+
+## Performance
+- Write idiomatic, zero-cost abstractions
+- Use iterators instead of indexing when possible
+- Minimize allocations in hot code paths
+- Use compiler optimizations (-O flag)
+- Profile with tools like perf or valgrind
+
+## Testing
+- Write comprehensive unit tests with #[test]
+- Use integration tests in tests/ directory
+- Leverage property-based testing with proptest
+- Use #[cfg(test)] for test-only code
+- Follow testing best practices (AAA pattern)
+
+## Documentation
+- Write clear, comprehensive doc comments with ///
+- Use doc tests to ensure examples compile
+- Document public APIs thoroughly
+- Use rustdoc for generating documentation
+- Include examples in documentation
+
+## Pattern Matching
+- Use match for exhaustive pattern matching
+- Use if let for non-exhaustive matching
+- Apply destructuring patterns effectively
+- Use wildcards (_) appropriately
+- Leverage match guards for complex conditions
+
+## Standard Library
+- Leverage Rust's comprehensive standard library
+- Use smart pointers (Box, Rc, Arc) appropriately
+- Use collections (Vec, HashMap, HashSet) effectively
+- Apply iterator methods for data processing
+- Use std::future and async constructs
+
+## Cargo and Dependencies
+- Organize projects with cargo workspaces
+- Use Cargo.toml for dependency management
+- Apply semantic versioning properly
+- Use feature flags for conditional compilation
+- Leverage cargo subcommands effectively
+
+## Safety and Security
+- Follow Rust's safety principles
+- Use unsafe sparingly and with care
+- Apply proper bounds checking
+- Leverage the type system for safety
+- Review unsafe code carefully

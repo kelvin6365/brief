@@ -1,0 +1,99 @@
+# Axum Framework Guidelines
+
+## Project Structure
+- Organize code using feature-based or layer-based structure
+- Use handlers/ for route handlers
+- Store models in models/ directory
+- Use services/ for business logic
+- Implement proper module organization
+
+## Routing and Middleware
+- Use axum's routing combinators effectively
+- Implement proper route registration with Router
+- Use middleware for cross-cutting concerns
+- Apply proper route parameter validation
+- Handle different HTTP methods appropriately
+
+## Handlers
+- Keep handlers focused and lightweight
+- Separate business logic from HTTP concerns
+- Implement proper request parsing with extractors
+- Use structured responses
+- Handle errors consistently
+
+## Request and Response Handling
+- Use axum's extractor system
+- Implement proper request validation
+- Use structured JSON responses with serde
+- Handle different content types appropriately
+- Implement proper error responses
+
+## Middleware
+- Create reusable middleware functions
+- Use tower middleware when appropriate
+- Implement authentication middleware
+- Apply logging and monitoring middleware
+- Handle CORS with middleware
+
+## Validation
+- Validate request parameters and bodies
+- Use validator crate for structured validation
+- Implement custom validation functions
+- Return appropriate error messages
+- Handle validation errors consistently
+
+## Error Handling
+- Use Axum's error handling mechanisms
+- Implement centralized error handling with IntoResponse
+- Return appropriate HTTP status codes
+- Log errors appropriately
+- Provide meaningful error messages
+
+## Database Integration
+- Use appropriate database drivers (sqlx, sqlx-anyhow)
+- Implement connection pooling
+- Use prepared statements for security
+- Handle database transactions properly
+- Follow ORM best practices
+
+## Async/Await Patterns
+- Use async functions appropriately
+- Handle futures properly
+- Implement proper error propagation
+- Use async streams for streaming data
+- Follow async best practices
+
+## Testing
+- Write comprehensive unit tests
+- Use axum's test utilities
+- Test routes and handlers appropriately
+- Mock external dependencies
+- Follow testing best practices (AAA pattern)
+
+## Security
+- Implement proper input validation
+- Use authentication and authorization
+- Apply rate limiting
+- Implement proper session management
+- Follow security best practices
+
+## Configuration
+- Use environment variables for configuration
+- Implement configuration structs with serde
+- Load configuration from multiple sources
+- Handle configuration validation
+- Use different configs for environments
+
+## Performance
+- Optimize handler performance
+- Use appropriate concurrency patterns
+- Implement proper resource management
+- Profile and optimize bottlenecks
+- Leverage Axum's typed routing system
+
+## Logging
+- Implement structured logging with tracing crate
+- Use appropriate log levels
+- Log important application events
+- Include request context in logs
+- Follow logging best practices

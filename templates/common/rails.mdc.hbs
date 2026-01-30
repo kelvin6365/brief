@@ -1,0 +1,99 @@
+# Ruby on Rails Guidelines
+
+## Project Structure
+- Follow Rails' conventional directory structure
+- Use app/ for application code (models, views, controllers)
+- Store configuration in config/ directory
+- Place tests in test/ or spec/ directory
+- Use lib/ for custom libraries and modules
+
+## Model Conventions
+- Follow the Active Record pattern
+- Use singular names for model classes
+- Implement proper validations
+- Use associations (has_many, belongs_to, etc.) appropriately
+- Follow naming conventions for attributes
+
+## Controller Conventions
+- Follow RESTful routing patterns
+- Keep controllers thin and focused
+- Use strong parameters for mass assignment protection
+- Implement proper error handling
+- Follow the seven RESTful actions (index, show, new, etc.)
+
+## View Conventions
+- Use ERB or HAML for templating
+- Keep views simple and focused
+- Use partials for reusable components
+- Implement proper form handling
+- Follow MVC separation of concerns
+
+## Database and Migrations
+- Use migrations for schema changes
+- Follow naming conventions for tables and columns
+- Implement proper indexing strategies
+- Use database constraints when appropriate
+- Follow Rails' naming conventions for foreign keys
+
+## Routing
+- Use resourceful routes when possible
+- Implement proper route organization
+- Use route constraints appropriately
+- Follow RESTful URL patterns
+- Implement proper route security
+
+## Security
+- Implement CSRF protection
+- Use strong parameters to prevent mass assignment
+- Apply proper authentication and authorization
+- Follow secure coding practices
+- Protect against common web vulnerabilities
+
+## Testing
+- Follow TDD/BDD practices
+- Use Rails' built-in testing framework or RSpec
+- Write comprehensive unit, integration, and system tests
+- Test models, controllers, and views appropriately
+- Use factories for test data generation
+
+## Performance
+- Use eager loading to prevent N+1 queries
+- Implement proper database indexing
+- Use caching strategies (page, action, fragment)
+- Optimize database queries with proper scopes
+- Profile and monitor application performance
+
+## Gems and Dependencies
+- Use Gemfile for dependency management
+- Follow semantic versioning
+- Regularly update dependencies
+- Use only necessary gems
+- Evaluate security of third-party gems
+
+## Configuration
+- Use environment-specific configurations
+- Store sensitive information in environment variables
+- Use config/initializers/ for application setup
+- Follow Rails' configuration patterns
+- Manage secrets appropriately
+
+## Asset Pipeline
+- Use the asset pipeline for managing assets
+- Implement proper asset organization
+- Use Sprockets for asset compilation
+- Follow best practices for CSS and JavaScript
+- Optimize assets for production
+
+## Background Jobs
+- Use Active Job for background processing
+- Implement proper job organization
+- Handle job failures appropriately
+- Monitor background job performance
+- Choose appropriate queue adapters
+
+## API Development
+- Use Rails API mode when appropriate
+- Implement proper JSON responses
+- Use serializers for complex data structures
+- Follow RESTful API conventions
+- Implement proper API versioning

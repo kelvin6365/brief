@@ -1,0 +1,92 @@
+# Go Guidelines
+
+## Code Style
+- Follow the Effective Go style guide
+- Use consistent indentation (tab character)
+- Use camelCase for naming (no underscores)
+- Use PascalCase for exported identifiers
+- Use mixedCaps for unexported identifiers
+
+## Naming Conventions
+- Use descriptive names for packages, types, and functions
+- Use short variable names in short functions
+- Use longer names for exported identifiers
+- Use single-letter variable names for loop counters
+- Use common abbreviations (ctx for context, err for error)
+
+## Package Organization
+- Organize code in logical packages
+- Use clear, descriptive package names
+- Follow standard Go project layout
+- Use internal packages for private code
+- Structure packages by functionality
+
+## Error Handling
+- Handle errors explicitly and immediately
+- Use error wrapping with fmt.Errorf and %w verb
+- Create custom error types when appropriate
+- Don't ignore errors (even if they seem unlikely)
+- Use sentinel errors for comparison when needed
+
+## Concurrency
+- Use goroutines for concurrent operations
+- Use channels for communication between goroutines
+- Follow the principle "Don't communicate by sharing memory; share memory by communicating"
+- Use sync.WaitGroup for waiting on goroutines
+- Use context for cancellation and timeouts
+
+## Testing
+- Write comprehensive unit tests
+- Use table-driven tests for multiple test cases
+- Write benchmarks for performance-critical code
+- Use the testing package effectively
+- Follow test naming conventions (TestXxx, BenchmarkXxx)
+
+## Performance
+- Use appropriate data structures
+- Minimize allocations in performance-critical code
+- Use buffer pooling for frequently allocated objects
+- Profile applications to identify bottlenecks
+- Consider memory usage and garbage collection
+
+## Interfaces
+- Accept interfaces, return structs
+- Keep interfaces small and focused
+- Use interface{} only when necessary
+- Create interfaces that define minimal behavior
+- Follow the "accept interfaces, return structs" principle
+
+## Standard Library
+- Leverage Go's extensive standard library
+- Use net/http for web servers and clients
+- Use database/sql for database operations
+- Use crypto packages for cryptographic operations
+- Use encoding packages for data serialization
+
+## Documentation
+- Write clear, concise comments
+- Use godoc-compatible comments
+- Document exported functions and types
+- Include examples in documentation
+- Follow Go documentation conventions
+
+## Structuring Applications
+- Use main package for executable programs
+- Structure applications with clear separation of concerns
+- Use configuration management patterns
+- Implement proper logging
+- Follow the 12-factor app methodology when appropriate
+
+## Error vs Panic
+- Use errors for expected error conditions
+- Use panic only for truly exceptional situations
+- Don't recover from panics unless necessary
+- Handle errors gracefully and provide context
+- Use defer for cleanup operations
+
+## Idiomatic Go Patterns
+- Use multiple return values effectively
+- Implement the io.Reader and io.Writer interfaces
+- Use struct embedding for composition
+- Follow Go's composition over inheritance principles
+- Use the options pattern for configurable functions

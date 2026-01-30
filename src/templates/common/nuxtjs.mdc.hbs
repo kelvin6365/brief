@@ -1,0 +1,92 @@
+# Nuxt.js Guidelines
+
+## Project Structure
+- Follow Nuxt's convention-based project structure
+- Use appropriate folder organization (pages, components, layouts, etc.)
+- Leverage auto-imports for components and composables
+- Use the ~/ alias for the srcDir
+- Organize modules and plugins appropriately
+
+## Page and Layout System
+- Use the pages directory for routing
+- Implement layouts in the layouts directory
+- Use the composables directory for shared logic
+- Leverage Nuxt's built-in components (ClientOnly, NuxtLink, etc.)
+- Implement proper error handling with error.vue
+
+## Composition API and Composables
+- Use composables for shared logic
+- Follow Vue 3 Composition API patterns
+- Implement proper state management with useState
+- Use lifecycle hooks appropriately (onMounted, etc.)
+- Follow best practices for reactive data
+
+## Server-Side Rendering (SSR)
+- Implement proper async data fetching with useAsyncData
+- Use server middleware for API routes
+- Implement proper hydration handling
+- Optimize for SEO with useHead
+- Handle client/server differences appropriately
+
+## TypeScript Integration
+- Use strict TypeScript configuration
+- Implement proper type definitions for composables
+- Use Nuxt's built-in type safety features
+- Leverage auto-generated types
+- Implement proper type checking in templates
+
+## Performance Optimization
+- Use lazy loading for components when appropriate
+- Implement proper code splitting
+- Use prefetch and preload strategies
+- Optimize images with @nuxt/image
+- Leverage Nuxt's built-in optimization features
+
+## Modules and Plugins
+- Use official Nuxt modules when available
+- Implement custom modules following Nuxt conventions
+- Use plugins for extending Vue instance
+- Follow module development best practices
+- Leverage community modules appropriately
+
+## Styling
+- Use Nuxt's built-in CSS support
+- Implement CSS frameworks with appropriate modules
+- Use scoped styles or CSS modules
+- Follow consistent styling patterns
+- Implement responsive design principles
+
+## Testing
+- Use appropriate testing frameworks (Vitest, Cypress, etc.)
+- Write unit tests for composables
+- Implement end-to-end testing for pages
+- Use Nuxt testing utilities
+- Follow testing best practices
+
+## Forms and Validation
+- Implement form handling with appropriate libraries
+- Use server-side validation when necessary
+- Implement proper error handling and display
+- Use client-side validation for UX
+- Handle form submissions properly
+
+## Security
+- Implement proper input sanitization
+- Use secure headers with nuxt-security
+- Follow Nuxt security best practices
+- Handle authentication securely
+- Protect against common web vulnerabilities
+
+## Build and Deployment
+- Configure appropriate target (server/static)
+- Optimize for different deployment platforms
+- Implement proper environment handling
+- Use Nuxt's built-in optimization features
+- Follow deployment best practices
+
+## Code Style
+- Follow Vue and Nuxt style guides
+- Use consistent naming conventions
+- Maintain clean, readable code
+- Use proper indentation and formatting
+- Write clear, descriptive comments when needed

@@ -1,0 +1,85 @@
+# Ruby Guidelines
+
+## Code Style
+- Follow the Ruby Style Guide conventions
+- Use consistent indentation (2 spaces)
+- Use snake_case for methods and variables
+- Use PascalCase for classes and modules
+- Use SCREAMING_SNAKE_CASE for constants
+
+## Naming Conventions
+- Use descriptive names for methods, variables, and classes
+- Use verbs for methods that return boolean values (predicates)
+- Use ? suffix for predicate methods (e.g., empty?, valid?)
+- Use ! suffix for dangerous methods that modify receiver
+- Use _ prefix for unused block parameters
+
+## Syntax Best Practices
+- Use single quotes for strings that don't require interpolation
+- Use double quotes when interpolation is needed
+- Use %w() for arrays of words without spaces
+- Use %i() for arrays of symbols without spaces
+- Prefer {} over do/end for single-line blocks
+
+## Object-Oriented Programming
+- Follow the Single Responsibility Principle
+- Use modules for namespacing and mixins
+- Implement proper inheritance hierarchies
+- Use encapsulation to hide implementation details
+- Follow the Law of Demeter
+
+## Methods and Blocks
+- Keep methods short and focused on a single task
+- Use blocks and procs for flexible, reusable code
+- Implement proper method chaining when appropriate
+- Use keyword arguments for clarity
+- Return early to avoid deep nesting
+
+## Error Handling
+- Use exceptions appropriately for error conditions
+- Implement proper exception handling with begin/rescue/end
+- Create custom exception classes when needed
+- Follow Ruby's exception hierarchy
+- Fail fast when encountering invalid states
+
+## Performance
+- Use built-in methods when available (they're often optimized)
+- Avoid unnecessary object creation
+- Use frozen strings when appropriate
+- Profile and optimize hot code paths
+- Consider memory usage in long-running processes
+
+## Concurrency
+- Use threads appropriately for concurrent operations
+- Implement proper synchronization for shared data
+- Consider using actors or other concurrency patterns
+- Be aware of the Global VM Lock (GVL) in CRuby
+- Use async libraries when needed
+
+## Testing
+- Follow TDD/BDD practices
+- Use RSpec, minitest, or other testing frameworks
+- Write comprehensive unit and integration tests
+- Use mocks and stubs appropriately
+- Follow testing best practices (AAA pattern)
+
+## Standard Library
+- Leverage Ruby's rich standard library
+- Use Enumerable methods effectively
+- Utilize regular expressions for text processing
+- Use Time and Date classes appropriately
+- Leverage Pathname and File classes for file operations
+
+## Metaprogramming
+- Use metaprogramming judiciously
+- Document metaprogramming clearly
+- Follow established patterns and conventions
+- Be cautious with method_missing
+- Maintain readability and maintainability
+
+## File Organization
+- Organize code in logical modules
+- Use require and autoload appropriately
+- Follow conventional file naming patterns
+- Use gems for dependency management
+- Structure applications following conventions

@@ -1,0 +1,99 @@
+# SolidJS Guidelines
+
+## Project Structure
+- Organize components in a logical hierarchy
+- Use appropriate folder naming conventions
+- Separate components, stores, and utilities
+- Follow conventional project organization
+- Use consistent file naming patterns
+
+## Component Architecture
+- Use JSX for component templates
+- Implement proper props handling
+- Use children and rendering patterns effectively
+- Leverage Solid's component lifecycle
+- Follow best practices for component composition
+
+## Reactive Programming
+- Use signals (createSignal) for local state
+- Implement derived state with createMemo
+- Use effects (createEffect, createRenderEffect) appropriately
+- Implement computed values efficiently
+- Follow reactive patterns best practices
+
+## State Management
+- Use contexts for dependency injection
+- Implement global state with stores
+- Use solid-js/store for complex state management
+- Follow state colocation principles
+- Implement proper state update patterns
+
+## TypeScript Integration
+- Use strict typing throughout the application
+- Define proper interfaces for props and state
+- Leverage Solid's TypeScript support
+- Use type annotations for functions and callbacks
+- Implement proper error handling with types
+
+## Performance Optimization
+- Leverage fine-grained reactivity
+- Use createMemo for expensive computations
+- Implement proper component memoization
+- Minimize unnecessary re-renders
+- Use reconciliation patterns effectively
+
+## Styling
+- Use component-scoped styles
+- Leverage CSS-in-JS libraries if needed
+- Use CSS custom properties for theming
+- Implement responsive design patterns
+- Follow accessibility best practices
+
+## Routing
+- Use solid-app-router or tanstack/router
+- Implement proper route definitions
+- Use dynamic routing patterns
+- Handle route parameters appropriately
+- Implement proper navigation patterns
+
+## Effects and Lifecycle
+- Use effects appropriately (avoid anti-patterns)
+- Implement proper cleanup functions
+- Use suspense and resources for async data
+- Handle error boundaries effectively
+- Follow lifecycle best practices
+
+## Testing
+- Use testing libraries appropriate for Solid (e.g., @testing-library/jest-dom)
+- Write unit tests for components and logic
+- Implement integration tests for complex interactions
+- Use Solid's testing utilities effectively
+- Follow testing best practices (AAA pattern)
+
+## Forms
+- Implement proper form validation patterns
+- Use controlled/uncontrolled components appropriately
+- Handle form submissions effectively
+- Implement proper error messaging
+- Use form libraries if needed
+
+## Security
+- Sanitize user inputs to prevent XSS
+- Use proper CSP headers
+- Implement secure authentication patterns
+- Validate data on the server side
+- Follow Solid security best practices
+
+## Code Style
+- Follow Solid's community style guide
+- Use consistent naming conventions
+- Keep components concise and focused
+- Use proper indentation and formatting
+- Write clear, descriptive comments when needed
+
+## Build and Deployment
+- Use Vite for building Solid projects
+- Implement proper environment configurations
+- Optimize for production builds
+- Use appropriate bundler configurations
+- Implement proper CI/CD pipelines

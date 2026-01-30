@@ -1,0 +1,99 @@
+# Flask Guidelines
+
+## Project Structure
+- Organize applications using blueprints
+- Use application factory pattern
+- Separate configuration from code
+- Store static files in static/ directory
+- Place templates in templates/ directory
+
+## Application Architecture
+- Use the application factory pattern
+- Implement blueprints for modular code
+- Follow proper initialization order
+- Use configuration classes for different environments
+- Separate concerns appropriately
+
+## Routing and Views
+- Use decorators for route definitions
+- Implement proper route organization
+- Handle different HTTP methods appropriately
+- Use URL building with url_for()
+- Implement proper error handling in routes
+
+## Templates
+- Use Jinja2 templating engine
+- Follow template inheritance patterns
+- Implement proper template security
+- Use template filters and macros when appropriate
+- Keep templates clean and maintainable
+
+## Database Operations
+- Use SQLAlchemy for database operations
+- Implement proper connection handling
+- Use migrations with Flask-Migrate
+- Follow ORM best practices
+- Implement proper transaction management
+
+## Forms
+- Use WTForms for form handling
+- Implement proper form validation
+- Handle file uploads securely
+- Implement CSRF protection
+- Use form libraries effectively
+
+## Security
+- Implement proper authentication mechanisms
+- Use Flask-Security or similar extensions
+- Apply CSRF protection
+- Sanitize user inputs properly
+- Follow secure coding practices
+
+## Configuration
+- Use environment variables for sensitive data
+- Implement configuration classes
+- Separate development, testing, and production configs
+- Use configuration management patterns
+- Store secrets securely
+
+## Testing
+- Write comprehensive unit tests
+- Use pytest or unittest for testing
+- Test routes, models, and business logic
+- Use test clients for integration testing
+- Follow testing best practices (AAA pattern)
+
+## Error Handling
+- Implement proper error handlers
+- Use custom error pages when appropriate
+- Log errors appropriately
+- Handle exceptions gracefully
+- Provide meaningful error messages
+
+## Extensions
+- Use Flask extensions appropriately
+- Follow extension best practices
+- Manage extension configurations
+- Choose extensions carefully
+- Keep extensions updated
+
+## Request Processing
+- Use request and response objects properly
+- Implement proper request validation
+- Handle different content types
+- Use before_request and after_request hooks
+- Implement proper session management
+
+## Performance
+- Optimize database queries
+- Implement caching strategies
+- Use proper connection pooling
+- Profile and monitor application performance
+- Optimize template rendering
+
+## Logging
+- Implement proper logging configuration
+- Use different log levels appropriately
+- Log security-related events
+- Monitor application logs
+- Follow logging best practices

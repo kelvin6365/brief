@@ -1,0 +1,85 @@
+# Svelte Guidelines
+
+## Project Structure
+- Use the standard Svelte project structure
+- Organize components in a logical hierarchy
+- Separate components, stores, and utilities
+- Use appropriate folder naming conventions
+- Follow SvelteKit best practices for routing (if using SvelteKit)
+
+## Component Architecture
+- Keep components focused and reusable
+- Use props for passing data down the component tree
+- Implement proper event dispatching for child-to-parent communication
+- Leverage Svelte's reactive declarations ($:, $set, etc.)
+- Use slots for flexible component composition
+
+## State Management
+- Use stores (writable, readable, derived) for global state
+- Implement proper store subscriptions
+- Use context API for component-specific data sharing
+- Follow Svelte's reactivity patterns
+- Consider external state management libraries only when necessary
+
+## TypeScript Integration (if applicable)
+- Use strict typing throughout the application
+- Define proper interfaces for props and store states
+- Leverage Svelte's built-in TypeScript support
+- Use type annotations for functions and callbacks
+- Implement proper error handling with types
+
+## SvelteKit Specific (if applicable)
+- Use file-based routing system effectively
+- Implement proper layouts and nested routing
+- Use load functions for server-side data fetching
+- Implement proper error handling with +error.svelte
+- Use hooks for global logic and authentication
+
+## Performance Optimization
+- Use keyed each blocks when appropriate
+- Implement dynamic imports for code splitting
+- Use the {#await} block for promise handling
+- Leverage Svelte's compile-time optimizations
+- Minimize unnecessary re-renders
+
+## Styling
+- Use component-scoped styles by default
+- Leverage CSS custom properties for theming
+- Use preprocessors like Sass/PostCSS if needed
+- Implement responsive design patterns
+- Follow accessibility best practices
+
+## Testing
+- Use testing libraries appropriate for Svelte (e.g., @testing-library/svelte)
+- Write unit tests for components and stores
+- Implement integration tests for complex interactions
+- Use Svelte's testing utilities effectively
+- Follow testing best practices (AAA pattern)
+
+## Forms
+- Implement proper form validation patterns
+- Use bind:value for two-way data binding
+- Handle form submissions appropriately
+- Implement proper error messaging
+- Use actions for complex form behaviors
+
+## Security
+- Sanitize user inputs to prevent XSS
+- Use proper CSP headers
+- Implement secure authentication patterns
+- Validate data on the server side
+- Follow Svelte security best practices
+
+## Code Style
+- Follow Svelte's official style guide
+- Use consistent naming conventions
+- Keep components concise and focused
+- Use proper indentation and formatting
+- Write clear, descriptive comments when needed
+
+## Build and Deployment
+- Use Vite for building Svelte projects
+- Implement proper environment configurations
+- Optimize for production builds
+- Use SvelteKit adapter for deployment targets
+- Implement proper CI/CD pipelines

@@ -1,0 +1,85 @@
+# Kubernetes Guidelines
+
+## Cluster Architecture
+- Understand master and worker node roles
+- Implement proper cluster networking
+- Use appropriate cluster sizing
+- Follow security best practices
+- Plan for high availability
+
+## Pod Design
+- Keep pods focused on single responsibilities
+- Use appropriate resource requests and limits
+- Implement proper health checks (liveness/readiness)
+- Follow pod security standards
+- Use labels for organization
+
+## Deployments
+- Use deployments for stateless applications
+- Implement proper rolling updates
+- Configure replica sets appropriately
+- Use deployment strategies effectively
+- Monitor deployment health
+
+## Services
+- Use appropriate service types (ClusterIP, NodePort, LoadBalancer)
+- Implement proper service discovery
+- Configure load balancing appropriately
+- Use service mesh when needed
+- Secure service communication
+
+## ConfigMaps and Secrets
+- Use ConfigMaps for configuration data
+- Store sensitive data in Secrets
+- Implement proper secret management
+- Use environment variables appropriately
+- Follow security best practices
+
+## Storage
+- Choose appropriate storage classes
+- Use PersistentVolumes and PersistentVolumeClaims
+- Implement proper backup strategies
+- Handle stateful applications appropriately
+- Configure storage access modes
+
+## Networking
+- Implement proper network policies
+- Use ingress controllers for external access
+- Configure DNS properly
+- Handle traffic routing appropriately
+- Secure network communication
+
+## Monitoring and Logging
+- Implement proper monitoring solutions
+- Use Prometheus and Grafana for metrics
+- Configure centralized logging
+- Set up alerting systems
+- Monitor cluster health
+
+## Security
+- Follow Pod Security Standards
+- Use RBAC for access control
+- Implement network policies
+- Scan images for vulnerabilities
+- Secure cluster components
+
+## Helm Charts
+- Use Helm for package management
+- Follow chart best practices
+- Implement proper templating
+- Use values.yaml for configuration
+- Version charts appropriately
+
+## Resource Management
+- Use namespaces for organization
+- Implement resource quotas
+- Configure limits and requests
+- Use priority classes when needed
+- Monitor resource utilization
+
+## CI/CD Integration
+- Implement proper deployment pipelines
+- Use GitOps for configuration management
+- Automate testing and validation
+- Follow blue-green or canary deployment strategies
+- Implement rollback procedures

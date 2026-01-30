@@ -1,0 +1,85 @@
+# TypeORM Guidelines
+
+## Entity Design
+- Use decorators to define entities and columns
+- Follow naming conventions for entities and columns
+- Implement proper entity relationships
+- Use appropriate column types and constraints
+- Apply proper indexing strategies
+
+## Connection Management
+- Configure connections properly
+- Use connection pooling for performance
+- Implement proper connection lifecycle management
+- Handle disconnections gracefully
+- Use different configurations for environments
+
+## Repository Pattern
+- Use Repository classes for data access
+- Implement custom repositories when needed
+- Use Entity Manager for complex operations
+- Follow proper transaction patterns
+- Apply proper error handling
+
+## Query Building
+- Use Query Builder for complex queries
+- Implement proper parameter binding
+- Follow SQL injection prevention practices
+- Optimize queries for performance
+- Use eager and lazy loading appropriately
+
+## Migrations
+- Generate and run migrations properly
+- Follow migration best practices
+- Use migration naming conventions
+- Handle migration conflicts appropriately
+- Test migrations before deployment
+
+## Relationships
+- Implement proper entity relationships
+- Use appropriate join strategies
+- Handle circular dependencies
+- Use cascading operations appropriately
+- Follow referential integrity
+
+## Validation
+- Implement model-level validation
+- Use decorators for validation rules
+- Validate data before persistence
+- Handle validation errors properly
+- Use custom validation decorators
+
+## Performance
+- Optimize queries with proper joins
+- Use eager loading to prevent N+1 queries
+- Implement proper indexing strategies
+- Use pagination for large datasets
+- Monitor query performance
+
+## Transactions
+- Use transactions for atomic operations
+- Handle transaction rollbacks properly
+- Implement proper isolation levels
+- Use savepoints when needed
+- Follow ACID principles
+
+## Subscribers and Listeners
+- Implement entity listeners appropriately
+- Use subscribers for cross-cutting concerns
+- Follow proper event handling patterns
+- Handle events efficiently
+- Apply proper error handling
+
+## Caching
+- Implement proper caching strategies
+- Use query result caching
+- Handle cache invalidation properly
+- Configure cache providers appropriately
+- Monitor cache performance
+
+## Testing
+- Write comprehensive unit tests
+- Use in-memory databases for testing
+- Test entity relationships properly
+- Test custom queries and business logic
+- Follow testing best practices (AAA pattern)

@@ -1,0 +1,92 @@
+# Dart Guidelines
+
+## Code Style
+- Follow the Effective Dart style guide
+- Use consistent indentation (2 spaces)
+- Use camelCase for methods, variables, and parameters
+- Use PascalCase for classes, typedefs, and enums
+- Use underscores for private members
+
+## Naming Conventions
+- Use descriptive names for classes, methods, and variables
+- Use verb-noun combinations for methods that perform actions
+- Use nouns for getters that return values
+- Use imperative mood for boolean-returning methods
+- Use prefixes like _ for private members
+
+## Syntax Best Practices
+- Use final for immutable variables when possible
+- Use var for mutable variables
+- Use const for compile-time constants
+- Use cascade notation (..) for method chaining
+- Use arrow syntax (=>) for single-expression functions
+
+## Object-Oriented Programming
+- Follow SOLID principles
+- Use abstract classes and interfaces appropriately
+- Implement proper encapsulation with getters/setters
+- Use mixins for code reuse across hierarchies
+- Apply inheritance judiciously
+
+## Null Safety
+- Leverage Dart's sound null safety
+- Use nullable types appropriately (?)
+- Use null-aware operators (??, ??=, ?. )
+- Use late keyword for non-nullable late initialization
+- Handle null values properly to prevent exceptions
+
+## Asynchronous Programming
+- Use Future for single-value asynchronous operations
+- Use Stream for multi-value asynchronous sequences
+- Use async/await for cleaner asynchronous code
+- Handle errors in asynchronous operations properly
+- Use Isolates for CPU-intensive tasks
+
+## Collections and Generics
+- Use appropriate collection types (List, Set, Map)
+- Specify generic types explicitly when needed
+- Use collection literals when possible
+- Leverage collection methods effectively
+- Consider performance implications of operations
+
+## Error Handling
+- Use exceptions appropriately for error conditions
+- Implement proper try/catch/finally blocks
+- Create custom exception classes when needed
+- Follow Dart's exception hierarchy
+- Fail fast when encountering invalid states
+
+## Performance
+- Use const constructors when possible
+- Avoid unnecessary object creation
+- Use efficient algorithms and data structures
+- Profile and optimize hot code paths
+- Consider memory usage in mobile applications
+
+## Testing
+- Follow TDD/BDD practices
+- Use the test package for unit testing
+- Write comprehensive unit and integration tests
+- Use mockito for mocking dependencies
+- Follow testing best practices (AAA pattern)
+
+## Functional Programming
+- Use higher-order functions effectively
+- Leverage closures for encapsulation
+- Use functional programming patterns when appropriate
+- Apply immutability principles where possible
+- Use extension methods for adding functionality
+
+## Packages and Dependencies
+- Organize code into logical packages
+- Use pubspec.yaml for dependency management
+- Follow semantic versioning
+- Use part/part of for library organization
+- Structure applications following conventions
+
+## Documentation
+- Use dartdoc comments for public APIs
+- Include examples in documentation
+- Use proper documentation formatting
+- Maintain accurate documentation
+- Follow dartdoc best practices

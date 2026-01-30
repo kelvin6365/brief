@@ -1,0 +1,85 @@
+# Mongoose Guidelines
+
+## Schema Design
+- Define schemas with proper field types
+- Use appropriate validation rules
+- Implement proper indexing strategies
+- Follow naming conventions for collections and fields
+- Use virtual fields when appropriate
+
+## Models
+- Create models from schemas properly
+- Implement static and instance methods
+- Use middleware hooks appropriately
+- Follow proper model organization
+- Apply consistent naming patterns
+
+## Connections
+- Establish connections properly
+- Use connection pooling for performance
+- Implement proper connection lifecycle management
+- Handle disconnections gracefully
+- Use different configurations for environments
+
+## Queries
+- Use Mongoose query builder effectively
+- Implement proper query validation
+- Follow security best practices (prevent injection)
+- Optimize queries for performance
+- Use projection to limit returned fields
+
+## Population
+- Use populate for related data
+- Handle circular references appropriately
+- Optimize population with lean queries
+- Use virtual populate when appropriate
+- Handle populated data properly
+
+## Middleware
+- Implement pre and post middleware appropriately
+- Use middleware for validation and transformation
+- Handle middleware errors properly
+- Follow middleware execution order
+- Apply cross-cutting concerns
+
+## Validation
+- Use built-in validators when possible
+- Implement custom validators when needed
+- Validate data before saving
+- Handle validation errors properly
+- Use schema-level validation
+
+## Performance
+- Use indexes for query optimization
+- Implement proper pagination
+- Use lean queries for read operations
+- Optimize population strategies
+- Monitor query performance
+
+## Error Handling
+- Handle Mongoose errors properly
+- Use proper error catching patterns
+- Implement custom error types when needed
+- Follow error handling best practices
+- Log errors appropriately
+
+## Transactions
+- Use transactions for atomic operations
+- Handle transaction rollbacks properly
+- Implement proper isolation levels
+- Use sessions appropriately
+- Follow ACID principles
+
+## Subdocuments
+- Use embedded documents when appropriate
+- Handle subdocument validation
+- Manage subdocument arrays properly
+- Follow subdocument update patterns
+- Apply proper access patterns
+
+## Testing
+- Write comprehensive unit tests
+- Use in-memory databases for testing
+- Mock Mongoose operations when needed
+- Test schema validation properly
+- Follow testing best practices (AAA pattern)

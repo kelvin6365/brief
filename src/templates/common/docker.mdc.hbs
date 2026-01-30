@@ -1,0 +1,85 @@
+# Docker Guidelines
+
+## Image Creation
+- Use official base images when possible
+- Implement multi-stage builds to minimize image size
+- Use .dockerignore to exclude unnecessary files
+- Minimize the number of layers in Dockerfiles
+- Use specific version tags instead of latest
+
+## Security
+- Run containers as non-root user
+- Implement minimal user privileges
+- Scan images for vulnerabilities
+- Use read-only root filesystem when possible
+- Implement secrets management properly
+
+## Performance
+- Optimize layer caching with proper instruction ordering
+- Clean package managers after installation
+- Use .dockerignore to reduce build context size
+- Implement proper resource limits
+- Use lightweight base images (alpine, distroless)
+
+## Multi-platform Builds
+- Use buildx for multi-platform builds
+- Implement proper cross-compilation patterns
+- Test images on target platforms
+- Use platform-specific optimizations
+- Follow multi-architecture best practices
+
+## Docker Compose
+- Use compose files for multi-container applications
+- Implement proper service dependencies
+- Use environment variables for configuration
+- Implement health checks for services
+- Follow compose file version standards
+
+## Networking
+- Use custom networks for container communication
+- Implement proper DNS configuration
+- Use network aliases for service discovery
+- Secure network communication
+- Follow network segmentation best practices
+
+## Storage and Volumes
+- Use named volumes for persistent data
+- Implement proper volume mounting patterns
+- Use tmpfs for temporary data
+- Handle volume permissions properly
+- Follow data persistence best practices
+
+## Orchestration
+- Use Docker Swarm for simple orchestration
+- Implement proper service scaling
+- Use rolling updates for deployments
+- Implement service discovery patterns
+- Follow container lifecycle management
+
+## Logging and Monitoring
+- Use structured logging formats
+- Implement centralized logging
+- Use health checks for monitoring
+- Implement proper log rotation
+- Follow observability best practices
+
+## Configuration Management
+- Use environment variables for configuration
+- Implement secrets management
+- Use config files mounted as volumes
+- Follow 12-factor app principles
+- Handle configuration per environment
+
+## Build Optimization
+- Leverage Docker build cache effectively
+- Use build arguments for flexibility
+- Implement build-time optimizations
+- Use build secrets when needed
+- Follow build security best practices
+
+## CI/CD Integration
+- Integrate with container registries
+- Implement automated build pipelines
+- Use image tagging strategies
+- Implement proper image promotion
+- Follow deployment best practices

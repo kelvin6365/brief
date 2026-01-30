@@ -1,0 +1,85 @@
+# Terraform Guidelines
+
+## Project Structure
+- Organize code in logical modules
+- Use separate files for different resource types
+- Implement proper variable and output organization
+- Follow naming conventions for resources
+- Use workspaces for different environments
+
+## Variables
+- Define variables with proper types
+- Use sensible defaults for variables
+- Implement proper variable validation
+- Use tfvars files for environment-specific values
+- Follow naming conventions for variables
+
+## Modules
+- Create reusable modules for common infrastructure
+- Use proper module input and output definitions
+- Version modules appropriately
+- Document module usage and parameters
+- Follow module best practices
+
+## State Management
+- Use remote state storage (S3, etc.)
+- Implement proper state locking
+- Handle state migration when needed
+- Use state backends appropriately
+- Secure access to state files
+
+## Resources
+- Follow proper resource naming conventions
+- Use appropriate resource dependencies
+- Implement proper resource lifecycle management
+- Use count and for_each appropriately
+- Handle resource drift properly
+
+## Security
+- Store sensitive data in secure backends
+- Use appropriate IAM roles and policies
+- Implement proper network security
+- Follow security best practices
+- Scan for security vulnerabilities
+
+## Providers
+- Use appropriate provider versions
+- Configure providers properly
+- Handle provider-specific configurations
+- Use multiple providers when needed
+- Follow provider best practices
+
+## Outputs
+- Define clear, meaningful outputs
+- Use outputs for inter-module communication
+- Implement proper output validation
+- Follow naming conventions for outputs
+- Document output purposes
+
+## Testing
+- Write comprehensive tests for modules
+- Use Terratest for infrastructure testing
+- Validate configurations before applying
+- Test infrastructure changes appropriately
+- Follow testing best practices
+
+## Version Control
+- Store Terraform code in version control
+- Use appropriate .gitignore files
+- Handle sensitive data appropriately
+- Follow branching strategies for infrastructure
+- Use pull requests for infrastructure changes
+
+## Remote Backends
+- Use remote backends for team collaboration
+- Implement proper backend configuration
+- Handle backend initialization properly
+- Secure access to remote backends
+- Use appropriate backend types
+
+## Formatting and Style
+- Use terraform fmt for consistent formatting
+- Follow HCL syntax best practices
+- Use proper indentation and spacing
+- Implement consistent naming conventions
+- Write clear, descriptive comments

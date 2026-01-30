@@ -1,0 +1,92 @@
+# Gin Framework Guidelines
+
+## Project Structure
+- Organize code using feature-based or layer-based structure
+- Use cmd/ for entry points
+- Store handlers in handlers/ directory
+- Place models in models/ directory
+- Use services/ for business logic
+
+## Routing and Middleware
+- Use gin.Engine for routing
+- Implement proper route grouping with router groups
+- Use middleware for cross-cutting concerns
+- Apply proper route parameter validation
+- Handle different HTTP methods appropriately
+
+## Controllers/Handlers
+- Keep handlers focused and lightweight
+- Separate business logic from HTTP concerns
+- Implement proper request parsing
+- Use structured responses
+- Handle errors consistently
+
+## Request and Response Handling
+- Use context for request/response operations
+- Implement proper request validation
+- Use structured JSON responses
+- Handle different content types appropriately
+- Implement proper error responses
+
+## Middleware
+- Create reusable middleware functions
+- Use built-in middleware when appropriate
+- Implement authentication middleware
+- Apply logging and monitoring middleware
+- Handle CORS with middleware
+
+## Validation
+- Validate request parameters and bodies
+- Use structured validation approaches
+- Implement custom validation functions
+- Return appropriate error messages
+- Handle validation errors consistently
+
+## Error Handling
+- Use gin's error handling mechanisms
+- Implement centralized error handling
+- Return appropriate HTTP status codes
+- Log errors appropriately
+- Provide meaningful error messages
+
+## Database Integration
+- Use appropriate database drivers
+- Implement connection pooling
+- Use prepared statements for security
+- Handle database transactions properly
+- Follow ORM best practices
+
+## Testing
+- Write comprehensive unit tests
+- Use gin's test helpers
+- Test routes and handlers appropriately
+- Mock external dependencies
+- Follow testing best practices (AAA pattern)
+
+## Security
+- Implement proper input validation
+- Use authentication and authorization
+- Apply rate limiting
+- Implement proper session management
+- Follow security best practices
+
+## Configuration
+- Use environment variables for configuration
+- Implement configuration structs
+- Load configuration from multiple sources
+- Handle configuration validation
+- Use different configs for environments
+
+## Performance
+- Optimize handler performance
+- Use appropriate caching strategies
+- Monitor application performance
+- Implement proper resource management
+- Profile and optimize bottlenecks
+
+## Logging
+- Implement structured logging
+- Use appropriate log levels
+- Log important application events
+- Include request context in logs
+- Follow logging best practices
