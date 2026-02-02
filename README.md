@@ -60,16 +60,16 @@ brief templates            # List available templates
 
 ## Commands
 
-| Command                   | Description                                      |
-| ------------------------- | ------------------------------------------------ |
-| `brief init`              | Initialize AI configuration (interactive wizard) |
+| Command                   | Description                                           |
+| ------------------------- | ----------------------------------------------------- |
+| `brief init`              | Initialize AI configuration (interactive wizard)      |
 | `brief magic <kit>`       | Generate framework-specific AI configs (e.g. Next.js) |
-| `brief detect`            | Detect and display project information           |
-| `brief add <template>`    | Add a specific template                          |
-| `brief remove <template>` | Remove a template                                |
-| `brief sync`              | Re-detect and sync configuration                 |
-| `brief validate`          | Validate configuration files                     |
-| `brief templates`         | List all available templates                     |
+| `brief detect`            | Detect and display project information                |
+| `brief add <template>`    | Add a specific template                               |
+| `brief remove <template>` | Remove a template                                     |
+| `brief sync`              | Re-detect and sync configuration                      |
+| `brief validate`          | Validate configuration files                          |
+| `brief templates`         | List all available templates                          |
 
 ### Common Options
 
