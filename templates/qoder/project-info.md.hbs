@@ -5,7 +5,7 @@ trigger: manual
 
 > Technical stack and project configuration for Qoder memory system
 
-## 📋 Project Overview
+## Project Overview
 
 - **Project Name**: {{project.name}}
 - **Project Type**: {{project.type}}
@@ -15,48 +15,34 @@ trigger: manual
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
-### Primary Technologies
-
-**Language**: {{project.language}}{{#if detection.language.version}} v{{detection.language.version}}{{/if}}
+**Language**: {{project.language}}
 
 {{#if detection.frameworks}}
 **Frameworks:**
 {{#each detection.frameworks}}
-- **{{this.name}}**{{#if this.version}} v{{this.version}}{{/if}} - {{this.description}}
+- **{{this.name}}**{{#if this.description}} - {{this.description}}{{/if}}
 {{/each}}
 {{/if}}
 
 {{#if detection.packageManager.name}}
-**Package Manager**: {{detection.packageManager.name}}{{#if detection.packageManager.version}} v{{detection.packageManager.version}}{{/if}}
+**Package Manager**: {{detection.packageManager.name}}
 {{/if}}
 
 {{#if detection.runtime}}
-**Runtime**: {{detection.runtime}}{{#if detection.runtimeVersion}} v{{detection.runtimeVersion}}{{/if}}
+**Runtime**: {{detection.runtime}}
 {{/if}}
 
 ---
 
-## 🧪 Testing & Quality
+## Testing & Quality
 
 {{#if detection.testing}}
 **Testing Frameworks:**
 {{#each detection.testing}}
-- **{{this.name}}**{{#if this.version}} v{{this.version}}{{/if}}
+- **{{this.name}}**
 {{/each}}
-
-**Test Coverage Targets:**
-{{#if (eq project.type "library")}}
-- Unit Tests: 85%+
-- Integration Tests: 70%+
-{{else if (eq project.type "cli")}}
-- Unit Tests: 80%+
-- Integration Tests: 60%+
-{{else}}
-- Unit Tests: 70%+
-- Integration Tests: 50%+
-{{/if}}
 {{else}}
 **Testing**: Not yet configured
 - **Recommendation**: Set up testing framework (see `@testing.md`)
@@ -71,239 +57,39 @@ trigger: manual
 
 ---
 
-## 🗄️ Database & Storage
-
-{{#if detection.database}}
-**Database**: {{detection.database}}
-
-**ORM/Query Builder**:
-{{#if (includes detection.dependencies "prisma")}}
-- Prisma (TypeScript ORM)
-{{else if (includes detection.dependencies "typeorm")}}
-- TypeORM
-{{else if (includes detection.dependencies "sequelize")}}
-- Sequelize
-{{else if (includes detection.dependencies "mongoose")}}
-- Mongoose (MongoDB)
-{{else if (includes detection.dependencies "sqlalchemy")}}
-- SQLAlchemy (Python ORM)
-{{else}}
-- Direct database driver
-{{/if}}
-
-{{else}}
-**Database**: Not configured
-{{/if}}
-
----
-
-## 🔧 Build & Development
-
-{{#if (eq detection.packageManager.name "npm")}}
-### NPM Scripts
-
-**Development:**
-```bash
-npm install          # Install dependencies
-npm run dev         # Start development server
-npm run build       # Build for production
-npm start           # Start production server
-```
-
-**Testing:**
-```bash
-npm test            # Run tests
-npm run test:watch  # Watch mode
-npm run test:coverage # Generate coverage report
-```
-
-**Code Quality:**
-```bash
-npm run lint        # Run linter
-npm run lint:fix    # Fix linting issues
-npm run format      # Format code
-npm run type-check  # TypeScript type checking
-```
-
-{{else if (eq detection.packageManager.name "yarn")}}
-### Yarn Commands
-
-**Development:**
-```bash
-yarn install        # Install dependencies
-yarn dev           # Start development server
-yarn build         # Build for production
-yarn start         # Start production server
-```
-
-**Testing:**
-```bash
-yarn test          # Run tests
-yarn test:watch    # Watch mode
-yarn test:coverage # Generate coverage report
-```
-
-{{else if (eq detection.packageManager.name "pnpm")}}
-### PNPM Commands
-
-**Development:**
-```bash
-pnpm install       # Install dependencies
-pnpm dev          # Start development server
-pnpm build        # Build for production
-pnpm start        # Start production server
-```
-
-**Testing:**
-```bash
-pnpm test         # Run tests
-pnpm test:watch   # Watch mode
-pnpm test:coverage # Generate coverage report
-```
-
-{{else if (eq detection.packageManager.name "bun")}}
-### Bun Commands
-
-**Development:**
-```bash
-bun install        # Install dependencies
-bun run dev       # Start development server
-bun run build     # Build for production
-bun start         # Start production server
-```
-
-**Testing:**
-```bash
-bun test          # Run tests
-bun test --watch  # Watch mode
-bun test --coverage # Generate coverage report
-```
-
-{{else if (eq project.language "python")}}
-### Python Commands
-
-**Development:**
-```bash
-# Virtual environment
-python -m venv venv
-source venv/bin/activate  # or `venv\Scripts\activate` on Windows
-
-# Install dependencies
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-
-# Run application
-{{#if (contains detection.frameworks.[0].name "FastAPI")}}
-uvicorn main:app --reload
-{{else if (contains detection.frameworks.[0].name "Flask")}}
-flask run
-{{else if (contains detection.frameworks.[0].name "Django")}}
-python manage.py runserver
-{{else}}
-python main.py
-{{/if}}
-```
-
-**Testing:**
-```bash
-pytest                    # Run tests
-pytest --cov             # With coverage
-pytest -v                # Verbose
-pytest --watch           # Watch mode
-```
-
-**Code Quality:**
-```bash
-black .                  # Format code
-flake8                   # Lint code
-mypy .                   # Type checking
-```
-{{/if}}
-
----
-
-## 🌍 Environment Configuration
-
-### Required Environment Variables
-
-```bash
-{{#if (includes project.type "api")}}
-# Server
-PORT=3000
-NODE_ENV=development  # or production
-
-# Database
-{{#if detection.database}}
-{{#if (eq detection.database "postgresql")}}
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-{{else if (eq detection.database "mongodb")}}
-DATABASE_URL=mongodb://localhost:27017/dbname
-{{else if (eq detection.database "mysql")}}
-DATABASE_URL=mysql://user:password@localhost:3306/dbname
-{{else}}
-DATABASE_URL=<your-database-connection-string>
-{{/if}}
-{{/if}}
-
-# Authentication
-JWT_SECRET=<your-secret-key>
-JWT_EXPIRES_IN=7d
-
-# External Services
-API_KEY=<your-api-key>
-
-{{else if (eq project.type "cli")}}
-# CLI Configuration
-LOG_LEVEL=info
-CONFIG_PATH=./config
-
-{{else}}
-# Application Configuration
-NODE_ENV=development
-LOG_LEVEL=info
-{{/if}}
-```
+## Environment Configuration
 
 ### Environment Files
 
 ```bash
 .env                 # Development (gitignored)
 .env.local          # Local overrides (gitignored)
-.env.development    # Development defaults
-.env.production     # Production defaults
-.env.test           # Test environment
 .env.example        # Template (committed to git)
 ```
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 {{#if (contains detection.frameworks.[0].name "Next.js")}}
 project/
 ├── app/                # Next.js App Router
 │   ├── api/           # API routes
-│   ├── (auth)/        # Route groups
 │   └── layout.tsx     # Root layout
 ├── components/        # React components
 ├── lib/              # Utilities
 ├── public/           # Static assets
-├── prisma/           # Database schema
-├── tests/            # Tests
 └── package.json
 
 {{else if (contains detection.frameworks.[0].name "React")}}
 project/
 ├── src/
 │   ├── components/   # React components
-│   ├── pages/        # Page components
 │   ├── hooks/        # Custom hooks
 │   ├── utils/        # Utilities
-│   ├── types/        # TypeScript types
 │   └── App.tsx
 ├── public/           # Static assets
-├── tests/            # Tests
 └── package.json
 
 {{else if (contains detection.frameworks.[0].name "Express")}}
@@ -312,11 +98,8 @@ project/
 │   ├── routes/       # API routes
 │   ├── controllers/  # Request handlers
 │   ├── services/     # Business logic
-│   ├── models/       # Data models
 │   ├── middleware/   # Express middleware
-│   ├── utils/        # Utilities
 │   └── index.ts
-├── tests/            # Tests
 └── package.json
 
 {{else if (contains detection.frameworks.[0].name "FastAPI")}}
@@ -324,134 +107,23 @@ project/
 ├── app/
 │   ├── routers/      # API routers
 │   ├── models/       # Pydantic models
-│   ├── schemas/      # Database schemas
 │   ├── services/     # Business logic
-│   ├── dependencies/ # Dependency injection
 │   └── main.py
-├── tests/            # Tests
-├── requirements.txt
-└── pyproject.toml
+├── tests/
+└── requirements.txt
 
 {{else}}
 project/
 ├── src/              # Source code
 ├── tests/            # Tests
-├── docs/             # Documentation
 └── package.json / requirements.txt
 {{/if}}
 ```
 
 ---
 
-## 🔗 Key Dependencies
+## Related Rules
 
-{{#if detection.dependencies}}
-**Production Dependencies:**
-{{#each detection.dependencies}}
-- {{this}}
-{{/each}}
-{{/if}}
-
----
-
-## 🚀 Deployment
-
-{{#if (contains detection.frameworks.[0].name "Next.js")}}
-### Vercel Deployment (Recommended)
-
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-```
-
-### Docker Deployment
-
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --production
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
-```
-
-{{else if (eq project.language "python")}}
-### Docker Deployment
-
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-{{#if (contains detection.frameworks.[0].name "FastAPI")}}
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-{{else}}
-CMD ["python", "main.py"]
-{{/if}}
-```
-
-{{else}}
-### Docker Deployment
-
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --production
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
-```
-{{/if}}
-
----
-
-## 📊 Performance Targets
-
-{{#if (includes project.type "api")}}
-**API Performance:**
-- Response Time: < 200ms (p95)
-- Throughput: 1000+ req/s
-- Error Rate: < 0.1%
-- Uptime: 99.9%
-
-{{else if (includes project.type "web")}}
-**Web Performance:**
-- First Contentful Paint: < 1.5s
-- Largest Contentful Paint: < 2.5s
-- Time to Interactive: < 3.5s
-- Cumulative Layout Shift: < 0.1
-
-{{else}}
-**Performance:**
-- Startup Time: < 2s
-- Memory Usage: < 500MB
-- CPU Usage: < 50% average
-{{/if}}
-
----
-
-## 🔐 Security Considerations
-
-- See `@security.md` for comprehensive security guidelines
-- All secrets in environment variables
-- HTTPS in production
-- Rate limiting enabled
-- Input validation on all endpoints
-- Regular dependency audits
-
----
-
-## 📚 Documentation
-
-**Related Rules:**
 - `@core.md` - Core coding standards
 - `@best-practices.md` - Project-specific best practices
 - `@requirements-spec.md` - Feature specifications
@@ -466,4 +138,3 @@ CMD ["npm", "start"]
 ---
 
 *Generated by Brief v{{generated.version}} for Qoder IDE*
-*This file feeds Qoder's project_info memory category*

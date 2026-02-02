@@ -284,9 +284,10 @@ npm install -g husky lint-staged
 pip install pre-commit
 
 # .pre-commit-config.yaml
+# Note: Run `pre-commit autoupdate` to get latest versions
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: ""  # run: pre-commit autoupdate
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -295,12 +296,12 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: ""  # run: pre-commit autoupdate
     hooks:
       - id: black
 
   - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
+    rev: ""  # run: pre-commit autoupdate
     hooks:
       - id: flake8
 
