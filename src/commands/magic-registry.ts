@@ -41,14 +41,23 @@ export const MAGIC_KITS: MagicKit[] = [
       { name: "eslint-config-next", strategy: "latest" },
     ],
     templates: [
+      // Cursor-specific
       "cursor-core",
+      "cursor-memory",
+      // Claude-specific
       "claude-core",
+      // Common (Cursor + Claude)
       "typescript",
       "react",
       "nextjs",
       "testing",
       "api-design",
       "security",
+      // Qoder-specific equivalents
+      "qoder-testing",
+      "qoder-api-design",
+      "qoder-security",
+      "qoder-error-handling", // Similar to cursor-memory
     ],
     postSteps: ["cd <projectName>", "<pm> install", "<pm> run dev"],
   },

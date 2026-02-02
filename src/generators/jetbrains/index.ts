@@ -10,15 +10,8 @@ import {
   sortTemplatesByPriority,
 } from "../../templates/index.js";
 import type { TemplateDefinition } from "../../templates/types.js";
-import { createLogger } from "../../utils/logger.js";
-import {
-  createGeneratorContext,
-  generateFromTemplates,
-  summarizeResults,
-} from "../base.js";
-import type { Generator, GeneratorOptions, GeneratorResult } from "../types.js";
-
-const log = createLogger("jetbrains-gen");
+import { createGenerator } from "../base.js";
+import type { Generator, GeneratorOptions } from "../types.js";
 
 /**
  * Get JetBrains templates to generate based on detection and config
@@ -58,67 +51,10 @@ export function getJetBrainsTemplates(
 /**
  * JetBrains AI Assistant rules generator
  */
-export const jetbrainsGenerator: Generator = {
+export const jetbrainsGenerator: Generator = createGenerator({
   name: "JetBrains AI Assistant Rules Generator",
   target: "jetbrains",
-
-  async generate(options: GeneratorOptions): Promise<GeneratorResult> {
-    log.debug("Starting JetBrains AI Assistant rules generation");
-
-    try {
-      // Get templates to generate
-      const templates = getJetBrainsTemplates(options);
-
-      if (templates.length === 0) {
-        log.warn("No JetBrains templates selected for generation");
-        return {
-          success: true,
-          target: "jetbrains",
-          files: [],
-        };
-      }
-
-      log.debug(`Generating ${templates.length} JetBrains templates`);
-
-      // Create context
-      const context = createGeneratorContext(options);
-
-      // Generate files
-      const files = await generateFromTemplates(templates, context, options);
-
-      // Check for errors
-      const summary = summarizeResults(files);
-      const hasErrors = summary.errors > 0;
-
-      if (hasErrors) {
-        log.warn(
-          `JetBrains generation completed with ${summary.errors} error(s)`
-        );
-      } else {
-        log.debug(
-          `JetBrains generation completed: ${summary.created} created, ${summary.modified} modified, ${summary.skipped} skipped`
-        );
-      }
-
-      return {
-        success: !hasErrors,
-        target: "jetbrains",
-        files,
-        error: hasErrors
-          ? `${summary.errors} file(s) failed to generate`
-          : undefined,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      log.error("JetBrains generation failed:", message);
-      return {
-        success: false,
-        target: "jetbrains",
-        files: [],
-        error: message,
-      };
-    }
-  },
-};
+  getTemplates: getJetBrainsTemplates,
+});
 
 export default jetbrainsGenerator;

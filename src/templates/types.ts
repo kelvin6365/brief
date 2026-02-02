@@ -31,7 +31,7 @@ export interface TemplateDefinition {
   category: TemplateCategory;
   /** File path to the template (relative to templates directory) */
   templatePath: string;
-  /** Output file path (relative to project root) */
+  /** Output file path (relative to project root) - can use {{target}} placeholder */
   outputPath: string;
   /** Glob patterns for auto-activation (Cursor MDC format) */
   globs?: string[];

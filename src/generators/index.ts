@@ -14,12 +14,14 @@ export type {
 
 // Base utilities
 export {
+  createGenerator,
   createGeneratorContext,
   generateFromTemplates,
   renderTemplateWithContext,
   summarizeResults,
   writeGeneratedFile,
 } from "./base.js";
+export type { CreateGeneratorConfig } from "./base.js";
 
 // Individual generators
 export { claudeGenerator, getClaudeTemplates } from "./claude/index.js";

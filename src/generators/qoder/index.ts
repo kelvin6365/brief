@@ -3,22 +3,15 @@
  * Generates best_practices.md, AGENTS.md, and .ai_config.toml files
  */
 
-import type { GeneratorOptions, GeneratorResult, Generator } from "../types.js";
 import {
-  createGeneratorContext,
-  generateFromTemplates,
-  summarizeResults,
-} from "../base.js";
-import {
-  getTemplatesByTarget,
-  sortTemplatesByPriority,
   filterTemplatesByDetection,
+  getTemplatesByTarget,
   resolveTemplateDependencies,
+  sortTemplatesByPriority,
 } from "../../templates/index.js";
 import type { TemplateDefinition } from "../../templates/types.js";
-import { createLogger } from "../../utils/logger.js";
-
-const log = createLogger("qoder-gen");
+import { createGenerator } from "../base.js";
+import type { Generator, GeneratorOptions } from "../types.js";
 
 /**
  * Get Qoder templates to generate based on detection and config
@@ -31,22 +24,24 @@ export function getQoderTemplates(
   // Start with all Qoder templates
   let templates = getTemplatesByTarget("qoder");
 
-  // Filter by detection conditions (language, framework, etc.)
-  templates = filterTemplatesByDetection(templates, detection);
-
-  // If user specified templates, filter to only those (plus core)
+  // If user specified templates, include those explicitly
   if (config.templates.length > 0) {
     const requestedIds = new Set(config.templates);
 
-    // Always include core Qoder templates
-    requestedIds.add("qoder-best-practices");
+    // Always include essential core Qoder templates
+    requestedIds.add("qoder-core");
+    requestedIds.add("qoder-quick-reference");
 
     // Resolve dependencies for requested templates
     const resolvedIds = resolveTemplateDependencies(Array.from(requestedIds));
 
+    // Include explicitly requested templates (bypass condition check) + all core templates
     templates = templates.filter(
       (t) => resolvedIds.includes(t.id) || t.category === "core"
     );
+  } else {
+    // No specific templates requested, use detection-based filtering
+    templates = filterTemplatesByDetection(templates, detection);
   }
 
   // Sort by priority
@@ -58,65 +53,10 @@ export function getQoderTemplates(
 /**
  * Qoder generator
  */
-export const qoderGenerator: Generator = {
+export const qoderGenerator: Generator = createGenerator({
   name: "Qoder Generator",
   target: "qoder",
-
-  async generate(options: GeneratorOptions): Promise<GeneratorResult> {
-    log.debug("Starting Qoder generation");
-
-    try {
-      // Get templates to generate
-      const templates = getQoderTemplates(options);
-
-      if (templates.length === 0) {
-        log.warn("No Qoder templates selected for generation");
-        return {
-          success: true,
-          target: "qoder",
-          files: [],
-        };
-      }
-
-      log.debug(`Generating ${templates.length} Qoder templates`);
-
-      // Create context
-      const context = createGeneratorContext(options);
-
-      // Generate files
-      const files = await generateFromTemplates(templates, context, options);
-
-      // Check for errors
-      const summary = summarizeResults(files);
-      const hasErrors = summary.errors > 0;
-
-      if (hasErrors) {
-        log.warn(`Qoder generation completed with ${summary.errors} error(s)`);
-      } else {
-        log.debug(
-          `Qoder generation completed: ${summary.created} created, ${summary.modified} modified, ${summary.skipped} skipped`
-        );
-      }
-
-      return {
-        success: !hasErrors,
-        target: "qoder",
-        files,
-        error: hasErrors
-          ? `${summary.errors} file(s) failed to generate`
-          : undefined,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      log.error("Qoder generation failed:", message);
-      return {
-        success: false,
-        target: "qoder",
-        files: [],
-        error: message,
-      };
-    }
-  },
-};
+  getTemplates: getQoderTemplates,
+});
 
 export default qoderGenerator;

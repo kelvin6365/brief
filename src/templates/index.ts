@@ -4,48 +4,55 @@
 
 // Types
 export type {
-  TemplateTarget,
-  TemplateCategory,
-  TemplateDefinition,
-  TemplateCondition,
-  TemplateBundle,
   ResolvedTemplate,
+  TemplateBundle,
+  TemplateCategory,
+  TemplateCondition,
+  TemplateDefinition,
   TemplateRenderOptions,
   TemplateRenderResult,
+  TemplateTarget,
 } from "./types.js";
 
 // Registry
 export {
+  ALL_TEMPLATES,
+  CLAUDE_TEMPLATES,
   CORE_TEMPLATES,
-  LANGUAGE_TEMPLATES,
   FRAMEWORK_TEMPLATES,
+  LANGUAGE_TEMPLATES,
   PATTERN_TEMPLATES,
   PROJECT_TYPE_TEMPLATES,
-  CLAUDE_TEMPLATES,
   SHARED_TEMPLATES,
-  ALL_TEMPLATES,
   TEMPLATE_BUNDLES,
+  getBundle,
   getTemplate,
-  getTemplatesByTarget,
   getTemplatesByCategory,
   getTemplatesByTag,
-  getBundle,
+  getTemplatesByTarget,
   resolveBundleTemplates,
 } from "./registry.js";
 
 // Loader
 export {
+  checkAllConditions,
+  checkCondition,
+  filterTemplatesByDetection,
+  getApplicableTemplates,
+  getRecommendedTemplates,
   getTemplatePath,
-  templateExists,
+  getTemplatesDirectory,
   loadTemplate,
   loadTemplateDefinition,
   loadTemplates,
-  checkCondition,
-  checkAllConditions,
-  filterTemplatesByDetection,
-  getApplicableTemplates,
-  sortTemplatesByPriority,
   resolveTemplateDependencies,
-  getRecommendedTemplates,
-  getTemplatesDirectory,
+  sortTemplatesByPriority,
+  templateExists,
 } from "./loader.js";
+
+// Path Resolver
+export {
+  isCommonTemplatePath,
+  resolveOutputPath,
+  resolveTemplatePaths,
+} from "./path-resolver.js";

@@ -3,40 +3,48 @@
  */
 
 import path from "path";
-import type {
-  GeneratorOptions,
-  GeneratorContext,
-  GeneratedFile,
-  ConflictInfo,
-  ConflictResolution,
-} from "./types.js";
-import type { TemplateDefinition } from "../templates/types.js";
 import { loadTemplateDefinition } from "../templates/loader.js";
-import { renderTemplate, generateFrontmatter } from "../utils/template-engine.js";
+import type { TemplateDefinition } from "../templates/types.js";
 import {
-  writeFileSafe,
+  attemptMerge,
+  calculateSimilarity,
+  computeDiff,
+  createBackup,
   exists,
   joinPath,
   readFile,
-  createBackup,
-  calculateSimilarity,
-  computeDiff,
-  attemptMerge,
+  writeFileSafe,
 } from "../utils/file-system.js";
 import { createLogger } from "../utils/logger.js";
+import {
+  generateFrontmatter,
+  renderTemplate,
+} from "../utils/template-engine.js";
+import type {
+  ConflictInfo,
+  ConflictResolution,
+  GeneratedFile,
+  Generator,
+  GeneratorContext,
+  GeneratorOptions,
+  GeneratorResult,
+} from "./types.js";
 
 const log = createLogger("generator");
 
 /**
  * Create a generator context from options
  */
-export function createGeneratorContext(options: GeneratorOptions): GeneratorContext {
+export function createGeneratorContext(
+  options: GeneratorOptions
+): GeneratorContext {
   const { detection, config } = options;
 
   // Get project name from package.json or directory name
-  const projectName = detection.packageManager.name !== "unknown"
-    ? path.basename(options.projectPath)
-    : path.basename(options.projectPath);
+  const projectName =
+    detection.packageManager.name !== "unknown"
+      ? path.basename(options.projectPath)
+      : path.basename(options.projectPath);
 
   // Get primary framework
   const primaryFramework = detection.frameworks[0];
@@ -99,13 +107,19 @@ export async function renderTemplateWithContext(
 
   try {
     // Render the body
-    const renderedBody = renderTemplate(resolved.body, context as unknown as Record<string, unknown>);
+    const renderedBody = renderTemplate(
+      resolved.body,
+      context as unknown as Record<string, unknown>
+    );
 
     // Render frontmatter values that contain template expressions
     const renderedFrontmatter: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(resolved.frontmatter)) {
       if (typeof value === "string" && value.includes("{{")) {
-        renderedFrontmatter[key] = renderTemplate(value, context as unknown as Record<string, unknown>);
+        renderedFrontmatter[key] = renderTemplate(
+          value,
+          context as unknown as Record<string, unknown>
+        );
       } else {
         renderedFrontmatter[key] = value;
       }
@@ -137,7 +151,12 @@ export async function writeGeneratedFile(
   } = {}
 ): Promise<GeneratedFile> {
   const absolutePath = joinPath(projectPath, relativePath);
-  const { dryRun = false, overwrite = false, backup = false, templateId } = options;
+  const {
+    dryRun = false,
+    overwrite = false,
+    backup = false,
+    templateId,
+  } = options;
 
   // Check if file exists
   const fileExists = await exists(absolutePath);
@@ -237,7 +256,9 @@ export async function writeGeneratedFileWithMerge(
 
   // Calculate similarity
   const similarityScore = calculateSimilarity(originalContent, incomingContent);
-  log.debug(`File ${relativePath}: similarity = ${(similarityScore * 100).toFixed(1)}%`);
+  log.debug(
+    `File ${relativePath}: similarity = ${(similarityScore * 100).toFixed(1)}%`
+  );
 
   // High similarity (>=95%): auto-merge (use incoming)
   if (similarityScore >= autoMergeThreshold) {
@@ -283,7 +304,11 @@ export async function writeGeneratedFileWithMerge(
 
   // Low similarity (<70%): warn and require explicit action
   if (similarityScore < 0.7) {
-    log.warn(`File ${relativePath}: low similarity (${(similarityScore * 100).toFixed(1)}%), requires manual review`);
+    log.warn(
+      `File ${relativePath}: low similarity (${(similarityScore * 100).toFixed(
+        1
+      )}%), requires manual review`
+    );
 
     // If no conflict handler, skip the file
     if (!onConflict) {
@@ -344,7 +369,9 @@ export async function writeGeneratedFileWithMerge(
   }
 
   // No conflict handler and moderate similarity - try smart merge
-  const mergeResult = attemptMerge(originalContent, incomingContent, { autoMergeThreshold });
+  const mergeResult = attemptMerge(originalContent, incomingContent, {
+    autoMergeThreshold,
+  });
 
   if (mergeResult.success) {
     if (dryRun) {
@@ -433,9 +460,10 @@ async function handleConflictResolution(
     };
   }
 
-  const contentToWrite = resolution.action === "accept-incoming"
-    ? incomingContent
-    : resolution.content;
+  const contentToWrite =
+    resolution.action === "accept-incoming"
+      ? incomingContent
+      : resolution.content;
 
   if (dryRun) {
     return {
@@ -447,7 +475,10 @@ async function handleConflictResolution(
         autoMerged: false,
         similarityScore,
         hadConflicts: true,
-        resolution: resolution.action === "accept-incoming" ? "accept-incoming" : "manual",
+        resolution:
+          resolution.action === "accept-incoming"
+            ? "accept-incoming"
+            : "manual",
       },
     };
   }
@@ -472,7 +503,8 @@ async function handleConflictResolution(
       autoMerged: false,
       similarityScore,
       hadConflicts: true,
-      resolution: resolution.action === "accept-incoming" ? "accept-incoming" : "manual",
+      resolution:
+        resolution.action === "accept-incoming" ? "accept-incoming" : "manual",
     },
     error: result.error,
   };
@@ -553,5 +585,105 @@ export function summarizeResults(files: GeneratedFile[]): {
     merged: files.filter((f) => f.action === "merged").length,
     skipped: files.filter((f) => f.action === "skipped").length,
     errors: files.filter((f) => f.action === "error").length,
+  };
+}
+
+/**
+ * Configuration for creating a generator
+ */
+export interface CreateGeneratorConfig {
+  /** Display name of the generator */
+  name: string;
+  /** Target this generator produces */
+  target: GeneratorResult["target"];
+  /** Function to get templates for this generator */
+  getTemplates: (options: GeneratorOptions) => TemplateDefinition[];
+  /** Log level for empty templates (default: "warn") */
+  emptyTemplatesLogLevel?: "debug" | "warn";
+}
+
+/**
+ * Factory function to create a generator with common generate() logic
+ *
+ * This eliminates code duplication across cursor, qoder, claude, jetbrains, and shared generators.
+ * Each generator only needs to define its template selection logic.
+ *
+ * @param config - Generator configuration
+ * @returns A Generator instance
+ */
+export function createGenerator(config: CreateGeneratorConfig): Generator {
+  const {
+    name,
+    target,
+    getTemplates,
+    emptyTemplatesLogLevel = "warn",
+  } = config;
+  const generatorLog = createLogger(`${target}-gen`);
+
+  return {
+    name,
+    target,
+
+    async generate(options: GeneratorOptions): Promise<GeneratorResult> {
+      generatorLog.debug(`Starting ${name}`);
+
+      try {
+        // Get templates to generate
+        const templates = getTemplates(options);
+
+        if (templates.length === 0) {
+          generatorLog[emptyTemplatesLogLevel](
+            `No ${target} templates selected for generation`
+          );
+          return {
+            success: true,
+            target,
+            files: [],
+          };
+        }
+
+        generatorLog.debug(
+          `Generating ${templates.length} ${target} templates`
+        );
+
+        // Create context
+        const context = createGeneratorContext(options);
+
+        // Generate files
+        const files = await generateFromTemplates(templates, context, options);
+
+        // Check for errors
+        const summary = summarizeResults(files);
+        const hasErrors = summary.errors > 0;
+
+        if (hasErrors) {
+          generatorLog.warn(
+            `${name} completed with ${summary.errors} error(s)`
+          );
+        } else {
+          generatorLog.debug(
+            `${name} completed: ${summary.created} created, ${summary.modified} modified, ${summary.skipped} skipped`
+          );
+        }
+
+        return {
+          success: !hasErrors,
+          target,
+          files,
+          error: hasErrors
+            ? `${summary.errors} file(s) failed to generate`
+            : undefined,
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        generatorLog.error(`${name} failed:`, message);
+        return {
+          success: false,
+          target,
+          files: [],
+          error: message,
+        };
+      }
+    },
   };
 }
