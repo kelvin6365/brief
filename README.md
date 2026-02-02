@@ -21,16 +21,35 @@ npm install -g @tszhim_tech/brief
 
 ## Quick Start
 
+### Tier 1: One-Command Magic 🪄
+
 ```bash
-brief init              # Interactive wizard (recommended)
-brief init --yes        # Non-interactive with defaults
-brief init --dry-run    # Preview changes
-brief detect            # Show detected project info
-brief templates         # List available templates
+brief magic spring-api        # Spring Boot API with batteries included
+brief magic react-dashboard   # React + ShadCN + Zustand + Tailwind
+brief magic fullstack-shop    # Next.js + Spring Boot + PostgreSQL
+```
+
+### Tier 2: Guided Selection 🎯
+
+```bash
+brief init
+# 1. Select Tools: [Cursor] [Claude] [Qoder]
+# 2. Select Framework: [Spring Boot] [Next.js] [FastAPI]
+# 3. Select Libraries: Context-aware options based on framework
+```
+
+### Tier 3: Power User Mode ⚙️
+
+```bash
+brief init --advanced      # Full customization
+brief init --templates springboot,security,database
+brief detect               # Show detected project info
+brief templates            # List available templates
 ```
 
 ## Features
 
+- **Three-Tier Approach** — Magic commands, guided selection, or full control
 - **Auto-Detection** — Frameworks, languages, databases, ORMs, testing tools
 - **Multi-Tool Support** — Cursor, Claude Code, Qoder configurations
 - **Smart Templates** — Context-aware rules based on your stack
@@ -39,27 +58,27 @@ brief templates         # List available templates
 
 ## Supported Tech
 
-| Category | Technologies |
-|----------|-------------|
-| **Languages** | TypeScript, JavaScript, Python, Java, Go |
-| **Frontend** | React, Next.js, Vue, Nuxt, Svelte, Astro |
-| **Backend** | Express, Fastify, NestJS, FastAPI, Django, Spring Boot |
-| **Databases** | PostgreSQL, MySQL, MongoDB, SQLite, Redis |
-| **ORMs** | Prisma, Drizzle, TypeORM, Sequelize, SQLAlchemy |
-| **Testing** | Jest, Vitest, Bun Test, Pytest, Playwright, Cypress |
-| **Build** | Vite, Webpack, Turbopack, Bun, esbuild |
+| Category      | Technologies                                           |
+| ------------- | ------------------------------------------------------ |
+| **Languages** | TypeScript, JavaScript, Python, Java, Go               |
+| **Frontend**  | React, Next.js, Vue, Nuxt, Svelte, Astro               |
+| **Backend**   | Express, Fastify, NestJS, FastAPI, Django, Spring Boot |
+| **Databases** | PostgreSQL, MySQL, MongoDB, SQLite, Redis              |
+| **ORMs**      | Prisma, Drizzle, TypeORM, Sequelize, SQLAlchemy        |
+| **Testing**   | Jest, Vitest, Bun Test, Pytest, Playwright, Cypress    |
+| **Build**     | Vite, Webpack, Turbopack, Bun, esbuild                 |
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `brief init` | Initialize AI configuration (interactive wizard) |
-| `brief detect` | Detect and display project information |
-| `brief add <template>` | Add a specific template |
-| `brief remove <template>` | Remove a template |
-| `brief sync` | Re-detect and sync configuration |
-| `brief validate` | Validate configuration files |
-| `brief templates` | List all available templates |
+| Command                   | Description                                      |
+| ------------------------- | ------------------------------------------------ |
+| `brief init`              | Initialize AI configuration (interactive wizard) |
+| `brief detect`            | Detect and display project information           |
+| `brief add <template>`    | Add a specific template                          |
+| `brief remove <template>` | Remove a template                                |
+| `brief sync`              | Re-detect and sync configuration                 |
+| `brief validate`          | Validate configuration files                     |
+| `brief templates`         | List all available templates                     |
 
 ### Common Options
 
@@ -86,6 +105,7 @@ brief init --templates react,testing,security
 ├── security.mdc          # Security guidelines
 └── ...
 ```
+
 </details>
 
 <details>
@@ -99,6 +119,7 @@ CLAUDE.md                 # Main configuration
     ├── testing.md
     └── git-workflow.md
 ```
+
 </details>
 
 <details>
@@ -114,11 +135,13 @@ CLAUDE.md                 # Main configuration
 ├── api-design.md         # API conventions
 └── ...
 ```
+
 </details>
 
 ## Roadmap
 
-### Completed
+### Completed ✅
+
 - [x] Interactive wizard with project detection
 - [x] Cursor, Claude Code, Qoder generators
 - [x] TypeScript, JavaScript, Python, Java templates
@@ -128,7 +151,38 @@ CLAUDE.md                 # Main configuration
 - [x] Smart merge with conflict resolution
 - [x] Dry-run and backup modes
 
+### Phase 1: Quick Start & Profiles (Next 2-3 releases)
+
+- [ ] **Quick Start Commands** - One-command project scaffolding
+  ```bash
+  brief init spring-api     # Spring Boot backend
+  brief init react-app      # React frontend
+  brief init fullstack      # Full-stack opinionated setup
+  ```
+- [ ] **Profile System** - Save and reuse configurations
+  ```bash
+  brief profile save my-stack    # Save current setup
+  brief init --profile my-stack  # Reuse anytime
+  ```
+- [ ] **Enhanced Detection** - Smarter project type guessing
+- [ ] **Template Recommendations** - Context-aware suggestions
+
+### Phase 2: Community & Collaboration (3-6 months)
+
+- [ ] **Template Marketplace** - Browse and share community templates
+- [ ] **Team Profiles** - Organization-wide standard configurations
+- [ ] **IDE Integration** - Auto-configure VS Code, IntelliJ
+- [ ] **Cloud Sync** - Sync profiles across all your machines
+
+### Phase 3: Intelligence & Scale (6+ months)
+
+- [ ] **AI-Powered Suggestions** - Learn from usage patterns
+- [ ] **Template Builder UI** - Visual template creation tool
+- [ ] **Enterprise Features** - Compliance scanning, security audits
+- [ ] **Plugin System** - Third-party template providers
+
 ### Planned
+
 - [ ] Standalone binary distribution
 - [ ] VS Code extension
 - [ ] Template marketplace
