@@ -38,6 +38,7 @@ import {
   detectCommand,
   getAvailableTemplates,
   initCommand,
+  magicCommand,
   parseTool,
   removeCommand,
   skillsAddCommand,
@@ -107,6 +108,52 @@ program
 
         if (!result.success) {
           console.error(result.error);
+          process.exit(1);
+        }
+      } catch (error) {
+        console.error("Error:", error instanceof Error ? error.message : error);
+        process.exit(1);
+      }
+    }
+  );
+
+// Magic command
+program
+  .command("magic")
+  .description("Generate AI configuration for a framework-specific project")
+  .argument("<kit>", "Magic kit ID (e.g. nextjs)")
+  .option(
+    "-p, --path <path>",
+    "Base path to create the project in",
+    process.cwd()
+  )
+  .option("--name <name>", "Project name (defaults to kit id)")
+  .option(
+    "--package-manager <pm>",
+    "Package manager to reference in next steps (bun|npm|pnpm|yarn)",
+    "bun"
+  )
+  .option("-d, --dry-run", "Preview without writing files")
+  .action(
+    async (
+      kit: string,
+      options: {
+        path: string;
+        name?: string;
+        packageManager: "bun" | "npm" | "pnpm" | "yarn";
+        dryRun?: boolean;
+      }
+    ): Promise<void> => {
+      try {
+        const result = await magicCommand(kit, {
+          path: options.path,
+          name: options.name,
+          packageManager: options.packageManager,
+          dryRun: options.dryRun,
+        });
+
+        if (!result.success) {
+          console.error(result.error ?? "Magic command failed");
           process.exit(1);
         }
       } catch (error) {
@@ -293,7 +340,10 @@ skillsCommand
   .command("list")
   .alias("ls")
   .description("List available skills")
-  .option("-p, --platform <platform>", "Filter by platform (cursor, claude, qoder)")
+  .option(
+    "-p, --platform <platform>",
+    "Filter by platform (cursor, claude, qoder)"
+  )
   .action(
     async (options: {
       platform?: "cursor" | "claude" | "qoder";
@@ -380,20 +430,18 @@ skillsCommand
 skillsCommand
   .command("info <skill>")
   .description("Show detailed information about a skill")
-  .action(
-    async (skill: string): Promise<void> => {
-      try {
-        const result = await skillsInfoCommand(skill);
+  .action(async (skill: string): Promise<void> => {
+    try {
+      const result = await skillsInfoCommand(skill);
 
-        if (!result.success) {
-          console.error(result.error);
-          process.exit(1);
-        }
-      } catch (error) {
-        console.error("Error:", error instanceof Error ? error.message : error);
+      if (!result.success) {
+        console.error(result.error);
         process.exit(1);
       }
+    } catch (error) {
+      console.error("Error:", error instanceof Error ? error.message : error);
+      process.exit(1);
     }
-  );
+  });
 
 program.parse();

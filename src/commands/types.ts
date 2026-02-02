@@ -74,3 +74,23 @@ export interface CommandResult {
   message?: string;
   error?: string;
 }
+
+/** Options for magic command */
+export interface MagicOptions {
+  /** Project path (parent directory to create project in or exact path) */
+  path?: string;
+  /** Optional project name (defaults to kit id when omitted) */
+  name?: string;
+  /** Package manager to use for generated instructions */
+  packageManager?: "bun" | "npm" | "pnpm" | "yarn";
+  /** Dry run (preview only, no files written) */
+  dryRun?: boolean;
+}
+
+/** Result for magic command */
+export interface MagicResult extends CommandResult {
+  /** Magic kit identifier that was executed */
+  kitId: string;
+  /** Absolute path to the generated project */
+  projectPath: string;
+}

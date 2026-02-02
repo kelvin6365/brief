@@ -4,18 +4,35 @@
 
 // Types
 export type {
-  AddOptions, CommandResult, DetectOptions, InitOptions, RemoveOptions,
+  AddOptions,
+  CommandResult,
+  DetectOptions,
+  InitOptions,
+  MagicOptions,
+  MagicResult,
+  RemoveOptions,
   SyncOptions,
-  ValidateOptions
+  ValidateOptions,
 } from "./types.js";
 
 // Commands
 export { addCommand, getAvailableTemplates } from "./add.js";
 export { detectCommand } from "./detect.js";
-export { initCommand, runInitInteractive, runInitNonInteractive } from "./init.js";
+export {
+  initCommand,
+  runInitInteractive,
+  runInitNonInteractive,
+} from "./init.js";
+export { magicCommand } from "./magic.js";
 export { removeCommand } from "./remove.js";
 export {
-  getAvailableSkills, getSkillInfo, getSkillsByPlatform, skillsAddCommand, skillsInfoCommand, skillsListCommand, skillsRemoveCommand
+  getAvailableSkills,
+  getSkillInfo,
+  getSkillsByPlatform,
+  skillsAddCommand,
+  skillsInfoCommand,
+  skillsListCommand,
+  skillsRemoveCommand,
 } from "./skills.js";
 export { syncCommand } from "./sync.js";
 export { validateCommand } from "./validate.js";
@@ -23,6 +40,9 @@ export { validateCommand } from "./validate.js";
 // Utilities
 export {
   formatBytes,
-  formatDuration, isInitialized, loadProjectConfig, parseTool, saveProjectConfig
+  formatDuration,
+  isInitialized,
+  loadProjectConfig,
+  parseTool,
+  saveProjectConfig,
 } from "./utils.js";
-

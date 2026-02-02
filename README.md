@@ -21,24 +21,14 @@ npm install -g @tszhim_tech/brief
 
 ## Quick Start
 
-### Tier 1: One-Command Magic 🪄
+### Framework-Specific Magic 🪄
 
 ```bash
-brief magic spring-api        # Spring Boot API with batteries included
-brief magic react-dashboard   # React + ShadCN + Zustand + Tailwind
-brief magic fullstack-shop    # Next.js + Spring Boot + PostgreSQL
+brief magic nextjs     # Generate AI configs for a Next.js project (App Router + TS + Tailwind)
+# more framework kits coming soon
 ```
 
-### Tier 2: Guided Selection 🎯
-
-```bash
-brief init
-# 1. Select Tools: [Cursor] [Claude] [Qoder]
-# 2. Select Framework: [Spring Boot] [Next.js] [FastAPI]
-# 3. Select Libraries: Context-aware options based on framework
-```
-
-### Tier 3: Power User Mode ⚙️
+### Advanced Mode ⚙️
 
 ```bash
 brief init --advanced      # Full customization
@@ -49,7 +39,7 @@ brief templates            # List available templates
 
 ## Features
 
-- **Three-Tier Approach** — Magic commands, guided selection, or full control
+- **Framework-Specific Magic** — One-command AI config generation for existing projects
 - **Auto-Detection** — Frameworks, languages, databases, ORMs, testing tools
 - **Multi-Tool Support** — Cursor, Claude Code, Qoder configurations
 - **Smart Templates** — Context-aware rules based on your stack
@@ -73,6 +63,7 @@ brief templates            # List available templates
 | Command                   | Description                                      |
 | ------------------------- | ------------------------------------------------ |
 | `brief init`              | Initialize AI configuration (interactive wizard) |
+| `brief magic <kit>`       | Generate framework-specific AI configs (e.g. Next.js) |
 | `brief detect`            | Detect and display project information           |
 | `brief add <template>`    | Add a specific template                          |
 | `brief remove <template>` | Remove a template                                |
@@ -150,6 +141,7 @@ CLAUDE.md                 # Main configuration
 - [x] AI memory management templates
 - [x] Smart merge with conflict resolution
 - [x] Dry-run and backup modes
+- [x] Next.js magic kit (AI config generation for Next.js projects)
 
 ### Phase 1: Quick Start & Profiles (Next 2-3 releases)
 

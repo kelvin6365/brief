@@ -6,7 +6,14 @@
 export type AiTool = "cursor" | "claude" | "qoder" | "hybrid" | "all";
 
 /** Detected project language */
-export type Language = "typescript" | "javascript" | "python" | "go" | "rust" | "java" | "unknown";
+export type Language =
+  | "typescript"
+  | "javascript"
+  | "python"
+  | "go"
+  | "rust"
+  | "java"
+  | "unknown";
 
 /** Detected framework */
 export interface DetectedFramework {
@@ -16,7 +23,18 @@ export interface DetectedFramework {
 }
 
 /** Build tool types */
-export type BuildTool = "vite" | "webpack" | "esbuild" | "rollup" | "parcel" | "turbopack" | "turborepo" | "tsup" | "swc" | "bun" | "nx";
+export type BuildTool =
+  | "vite"
+  | "webpack"
+  | "esbuild"
+  | "rollup"
+  | "parcel"
+  | "turbopack"
+  | "turborepo"
+  | "tsup"
+  | "swc"
+  | "bun"
+  | "nx";
 
 /** Styling framework types */
 export type StylingFramework =
@@ -99,4 +117,40 @@ export interface GenerationResult {
   filesCreated: string[];
   filesModified: string[];
   errors: string[];
+}
+
+/** Dependency definition for magic scaffolding kits */
+export interface MagicDependency {
+  /** Package name, e.g. `next` */
+  name: string;
+  /** Whether this should be installed as a devDependency */
+  dev?: boolean;
+  /** Version resolution strategy (for future use) */
+  strategy?: "latest" | "fixed";
+  /** Optional explicit version when using fixed strategy */
+  version?: string;
+}
+
+/** Framework-specific magic scaffolding kit */
+export interface MagicKit {
+  /** Unique kit identifier, e.g. `nextjs` or `spring` */
+  id: string;
+  /** Human-readable name */
+  name: string;
+  /** Short description shown in help/UX */
+  description: string;
+  /** Primary framework this kit targets, e.g. `nextjs`, `spring` */
+  framework: string;
+  /** Primary language used by the project */
+  language: Language;
+  /** AI tools to generate configuration for */
+  tools: AiTool[];
+  /** Runtime dependencies to add to the scaffolded project */
+  dependencies: MagicDependency[];
+  /** Development-time dependencies to add to the scaffolded project */
+  devDependencies: MagicDependency[];
+  /** Template IDs to feed into the generator pipeline */
+  templates: string[];
+  /** Optional human-readable next-step instructions */
+  postSteps?: string[];
 }

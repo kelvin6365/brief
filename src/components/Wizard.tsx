@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useReducer, type Reducer } from "react";
 import { detectProject } from "../detectors/index.js";
 import { runGenerators } from "../generators/index.js";
 import type { AiInitConfig, AiTool } from "../types/index.js";
+import { getCliVersion } from "../utils/version.js";
 import { getTerminalChars } from "../utils/terminal.js";
 import { ConfirmStep } from "./ConfirmStep.js";
 import { ProjectInfo } from "./ProjectInfo.js";
@@ -160,8 +161,9 @@ export function Wizard({
       try {
         const tools =
           state.config.tools.length > 0 ? state.config.tools : ["hybrid"];
+        const version = await getCliVersion();
         const config: AiInitConfig = {
-          version: state.config.version || "1.0.0",
+          version,
           projectType: state.config.projectType || "app",
           language: state.detection.language.primary,
           tools: tools as AiTool[],

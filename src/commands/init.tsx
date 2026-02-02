@@ -10,6 +10,7 @@ import { detectProject } from "../detectors/index.js";
 import { runGenerators } from "../generators/index.js";
 import type { AiInitConfig, AiTool } from "../types/index.js";
 import { createLogger } from "../utils/logger.js";
+import { getCliVersion } from "../utils/version.js";
 import type { CommandResult, InitOptions } from "./types.js";
 
 const log = createLogger("init");
@@ -235,8 +236,9 @@ export async function runInitNonInteractive(
     const tools: AiTool[] = options.tool ? [options.tool] : ["hybrid"];
 
     // Create config
+    const version = await getCliVersion();
     const config: AiInitConfig = {
-      version: "1.0.0",
+      version,
       projectType: "app",
       language: detection.language.primary,
       tools,
