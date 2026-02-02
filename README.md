@@ -119,15 +119,67 @@ CLAUDE.md                 # Main configuration
 ```
 .qoder/rules/
 ├── core.md               # Core standards
+├── quick-reference.md    # How to use @ references
 ├── requirements-spec.md  # Quest mode requirements
 ├── project-info.md       # Tech stack info
+├── best-practices.md     # Coding best practices
+├── typescript.md         # Language rules (from common)
+├── react.md              # Framework patterns (from common)
+├── nextjs.md             # Next.js conventions (from common)
 ├── security.md           # OWASP Top 10
 ├── testing.md            # Testing patterns
 ├── api-design.md         # API conventions
-└── ...
+└── ...                   # + other detected tech
 ```
 
 </details>
+
+## Architecture
+
+### Unified Template System
+
+Brief uses a **single-source, multi-target** architecture for templates. Common templates (TypeScript, React, security, etc.) are authored once and automatically transformed for each AI tool:
+
+```
+common/typescript.mdc.hbs (single source)
+    │
+    ├─► Cursor:  .cursor/rules/typescript.mdc
+    │            frontmatter: { description, globs, priority, tags }
+    │
+    ├─► Claude:  (included via CLAUDE.md aggregation)
+    │
+    └─► Qoder:   .qoder/rules/typescript.md
+                 frontmatter: { description }  ← Cursor fields removed
+```
+
+**Key benefits:**
+
+- **DRY** — One template, multiple outputs
+- **Consistency** — Same best practices across all AI tools
+- **Maintainability** — Update once, apply everywhere
+
+### Runtime Transformation
+
+When generating for non-Cursor targets, Brief automatically:
+
+1. **Path transformation** — `.cursor/rules/*.mdc` → `.qoder/rules/*.md`
+2. **Frontmatter transformation** — Removes Cursor-specific fields (`globs`, `priority`, `alwaysApply`, `tags`)
+
+This is handled by [`path-resolver.ts`](./src/templates/path-resolver.ts).
+
+### Generator Factory
+
+All generators (Cursor, Claude, Qoder, JetBrains, Shared) use a common factory pattern:
+
+```typescript
+export const cursorGenerator = createGenerator({
+  name: "Cursor Rules Generator",
+  target: "cursor",
+  getTemplates: getCursorTemplates,
+});
+```
+
+This eliminates ~250 lines of duplicate code across generators.
 
 ## Roadmap
 
@@ -142,6 +194,8 @@ CLAUDE.md                 # Main configuration
 - [x] Smart merge with conflict resolution
 - [x] Dry-run and backup modes
 - [x] Next.js magic kit (AI config generation for Next.js projects)
+- [x] Unified template system (single-source, multi-target)
+- [x] Generator factory pattern (DRY code architecture)
 
 ### Phase 1: Quick Start & Profiles (Next 2-3 releases)
 

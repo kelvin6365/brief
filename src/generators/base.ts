@@ -4,7 +4,12 @@
 
 import path from "path";
 import { loadTemplateDefinition } from "../templates/loader.js";
-import type { TemplateDefinition } from "../templates/types.js";
+import {
+  isCommonTemplatePath,
+  resolveOutputPath,
+  transformFrontmatterForTarget,
+} from "../templates/path-resolver.js";
+import type { TemplateDefinition, TemplateTarget } from "../templates/types.js";
 import {
   attemptMerge,
   calculateSimilarity,
@@ -94,10 +99,16 @@ export function createGeneratorContext(
 
 /**
  * Render a template with the generator context
+ *
+ * @param template - Template definition to render
+ * @param context - Generator context with project info
+ * @param target - Target tool (cursor, qoder, etc.) for frontmatter transformation
+ * @returns Rendered content and frontmatter, or null if failed
  */
 export async function renderTemplateWithContext(
   template: TemplateDefinition,
-  context: GeneratorContext
+  context: GeneratorContext,
+  target?: TemplateTarget
 ): Promise<{ content: string; frontmatter: Record<string, unknown> } | null> {
   const resolved = await loadTemplateDefinition(template);
   if (!resolved) {
@@ -113,7 +124,7 @@ export async function renderTemplateWithContext(
     );
 
     // Render frontmatter values that contain template expressions
-    const renderedFrontmatter: Record<string, unknown> = {};
+    let renderedFrontmatter: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(resolved.frontmatter)) {
       if (typeof value === "string" && value.includes("{{")) {
         renderedFrontmatter[key] = renderTemplate(
@@ -123,6 +134,16 @@ export async function renderTemplateWithContext(
       } else {
         renderedFrontmatter[key] = value;
       }
+    }
+
+    // Transform frontmatter for target if this is a common template
+    if (target) {
+      const isCommon = isCommonTemplatePath(template.outputPath);
+      renderedFrontmatter = transformFrontmatterForTarget(
+        renderedFrontmatter,
+        target,
+        isCommon
+      );
     }
 
     // Combine frontmatter and body
@@ -512,20 +533,33 @@ async function handleConflictResolution(
 
 /**
  * Generate files from a list of templates
+ *
+ * @param templates - List of templates to generate
+ * @param context - Generator context with project info
+ * @param options - Generator options
+ * @param target - Target tool for path and frontmatter transformation
+ * @returns List of generated files
  */
 export async function generateFromTemplates(
   templates: TemplateDefinition[],
   context: GeneratorContext,
-  options: GeneratorOptions
+  options: GeneratorOptions,
+  target?: TemplateTarget
 ): Promise<GeneratedFile[]> {
   const files: GeneratedFile[] = [];
 
   for (const template of templates) {
-    const rendered = await renderTemplateWithContext(template, context);
+    // Resolve output path for target (e.g., .cursor/rules/*.mdc → .qoder/rules/*.md)
+    const outputPath = target
+      ? resolveOutputPath(template.outputPath, target)
+      : template.outputPath;
+
+    // Render template with frontmatter transformation for target
+    const rendered = await renderTemplateWithContext(template, context, target);
     if (!rendered) {
       files.push({
-        path: template.outputPath,
-        absolutePath: joinPath(options.projectPath, template.outputPath),
+        path: outputPath,
+        absolutePath: joinPath(options.projectPath, outputPath),
         action: "error",
         templateId: template.id,
         error: "Failed to render template",
@@ -539,7 +573,7 @@ export async function generateFromTemplates(
     if (options.mergeMode) {
       result = await writeGeneratedFileWithMerge(
         options.projectPath,
-        template.outputPath,
+        outputPath,
         rendered.content,
         {
           dryRun: options.dryRun,
@@ -552,7 +586,7 @@ export async function generateFromTemplates(
     } else {
       result = await writeGeneratedFile(
         options.projectPath,
-        template.outputPath,
+        outputPath,
         rendered.content,
         {
           dryRun: options.dryRun,
@@ -649,8 +683,13 @@ export function createGenerator(config: CreateGeneratorConfig): Generator {
         // Create context
         const context = createGeneratorContext(options);
 
-        // Generate files
-        const files = await generateFromTemplates(templates, context, options);
+        // Generate files (pass target for path/frontmatter transformation)
+        const files = await generateFromTemplates(
+          templates,
+          context,
+          options,
+          target
+        );
 
         // Check for errors
         const summary = summarizeResults(files);

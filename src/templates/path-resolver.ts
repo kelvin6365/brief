@@ -16,6 +16,11 @@ const TARGET_PATHS: Record<string, { dir: string; ext: string }> = {
 };
 
 /**
+ * Frontmatter fields that are Cursor-specific and should be removed for other targets
+ */
+const CURSOR_SPECIFIC_FIELDS = ["globs", "priority", "alwaysApply", "tags"];
+
+/**
  * Resolve output path for a specific target
  *
  * Transforms paths from a generic format to target-specific format:
@@ -56,6 +61,39 @@ export function resolveOutputPath(
  */
 export function isCommonTemplatePath(outputPath: string): boolean {
   return outputPath.startsWith(".cursor/rules/");
+}
+
+/**
+ * Transform frontmatter for a specific target
+ *
+ * Removes Cursor-specific fields (globs, priority, alwaysApply, tags) for non-Cursor targets.
+ * This allows common templates to be used across different AI tools.
+ *
+ * @param frontmatter - Original frontmatter object
+ * @param target - Target tool to transform for
+ * @param isCommonTemplate - Whether this is a common template (needs transformation)
+ * @returns Transformed frontmatter for the target
+ */
+export function transformFrontmatterForTarget(
+  frontmatter: Record<string, unknown>,
+  target: TemplateTarget,
+  isCommonTemplate: boolean
+): Record<string, unknown> {
+  // Only transform common templates for non-cursor targets
+  if (!isCommonTemplate || target === "cursor") {
+    return frontmatter;
+  }
+
+  // Create a copy without Cursor-specific fields
+  const transformed: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(frontmatter)) {
+    if (!CURSOR_SPECIFIC_FIELDS.includes(key)) {
+      transformed[key] = value;
+    }
+  }
+
+  return transformed;
 }
 
 /**

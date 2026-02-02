@@ -20,17 +20,17 @@ export {
   CLAUDE_TEMPLATES,
   CORE_TEMPLATES,
   FRAMEWORK_TEMPLATES,
-  LANGUAGE_TEMPLATES,
-  PATTERN_TEMPLATES,
-  PROJECT_TYPE_TEMPLATES,
-  SHARED_TEMPLATES,
-  TEMPLATE_BUNDLES,
   getBundle,
   getTemplate,
   getTemplatesByCategory,
   getTemplatesByTag,
   getTemplatesByTarget,
+  LANGUAGE_TEMPLATES,
+  PATTERN_TEMPLATES,
+  PROJECT_TYPE_TEMPLATES,
   resolveBundleTemplates,
+  SHARED_TEMPLATES,
+  TEMPLATE_BUNDLES,
 } from "./registry.js";
 
 // Loader
@@ -55,4 +55,5 @@ export {
   isCommonTemplatePath,
   resolveOutputPath,
   resolveTemplatePaths,
+  transformFrontmatterForTarget,
 } from "./path-resolver.js";
