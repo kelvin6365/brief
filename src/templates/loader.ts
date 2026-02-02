@@ -133,13 +133,27 @@ export function checkCondition(
       break;
 
     case "hasFile":
-      // This would need additional context - for now, return false
-      result = false;
+      // Check if any file matches the glob pattern
+      if (detection.files) {
+        const pattern = condition.value
+          .replace(/[.+^${}()|[\]\\]/g, "\\$&") // escape regex chars except *
+          .replace(/\*\*/g, "{{GLOBSTAR}}") // temp placeholder
+          .replace(/\*/g, "[^/]*") // * matches segment
+          .replace(/\{\{GLOBSTAR\}\}/g, ".*"); // ** matches anything
+        const regex = new RegExp(pattern);
+        result = detection.files.some((file) => regex.test(file));
+      }
       break;
 
     case "hasDependency":
-      // This would need package.json context - for now, return false
-      result = false;
+      // Check if dependency exists in package.json
+      if (detection.packageJson) {
+        const allDeps = {
+          ...detection.packageJson.dependencies,
+          ...detection.packageJson.devDependencies,
+        };
+        result = condition.value in allDeps;
+      }
       break;
 
     case "custom":
@@ -256,7 +270,9 @@ function templateMatchesTools(
 
   // Handle array targets (e.g., ["cursor", "claude", "qoder"])
   if (Array.isArray(target)) {
-    return selectedTools.some((tool) => target.includes(tool as typeof target[number]));
+    return selectedTools.some((tool) =>
+      target.includes(tool as (typeof target)[number])
+    );
   }
 
   // Handle single target

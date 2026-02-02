@@ -36,12 +36,23 @@ export { buildDetectionContext } from "./utils.js";
  * @param projectPath - Path to the project root
  * @returns Complete detection result
  */
-export async function detectProject(projectPath: string): Promise<FullProjectDetection> {
+export async function detectProject(
+  projectPath: string
+): Promise<FullProjectDetection> {
   // Build the shared detection context
   const context = await buildDetectionContext(projectPath);
 
   // Run all detectors in parallel for performance
-  const [language, packageManager, frameworks, testing, database, buildTools, styling, aiConfig] = await Promise.all([
+  const [
+    language,
+    packageManager,
+    frameworks,
+    testing,
+    database,
+    buildTools,
+    styling,
+    aiConfig,
+  ] = await Promise.all([
     Promise.resolve(detectLanguage(context)),
     Promise.resolve(detectPackageManager(context)),
     Promise.resolve(detectFrameworks(context)),
@@ -61,6 +72,8 @@ export async function detectProject(projectPath: string): Promise<FullProjectDet
     buildTools,
     styling,
     aiConfig,
+    files: context.files,
+    packageJson: context.packageJson,
   };
 }
 
@@ -71,14 +84,22 @@ export function getDetectionSummary(detection: FullProjectDetection): string {
   const lines: string[] = [];
 
   // Language
-  lines.push(`Language: ${detection.language.primary} (${detection.language.confidence}% confidence)`);
+  lines.push(
+    `Language: ${detection.language.primary} (${detection.language.confidence}% confidence)`
+  );
   if (detection.language.secondary.length > 0) {
     lines.push(`  Secondary: ${detection.language.secondary.join(", ")}`);
   }
 
   // Package Manager
   if (detection.packageManager.name !== "unknown") {
-    lines.push(`Package Manager: ${detection.packageManager.name}${detection.packageManager.lockFile ? ` (${detection.packageManager.lockFile})` : ""}`);
+    lines.push(
+      `Package Manager: ${detection.packageManager.name}${
+        detection.packageManager.lockFile
+          ? ` (${detection.packageManager.lockFile})`
+          : ""
+      }`
+    );
   }
 
   // Frameworks
@@ -104,7 +125,9 @@ export function getDetectionSummary(detection: FullProjectDetection): string {
   if (detection.database.length > 0) {
     lines.push(`Database/ORM:`);
     for (const db of detection.database.slice(0, 3)) {
-      lines.push(`  - ${db.name}${db.orm ? ` (${db.orm})` : ""} (${db.confidence}%)`);
+      lines.push(
+        `  - ${db.name}${db.orm ? ` (${db.orm})` : ""} (${db.confidence}%)`
+      );
     }
   }
 
@@ -126,16 +149,35 @@ export function getDetectionSummary(detection: FullProjectDetection): string {
 
   // Existing AI Config
   const aiConfig = detection.aiConfig;
-  const hasQoderConfig = aiConfig.qoder.hasBestPractices || aiConfig.qoder.hasAgentsMd || aiConfig.qoder.hasAiConfig;
-  const hasExistingConfig = aiConfig.cursor.hasConfig || aiConfig.claude.hasConfig || hasQoderConfig || aiConfig.copilot.hasInstructions;
+  const hasQoderConfig =
+    aiConfig.qoder.hasBestPractices ||
+    aiConfig.qoder.hasAgentsMd ||
+    aiConfig.qoder.hasAiConfig;
+  const hasExistingConfig =
+    aiConfig.cursor.hasConfig ||
+    aiConfig.claude.hasConfig ||
+    hasQoderConfig ||
+    aiConfig.copilot.hasInstructions;
 
   if (hasExistingConfig) {
     lines.push(`Existing AI Config:`);
     if (aiConfig.cursor.hasConfig) {
-      lines.push(`  - Cursor: ${aiConfig.cursor.hasRulesDir ? "modern rules" : aiConfig.cursor.hasLegacyRules ? "legacy .cursorrules" : "config present"}`);
+      lines.push(
+        `  - Cursor: ${
+          aiConfig.cursor.hasRulesDir
+            ? "modern rules"
+            : aiConfig.cursor.hasLegacyRules
+            ? "legacy .cursorrules"
+            : "config present"
+        }`
+      );
     }
     if (aiConfig.claude.hasConfig) {
-      lines.push(`  - Claude Code: ${aiConfig.claude.hasClaudeMd ? "CLAUDE.md" : ""}${aiConfig.claude.hasSkills ? " + skills" : ""}`);
+      lines.push(
+        `  - Claude Code: ${aiConfig.claude.hasClaudeMd ? "CLAUDE.md" : ""}${
+          aiConfig.claude.hasSkills ? " + skills" : ""
+        }`
+      );
     }
     if (hasQoderConfig) {
       const qoderParts: string[] = [];

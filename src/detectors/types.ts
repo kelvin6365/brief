@@ -148,4 +148,6 @@ export interface FullProjectDetection {
   buildTools: BuildToolInfo[];
   styling: StylingInfo[];
   aiConfig: ExistingAiConfig;
+  files: string[];
+  packageJson: PackageJson | null;
 }

@@ -4,10 +4,16 @@
  */
 
 import type { GeneratorOptions, GeneratorResult, Generator } from "../types.js";
-import { createGeneratorContext, generateFromTemplates, summarizeResults } from "../base.js";
+import {
+  createGeneratorContext,
+  generateFromTemplates,
+  summarizeResults,
+} from "../base.js";
 import {
   getTemplatesByTarget,
   sortTemplatesByPriority,
+  filterTemplatesByDetection,
+  resolveTemplateDependencies,
 } from "../../templates/index.js";
 import type { TemplateDefinition } from "../../templates/types.js";
 import { createLogger } from "../../utils/logger.js";
@@ -17,11 +23,16 @@ const log = createLogger("qoder-gen");
 /**
  * Get Qoder templates to generate based on detection and config
  */
-export function getQoderTemplates(options: GeneratorOptions): TemplateDefinition[] {
-  const { config } = options;
+export function getQoderTemplates(
+  options: GeneratorOptions
+): TemplateDefinition[] {
+  const { detection, config } = options;
 
   // Start with all Qoder templates
   let templates = getTemplatesByTarget("qoder");
+
+  // Filter by detection conditions (language, framework, etc.)
+  templates = filterTemplatesByDetection(templates, detection);
 
   // If user specified templates, filter to only those (plus core)
   if (config.templates.length > 0) {
@@ -30,8 +41,11 @@ export function getQoderTemplates(options: GeneratorOptions): TemplateDefinition
     // Always include core Qoder templates
     requestedIds.add("qoder-best-practices");
 
+    // Resolve dependencies for requested templates
+    const resolvedIds = resolveTemplateDependencies(Array.from(requestedIds));
+
     templates = templates.filter(
-      (t) => requestedIds.has(t.id) || t.category === "core"
+      (t) => resolvedIds.includes(t.id) || t.category === "core"
     );
   }
 
@@ -79,14 +93,18 @@ export const qoderGenerator: Generator = {
       if (hasErrors) {
         log.warn(`Qoder generation completed with ${summary.errors} error(s)`);
       } else {
-        log.debug(`Qoder generation completed: ${summary.created} created, ${summary.modified} modified, ${summary.skipped} skipped`);
+        log.debug(
+          `Qoder generation completed: ${summary.created} created, ${summary.modified} modified, ${summary.skipped} skipped`
+        );
       }
 
       return {
         success: !hasErrors,
         target: "qoder",
         files,
-        error: hasErrors ? `${summary.errors} file(s) failed to generate` : undefined,
+        error: hasErrors
+          ? `${summary.errors} file(s) failed to generate`
+          : undefined,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
