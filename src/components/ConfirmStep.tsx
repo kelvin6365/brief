@@ -124,6 +124,8 @@ function formatTools(tools: string[]): string {
           return "Cursor";
         case "claude":
           return "Claude Code";
+        case "qoder":
+          return "Qoder";
         default:
           return t;
       }

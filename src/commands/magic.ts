@@ -99,9 +99,34 @@ async function buildAiInitConfigFromKit(
 
 function printPostSteps(kit: MagicKit, projectPath: string): void {
   // eslint-disable-next-line no-console
-  console.log("\nMagic kit:", kit.name);
+  console.log("");
   // eslint-disable-next-line no-console
-  console.log("Project path:", projectPath);
+  console.log("✨ Magic kit applied:", kit.name);
+  // eslint-disable-next-line no-console
+  console.log("📁 Project path:", projectPath);
+  
+  // Show Qoder-specific guidance if Qoder is in the tools list
+  if (kit.tools.includes("qoder")) {
+    // eslint-disable-next-line no-console
+    console.log("");
+    // eslint-disable-next-line no-console
+    console.log("🎯 Qoder Setup:");
+    // eslint-disable-next-line no-console
+    console.log("  1. Open project in Qoder IDE");
+    // eslint-disable-next-line no-console
+    console.log("  2. Review .qoder/rules/quick-reference.md for usage guide");
+    // eslint-disable-next-line no-console
+    console.log("  3. Configure rule activation: Right-click rules → Settings");
+    // eslint-disable-next-line no-console
+    console.log("  4. Recommended: Set requirements-spec.md to 'Always Apply'");
+    // eslint-disable-next-line no-console
+    console.log("");
+    // eslint-disable-next-line no-console
+    console.log("  ⚠️  Keep total active rules under 100,000 characters");
+    // eslint-disable-next-line no-console
+    console.log("  📖 Docs: https://docs.qoder.com/user-guide/rules");
+  }
+  
   // eslint-disable-next-line no-console
   console.log("");
 }

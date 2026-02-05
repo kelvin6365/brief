@@ -22,7 +22,7 @@ const TOOL_OPTIONS: SelectOption[] = [
   {
     label: "Qoder",
     value: "qoder",
-    description: "Generate .qoder/ config files",
+    description: "Generate .qoder/rules/*.md files with IDE activation",
   },
 ];
 

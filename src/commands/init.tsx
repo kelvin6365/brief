@@ -44,84 +44,101 @@ function showQoderUsageGuide(): void {
   console.log(chalk.cyan.bold("  🎉 Qoder Rules Generated Successfully!"));
   console.log(chalk.cyan.bold("━".repeat(60)));
   console.log("");
-  console.log(chalk.white("📖 How to Use These Rules:"));
+  console.log(chalk.white("📖 How to Activate Rules:"));
   console.log("");
   console.log(
-    chalk.gray("  Rules use ") +
-      chalk.yellow("trigger: manual") +
-      chalk.gray(" - reference them with ") +
-      chalk.green("@rule-name.md")
+    chalk.gray("  Right-click any rule in Qoder IDE → ") +
+      chalk.yellow("Settings") +
+      chalk.gray(" → Choose activation mode:")
   );
   console.log("");
-  console.log(chalk.white("💡 Quick Start:"));
+  console.log(
+    chalk.gray("    • ") +
+      chalk.green("Apply Manually") +
+      chalk.gray(" - Activate when you need it (default)")
+  );
+  console.log(
+    chalk.gray("    • ") +
+      chalk.green("Model Decision") +
+      chalk.gray(" - Let Qoder decide when to apply")
+  );
+  console.log(
+    chalk.gray("    • ") +
+      chalk.green("Always Apply") +
+      chalk.gray(" - Active for all tasks")
+  );
+  console.log(
+    chalk.gray("    • ") +
+      chalk.green("Specific Files") +
+      chalk.gray(" - Active for certain file patterns")
+  );
+  console.log("");
+  console.log(chalk.white("💡 Recommended Rules to Activate:"));
   console.log("");
   console.log(
     chalk.gray("  1. ") +
-      chalk.green("@quick-reference.md") +
+      chalk.green("quick-reference.md") +
       chalk.gray(" - Start here! Complete usage guide")
   );
   console.log(
     chalk.gray("  2. ") +
-      chalk.green("@requirements-spec.md") +
+      chalk.green("requirements-spec.md") +
       chalk.gray(" - Critical for Quest Mode (no TODOs!)")
   );
   console.log(
+    chalk.gray("     ") +
+      chalk.yellow("→ Suggestion: Always Apply") +
+      chalk.gray(" (enforces complete code)")
+  );
+  console.log(
     chalk.gray("  3. ") +
-      chalk.green("@security.md") +
+      chalk.green("security.md") +
       chalk.gray(" - When handling auth, validation, APIs")
   );
   console.log(
+    chalk.gray("     ") +
+      chalk.yellow("→ Suggestion: Model Decision") +
+      chalk.gray(" (auto-applies for security)")
+  );
+  console.log(
     chalk.gray("  4. ") +
-      chalk.green("@api-design.md") +
+      chalk.green("api-design.md") +
       chalk.gray(" - When creating API endpoints")
   );
   console.log(
     chalk.gray("  5. ") +
-      chalk.green("@testing.md") +
+      chalk.green("testing.md") +
       chalk.gray(" - When writing tests")
   );
   console.log("");
-  console.log(chalk.white("🚀 Example Usage:"));
+  console.log(chalk.white("🚀 Manual Activation (Apply Manually mode):"));
   console.log("");
   console.log(
-    chalk.gray('  "Implement login endpoint ') +
-      chalk.green("@requirements-spec.md @security.md @api-design.md") +
+    chalk.gray('  Just mention the rule in your task:')
+  );
+  console.log(
+    chalk.gray('  "Implement login endpoint following ') +
+      chalk.green("security.md") +
+      chalk.gray(' and ') +
+      chalk.green("api-design.md") +
       chalk.gray('"')
   );
   console.log(
-    chalk.gray('  "Write tests for UserService ') +
-      chalk.green("@testing.md @core.md") +
-      chalk.gray('"')
-  );
-  console.log(
-    chalk.gray('  "Commit changes ') +
-      chalk.green("@git-workflow.md") +
+    chalk.gray('  "Write tests using patterns from ') +
+      chalk.green("testing.md") +
       chalk.gray('"')
   );
   console.log("");
-  console.log(chalk.white("📚 Common Combinations:"));
-  console.log("");
   console.log(
-    chalk.gray("  • API Development: ") +
-      chalk.green("@api-design.md @security.md @error-handling.md")
-  );
-  console.log(
-    chalk.gray("  • New Features: ") +
-      chalk.green("@requirements-spec.md @core.md @security.md")
-  );
-  console.log(
-    chalk.gray("  • Architecture: ") + chalk.green("@architecture.md @core.md")
-  );
-  console.log("");
-  console.log(
-    chalk.yellow("⚠️  Important: ") +
-      chalk.gray("Always reference ") +
-      chalk.green("@requirements-spec.md") +
-      chalk.gray(" for new features")
+    chalk.yellow("⚠️  Character Limit: ") +
+      chalk.gray("Keep total ") +
+      chalk.white("active") +
+      chalk.gray(" rules under ") +
+      chalk.white("100,000 characters")
   );
   console.log(
     chalk.gray(
-      "   to ensure complete, runnable code with no TODOs/placeholders!"
+      "   Too many active rules may impact performance!"
     )
   );
   console.log("");

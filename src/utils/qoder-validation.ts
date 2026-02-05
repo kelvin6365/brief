@@ -279,14 +279,80 @@ export async function validateQoderRulesDirectory(
 }
 
 /**
- * Generate a validation report summary
+ * Calculate total character count for Qoder rule files
  * 
- * @param results - Validation results from validateQoderRulesDirectory
- * @returns Human-readable summary
+ * @param filePaths - Array of file paths to .qoder/rules/*.md files
+ * @returns Total character count across all files
  */
-export function generateValidationReport(
-  results: Map<string, QoderRuleValidationResult>
-): string {
+export async function calculateRuleCharacters(filePaths: string[]): Promise<number> {
+  let totalChars = 0;
+  
+  for (const filePath of filePaths) {
+    try {
+      if (await fs.pathExists(filePath)) {
+        const content = await fs.readFile(filePath, "utf-8");
+        totalChars += content.length;
+      }
+    } catch (error) {
+      log.warn(`Failed to read ${filePath}: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  }
+  
+  return totalChars;
+}
+
+/**
+ * Validate character limit for Qoder rules
+ * Qoder has a 100,000 character limit across all active rules
+ * 
+ * @param rulesDir - Path to .qoder/rules directory
+ * @returns Validation result with character count and warnings
+ */
+export async function validateCharacterLimit(rulesDir: string): Promise<{
+  totalChars: number;
+  exceedsLimit: boolean;
+  withinLimit: boolean;
+  warnings: string[];
+}> {
+  const warnings: string[] = [];
+  
+  if (!(await fs.pathExists(rulesDir))) {
+    return {
+      totalChars: 0,
+      exceedsLimit: false,
+      withinLimit: true,
+      warnings: ["Rules directory does not exist"],
+    };
+  }
+  
+  const files = await fs.readdir(rulesDir);
+  const mdFiles = files
+    .filter((f) => f.endsWith(".md"))
+    .map((f) => `${rulesDir}/${f}`);
+  
+  const totalChars = await calculateRuleCharacters(mdFiles);
+  const LIMIT = 100000;
+  const exceedsLimit = totalChars > LIMIT;
+  const withinLimit = totalChars <= LIMIT;
+  
+  if (exceedsLimit) {
+    const overage = totalChars - LIMIT;
+    warnings.push(`Total character count (${totalChars}) exceeds Qoder's 100,000 limit by ${overage} characters`);
+    warnings.push("Use 'Apply Manually' activation mode for most rules to stay within limit");
+    warnings.push("Only set critical rules (like requirements-spec.md) to 'Always Apply'");
+  } else if (totalChars > LIMIT * 0.8) {
+    warnings.push(`Total character count (${totalChars}) is approaching the 100,000 limit`);
+    warnings.push("Consider using 'Apply Manually' or 'Model Decision' for less critical rules");
+  }
+  
+  return {
+    totalChars,
+    exceedsLimit,
+    withinLimit,
+    warnings,
+  };
+}
+
   const lines: string[] = [];
   const totalFiles = results.size;
   const validFiles = Array.from(results.values()).filter((r) => r.valid).length;
