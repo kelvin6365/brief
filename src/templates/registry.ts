@@ -823,17 +823,6 @@ export const QODO_TEMPLATES: TemplateDefinition[] = [
     priority: 850,
     tags: ["qoder", "best-practices"],
   },
-  {
-    id: "qoder-settings",
-    name: "Qoder Settings",
-    description: "Qoder settings.json with memory and Quest Mode configuration",
-    target: "qoder",
-    category: "core",
-    templatePath: "qoder/settings.json.hbs",
-    outputPath: ".qoder/settings.json",
-    priority: 950,
-    tags: ["qoder", "settings", "config", "essential"],
-  },
 
   // Qoder-specific quality templates (Priority: 800-700)
   {

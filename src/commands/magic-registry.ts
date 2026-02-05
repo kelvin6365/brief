@@ -45,15 +45,14 @@ export const MAGIC_KITS: MagicKit[] = [
       "typescript",
       "react",
       "nextjs",
-      
+
       // Qoder-specific core templates
       "qoder-core",
       "qoder-quick-reference",
       "qoder-requirements-spec",
       "qoder-project-info",
       "qoder-best-practices",
-      "qoder-settings",
-      
+
       // Qoder-specific quality & process templates
       "qoder-security",
       "qoder-testing",

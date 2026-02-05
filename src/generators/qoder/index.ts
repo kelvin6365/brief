@@ -1,6 +1,6 @@
 /**
  * Qoder generator
- * Generates .qoder/rules/*.md files and .qoder/settings.json
+ * Generates .qoder/rules/*.md files
  */
 
 import {
@@ -15,23 +15,22 @@ import type { Generator, GeneratorOptions } from "../types.js";
 
 /**
  * Get Qoder templates to generate based on detection and config
- * 
+ *
  * This function selects templates for Qoder by:
  * 1. Starting with all templates that target "qoder"
  * 2. If user specified templates: include those + essential core templates
  * 3. Otherwise: use detection-based filtering (auto-select based on tech stack)
  * 4. Resolve dependencies (e.g., Angular requires TypeScript)
  * 5. Sort by priority (higher number = generated first)
- * 
+ *
  * Core templates always included:
  * - qoder-core (coding standards)
  * - qoder-quick-reference (how to use @ references)
  * - qoder-requirements-spec (Quest Mode standards)
- * - qoder-settings (settings.json configuration)
- * 
+ *
  * @param options - Generator options with detection and config
  * @returns Array of template definitions to generate
- * 
+ *
  * @example
  * ```typescript
  * const templates = getQoderTemplates({
@@ -39,7 +38,7 @@ import type { Generator, GeneratorOptions } from "../types.js";
  *   config: { templates: ['typescript', 'react'] },
  *   projectPath: '/path/to/project'
  * });
- * // Returns: [qoder-core, qoder-settings, typescript, react, ...]
+ * // Returns: [qoder-core, qoder-quick-reference, typescript, react, ...]
  * ```
  */
 export function getQoderTemplates(
@@ -57,7 +56,6 @@ export function getQoderTemplates(
     // Always include essential core Qoder templates
     requestedIds.add("qoder-core");
     requestedIds.add("qoder-quick-reference");
-    requestedIds.add("qoder-settings");
 
     // Resolve dependencies for requested templates
     const resolvedIds = resolveTemplateDependencies(Array.from(requestedIds));
@@ -79,17 +77,16 @@ export function getQoderTemplates(
 
 /**
  * Qoder generator instance
- * 
+ *
  * Generates configuration files for Qoder (The Agentic Coding Platform):
  * - .qoder/rules/*.md - Rule files with manual/always_on triggers
- * - .qoder/settings.json - Memory, Quest Mode, and agent configuration
- * 
+ *
  * Key features:
  * - Uses @ reference system (manual rule activation)
  * - Integrates with Qoder's 4-category memory system
  * - Enforces complete code in Quest Mode (no TODO/placeholders)
  * - Supports framework/language-specific rules via shared templates
- * 
+ *
  * @see {@link getQoderTemplates} for template selection logic
  */
 export const qoderGenerator: Generator = createGenerator({
