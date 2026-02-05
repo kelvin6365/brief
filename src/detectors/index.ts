@@ -182,8 +182,11 @@ export function getDetectionSummary(detection: FullProjectDetection): string {
     if (hasQoderConfig) {
       const qoderParts: string[] = [];
       if (aiConfig.qoder.hasAiConfig) qoderParts.push(".qoder/rules/");
-      if (aiConfig.qoder.hasBestPractices) qoderParts.push("rules");
+      if (aiConfig.qoder.hasBestPractices)
+        qoderParts.push(`rules (${aiConfig.qoder.ruleCount})`);
       if (aiConfig.qoder.hasAgentsMd) qoderParts.push("AGENTS.md");
+      if (aiConfig.qoder.hasSettings) qoderParts.push("settings.json");
+      if (aiConfig.qoder.hasSkills) qoderParts.push("skills");
       lines.push(`  - Qoder: ${qoderParts.join(" + ")}`);
     }
     if (aiConfig.copilot.hasInstructions) {

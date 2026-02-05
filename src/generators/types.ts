@@ -131,6 +131,7 @@ export interface GeneratorContext {
   };
   generated: {
     date: string;
+    timestamp: string;
     version: string;
   };
 }

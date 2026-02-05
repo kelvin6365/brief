@@ -1,0 +1,55 @@
+{
+  "$schema": "https://qoder.com/schemas/settings.json",
+  "version": "1.0.0",
+  "memory": {
+    "enabled": true,
+    "categories": {
+      "user_prefer": {
+        "enabled": true,
+        "description": "User preferences and coding style"
+      },
+      "project_info": {
+        "enabled": true,
+        "description": "Technology stack and project configuration",
+        "sources": [".qoder/rules/project-info.md"]
+      },
+      "project_specification": {
+        "enabled": true,
+        "description": "Development standards and architecture",
+        "sources": [".qoder/rules/requirements-spec.md", ".qoder/rules/architecture.md"]
+      },
+      "experience_lessons": {
+        "enabled": true,
+        "description": "Learned patterns and pain points from this project"
+      }
+    }
+  },
+  "rules": {
+    "directory": ".qoder/rules",
+    "autoLoad": ["requirements-spec.md"],
+    "triggerMode": "manual"
+  },
+  "quest": {
+    "enabled": true,
+    "defaults": {
+      "enforceCompleteCode": true,
+      "noPlaceholders": true,
+      "requireTests": {{#if detection.testing}}true{{else}}false{{/if}}
+    }
+  },
+  "agents": {
+    "enabled": true,
+    "directory": ".qoder/agents"
+  },
+  "project": {
+    "name": "{{project.name}}",
+    "language": "{{project.language}}",
+    "type": "{{project.type}}"{{#if project.framework}},
+    "framework": "{{project.framework}}"{{/if}}
+  },
+  "generated": {
+    "by": "Brief CLI",
+    "version": "{{generated.version}}",
+    "date": "{{generated.date}}"
+  }
+}
