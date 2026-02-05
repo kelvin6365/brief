@@ -245,9 +245,10 @@ export function countFiles(context: DetectionContext, pattern: RegExp): number {
  */
 export async function buildDetectionContext(projectPath: string): Promise<DetectionContext> {
   // Get all files in the project (excluding node_modules, .git, etc.)
+  // Note: We include .cursor, .claude, .qoder directories for AI config detection
   const files = await globby(["**/*"], {
     cwd: projectPath,
-    gitignore: true,
+    gitignore: false, // Don't use gitignore to ensure we detect AI config files
     ignore: [
       "**/node_modules/**",
       "**/.git/**",

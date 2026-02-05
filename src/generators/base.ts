@@ -92,6 +92,7 @@ export function createGeneratorContext(
     },
     generated: {
       date: new Date().toISOString(),
+      timestamp: new Date().toLocaleString(),
       version: config.version,
     },
   };

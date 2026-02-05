@@ -69,6 +69,21 @@ export async function detectCommand(options: DetectOptions): Promise<CommandResu
         console.log("\nAI Config Status:");
         console.log(`  Cursor: ${detection.aiConfig.cursor.hasConfig ? "Configured" : "Not configured"}`);
         console.log(`  Claude: ${detection.aiConfig.claude.hasConfig ? "Configured" : "Not configured"}`);
+        
+        // Enhanced Qoder detection output
+        const qoderConfig = detection.aiConfig.qoder;
+        const hasQoderConfig = qoderConfig.hasAiConfig || qoderConfig.hasBestPractices || qoderConfig.hasAgentsMd;
+        if (hasQoderConfig) {
+          const qoderDetails = [];
+          if (qoderConfig.hasAiConfig) qoderDetails.push(`.qoder/rules/ (${qoderConfig.ruleCount} rules)`);
+          if (qoderConfig.hasSettings) qoderDetails.push("settings.json");
+          if (qoderConfig.hasSkills) qoderDetails.push("skills/");
+          if (qoderConfig.hasAgentsMd) qoderDetails.push("AGENTS.md");
+          console.log(`  Qoder: Configured (${qoderDetails.join(", ")})`);
+        } else {
+          console.log(`  Qoder: Not configured`);
+        }
+        
         console.log(`  Copilot: ${detection.aiConfig.copilot.hasInstructions ? "Configured" : "Not configured"}`);
       }
 

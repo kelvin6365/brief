@@ -72,10 +72,24 @@ function detectQoderConfig(context: DetectionContext): ExistingAiConfig["qoder"]
     (f) => f.startsWith(".qoder/rules/") && f.endsWith(".md")
   );
 
+  // Check for settings.json
+  const hasSettings = hasFile(context, ".qoder/settings.json");
+
+  // Check for skills directory
+  const hasSkills = context.files.some((f) => f.startsWith(".qoder/skills/"));
+
+  // Count rule files
+  const ruleCount = context.files.filter(
+    (f) => f.startsWith(".qoder/rules/") && f.endsWith(".md")
+  ).length;
+
   return {
     hasBestPractices: hasRules,
     hasAgentsMd,
     hasAiConfig: hasRulesDir,
+    hasSettings,
+    hasSkills,
+    ruleCount,
   };
 }
 

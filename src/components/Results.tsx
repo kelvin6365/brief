@@ -140,53 +140,40 @@ export function Results({ results }: ResultsProps): React.ReactElement {
             </Text>
             <Box marginTop={1} flexDirection="column">
               <Text bold color="white">
-                📖 How to Use:
+                📖 How to Activate:
               </Text>
               <Box marginLeft={2} flexDirection="column" marginTop={1}>
                 <Text color="gray">
-                  Rules use <Text color="yellow">trigger: manual</Text> -
-                  reference with <Text color="green">@rule-name.md</Text>
+                  Right-click rules in Qoder IDE → Settings → Choose mode
                 </Text>
               </Box>
             </Box>
             <Box marginTop={1} flexDirection="column">
               <Text bold color="white">
-                💡 Quick Start:
+                💡 Recommended:
               </Text>
               <Box marginLeft={2} flexDirection="column" marginTop={1}>
                 <Text>
                   <Text color="cyan">1.</Text>{" "}
-                  <Text color="green">@quick-reference.md</Text>{" "}
+                  <Text color="green">quick-reference.md</Text>{" "}
                   <Text color="gray">- Complete usage guide</Text>
                 </Text>
                 <Text>
                   <Text color="cyan">2.</Text>{" "}
-                  <Text color="green">@requirements-spec.md</Text>{" "}
-                  <Text color="gray">- Quest Mode (no TODOs!)</Text>
+                  <Text color="green">requirements-spec.md</Text>{" "}
+                  <Text color="gray">- Always Apply (no TODOs!)</Text>
                 </Text>
                 <Text>
                   <Text color="cyan">3.</Text>{" "}
-                  <Text color="green">@security.md</Text>{" "}
-                  <Text color="gray">- Auth, validation, APIs</Text>
-                </Text>
-              </Box>
-            </Box>
-            <Box marginTop={1} flexDirection="column">
-              <Text bold color="white">
-                🚀 Example:
-              </Text>
-              <Box marginLeft={2} flexDirection="column" marginTop={1}>
-                <Text color="gray">
-                  "Implement login{" "}
-                  <Text color="green">@security.md @api-design.md</Text>"
+                  <Text color="green">security.md</Text>{" "}
+                  <Text color="gray">- Model Decision (auto-security)</Text>
                 </Text>
               </Box>
             </Box>
             <Box marginTop={1}>
-              <Text color="yellow">⚠️ Important: </Text>
+              <Text color="yellow">⚠️ Limit: </Text>
               <Text color="gray">
-                Always use <Text color="green">@requirements-spec.md</Text> for
-                new features!
+                Keep active rules under 100K characters
               </Text>
             </Box>
           </Box>

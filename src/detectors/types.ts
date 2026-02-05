@@ -117,6 +117,9 @@ export interface ExistingAiConfig {
     hasBestPractices: boolean;
     hasAgentsMd: boolean;
     hasAiConfig: boolean;
+    hasSettings: boolean;
+    hasSkills: boolean;
+    ruleCount: number;
   };
   copilot: {
     hasInstructions: boolean;
