@@ -1,19 +1,28 @@
 ---
 trigger: manual
+description: Essential coding standards and AI behavior guidelines
 ---
+<!-- 
+  Qoder Rule Configuration:
+  - YAML frontmatter above is for metadata/documentation
+  - Configure activation in Qoder IDE: Right-click file → Settings
+  - Recommended: "Model Decision" (AI decides based on context)
+  See: https://docs.qoder.com/user-guide/rules
+-->
+
 # Core Rules for {{project.name}}
 
 > Essential coding standards and AI behavior guidelines for Qoder
 
 ## 🤖 Qoder-Specific Instructions
 
-### Agent & Quest Mode Guidelines
+### Quest Mode Guidelines
 
-When working in **Quest Mode** (Qoder's multi-step workflow):
+When working in **Quest Mode** (Qoder's autonomous multi-step workflow):
 1. **Always provide complete runnable code** - Never use placeholders like `// TODO`, `...`, `/* implement this */`, or similar
 2. **Follow Spec-first workflow** - Review and reference technical specifications before implementing
-3. **Leverage context awareness** - Use `@` syntax to reference other rules (e.g., `@quality/security.md`, `@quality/testing.md`)
-4. **Complete all steps** - When given a multi-step task, complete ALL steps without stopping midway
+3. **Complete all steps** - When given a multi-step task, complete ALL steps without stopping midway
+4. **Be specific** - Include file names, tech stack, and design requirements in your Quest specifications
 
 ### Ask Mode Guidelines
 
@@ -24,11 +33,14 @@ For quick questions and clarifications:
 
 ### Memory System Integration
 
-This project uses Qoder's persistent memory system:
-- **user_prefer**: Coding preferences, dialogue style, project-specific preferences
-- **project_info**: Technology stack, environment setup (see `.qoder/rules/project-info.md`)
-- **project_specification**: Development standards, architecture (see `.qoder/rules/requirements-spec.md`)
-- **experience_lessons**: Remember pain points and solutions from this project
+This project leverages Qoder's memory system:
+- **Active Memory**: Explicitly saved information (use Agent mode to save)
+- **Automatic Memory**: Auto-learned from conversations, coding style, and project patterns
+- **Rules take precedence** when conflicts occur between rules and memory
+
+Related rules in `.qoder/rules/`:
+- `project-info.md` - Technology stack and environment setup
+- `requirements-spec.md` - Development standards and Quest Mode requirements
 
 ## Project Context
 
@@ -47,7 +59,25 @@ This project uses Qoder's persistent memory system:
 - **Database**: {{detection.database}}
 {{/if}}
 
-### Available Rule References
+### Available Rules in This Project
+
+Other rules you can activate in Qoder IDE:
+- `core.md` - This file (core coding standards)
+- `best-practices.md` - Project-specific best practices
+{{#if detection.testing}}
+- `testing.md` - Testing patterns and conventions
+{{/if}}
+- `requirements-spec.md` - Feature requirements and specifications (recommended for Quest Mode)
+- `security.md` - Security guidelines and OWASP prevention
+- `error-handling.md` - Error handling patterns
+{{#if detection.frameworks}}
+- `git-workflow.md` - Git commit and branching conventions
+{{/if}}
+{{#if (includes project.type "api")}}
+- `api-design.md` - RESTful API design patterns
+{{/if}}
+
+Activate rules via Qoder IDE (right-click → settings) or let Model Decision mode handle it automatically.
 
 Use `@` to reference other rules in this project:
 - `@core.md` - This file (core coding standards)
